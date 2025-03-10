@@ -1,0 +1,53 @@
+import mongoose from 'mongoose';
+
+const LocationSchema = new mongoose.Schema({
+  name: {
+    en: {
+      type: String,
+      required: [true, 'Please provide a name in English'],
+      trim: true,
+    },
+    ar: {
+      type: String,
+      required: [true, 'Please provide a name in Arabic'],
+      trim: true,
+    },
+  },
+  description: {
+    en: {
+      type: String,
+      required: [true, 'Please provide a description in English'],
+    },
+    ar: {
+      type: String,
+      required: [true, 'Please provide a description in Arabic'],
+    },
+  },
+  images: [
+    {
+      url: {
+        type: String,
+      },
+      publicId: {
+        type: String,
+      },
+    },
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+});
+
+// Virtual populate tours
+LocationSchema.virtual('tours', {
+  ref: 'Tour',
+  localField: '_id',
+  foreignField: 'locations',
+  justOne: false,
+});
+
+export default mongoose.models.Location || mongoose.model('Location', LocationSchema); 

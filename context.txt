@@ -1,0 +1,279 @@
+### CursorAI Prompt for Next.js Travel Guide Platform
+### you do only what i ask you to do !! don't do anything else !!
+**Project Description:**
+Create a high-performance, multilingual (Arabic and English) Next.js web application to connect travelers directly with expert local guides. Guides will manage their own profiles and tours via a dedicated dashboard. Users will browse, filter, and book tours. Include powerful search, filtering, reviews, ratings, personalized quiz recommendations, and robust admin management.
+
+---
+
+### Tech Stack:
+
+- Next.js (App router, server-side components)
+- TailwindCSS
+- MongoDB, Mongoose
+- Cloudinary (image uploads)
+- JavaScript (ES6+)
+
+---
+
+### Best-Practice Structure (Next.js):
+
+**Models:**
+
+- **User**: `role(admin|guide|user)`, name, email, password, wishlist (`tours`, `guides`), bookings
+- **Guide**: name (multilingual), email, nickname, address, phone, languages (with proficiency), expertise areas (with experience years), about (multilingual), profile image, driver license (date, number, image), vehicle info (optional), reviews, rating (1-5)
+- **Tour**: title (multilingual), description (multilingual), guide (reference), price, images (cover, grid), duration, duration unit, activity level, max group size, languages, transportation, handicapped-friendly, kid-friendly, active status, expertise, reviews, average temperature, locations
+- **Location**: name, description, images
+- **Review**: user (reference), rating (1-5), comment, date, guide/tour reference
+- **Booking**: user (reference), tour (reference), guide (reference), dates, travelers, total price, status
+
+---
+
+### Dashboard (Guides & Admin):
+
+**Guide Dashboard:**
+
+- Multilingual profile management (dynamic inputs per selected language)
+- Tour management (create, update, delete)
+- Review and rating overview
+- Booking and availability management
+- Password update & reset functionality
+
+**Admin Dashboard:**
+
+- User, guide, and tour management (CRUD)
+- Verify and manage guide licenses
+- Manage content and reviews
+
+---
+
+### UI/UX & Frontend:\*\*
+
+**Home Page:**
+
+- Hero section with travel dates, travelers count, language filter
+- Background carousel with dynamic moving images
+- Showcase featured tour types (Christian, Jewish, Muslim, Political, Historical, Cultural, Food, All-inclusive) with animated hover effects
+- "Personalized Tour" quiz
+- Highlight top locations (e.g., Jerusalem, Jaffa, Haifa, Dead Sea, etc.)
+- Display top-rated guides (rating, expertise, languages, recent reviews)
+- Clear CTA sections for exploring more tours and quiz participation
+
+**Tours Page:**
+
+- Advanced filtering: dates, travelers, languages, expertise, locations
+- Wishlist functionality for users
+- Interactive tour cards displaying images, duration, expertise, and quick booking options
+
+**Guide Listing Page:**
+
+- Show guides with ratings, expertise, languages
+- Option to filter/search by language proficiency and expertise
+
+**Location Pages:**
+
+- Detailed description, image gallery
+- Related tours and guides specialized in the location
+
+**Interactive Carousel & Popup:**
+
+- Animated carousel component inspired by provided image
+- Popup carousel with navigation to selected tour pages
+
+**Responsive Design:**
+
+- Mobile-first responsive design using TailwindCSS
+
+---
+
+### SEO & Performance:\*\*
+
+- Server-side rendering (SSR)
+- Dynamic metadata for better SEO
+- Optimal image handling via Cloudinary
+
+---
+
+### Authentication & Security:\*\*
+
+- Secure authentication (JWT, NextAuth.js recommended)
+- Secure password reset via email
+- Profile-based authorization
+
+---
+
+### Deliverables:\*\*
+
+- Structured Next.js project setup (best practices)
+- Clean, modular, reusable components
+- Fully responsive and modern UI/UX
+- Efficient database schema with MongoDB and Mongoose
+- Optimized server-side rendering strategy
+
+---
+Help Center
+Questions about our tours?
+Take a look at our FAQs or reach out to us.
+When is the best time to visit the Holy Land?
+The best time to visit the Holy Land depends on what you’re looking for in your trip. If you want to chill out on the beach, the summer months bring daily blue skies and fantastic beach weather – with lively beach bars and nonstop excitement in the capital, Tel Aviv. Be prepared for temperatures in the high 80º’s F and 90º’s F / 30º C up to 40º C, plus bigger crowds, and higher hotel prices if you visit in summertime.
+
+Spring and fall bring more mild weather and smaller crowds. With daytime temperatures in the 60’sº F and 70’s° F / 15ºC to 25ºC in most of the country (but still hot around the Red Sea and Dead Sea), it’s an ideal time to explore the endless incredible sights the Holy Land has to offer
+
+ 
+
+
+What are the top Christian sites in the Holy Land?
+What are the top Christian sites in the Holy Land?
+
+
+What does “Israeli licensed tour guide” mean?
+In Israel, it’s a legal requirement for all tour guides to be licensed by the Ministry of Tourism. Guides must renew their license every two years and partake in one training course each year. All guides on Tourminded are fully licensed.  
+
+
+What is the tipping culture in the Holy Land?
+Tipping in restaurants is expected in Israel (between 10 to 15% depending on the quality of the service). 
+
+Tipping taxi drivers is not common, nor is tipping when ordering at a cafe counter or getting information from your hotel. 
+
+
+On guided tours, a tip between $3 and $5 is the minimum, but feel free to tip more if you are really happy with the guide and if the tour lasts multiple days.
+
+
+Are there guides who can give a tour of Israel and Palestine?
+Yes! Tourminded has guides that will show you around both Israel and Palestine. You can see the regions each guide visits on their personal guide page.
+
+
+Why should I book through Tourminded?
+Tourminded tours are more customizable than tours through any other operator. We are the only travel agency that matches you with a perfect-fit guide, ensuring you get exactly the trip you’re hoping for, nothing less! Explore our wide range of tours with engaging guides knowledgeable about religion, history, architecture, food, and more. Plus, you pay significantly less than you would when booking through other agencies because we don’t charge a premium.
+
+
+How do you choose the guides?
+We interview each guide individually to assess their qualifications, areas of expertise, and language proficiency. Additionally, a member of our team goes on their tour before we add them to Tourminded.
+
+
+So, you can rest assured that your guided tour meets the highest quality standards and there are no unpleasant surprises on your visit to the Holy Land. Just kick back, relax, and let your guide show you the endless wonders there are to discover!
+
+
+What type of electrical outlets are used in Israel? Should I bring an adapter?
+Israel has two types of sockets: type C (two prongs) and type H (3 prongs in a triangle). If you are traveling from the U.S., you will need an adaptor and voltage converter. If you are coming from Europe, you don’t need an adaptor. 
+
+
+Wondering about something else?
+We’re happy to help! You can reach us via the live website chat, or send an email to ,
+boulos@tourminded.com, or simply fill out the form below. We will get back to you within 48 hours.
+
+First Name *
+Last Name *
+Email *
+Phone Number *
+submit
+Your perfect trip awaits
+FlowBite Logo
+about
+Seamless, fun-filled tours with local experts
+You’ll be matched with a personable guide who perfectly aligns with your passions and needs, so your trip to the Holy Land is everything you hoped for and more.
+
+Tour Image
+“It was an amazing day and I learned so much.”
+“Ariel was an absolute joy on our tour and made the experience so smooth and wonderful.”
+
+“Ariel was an absolute joy on our tour and made the experience so smooth and wonderful.”
+
+“Ariel was an absolute joy on our tour and made the experience so smooth and wonderful.”
+
+Why we exist
+Avoid unpleasant surprises on your vacation
+Tickets have been booked for months. Bags are packed. Finally, the big day is here. It’s time for your vacation.
+But when you arrive after a long, exhausting flight, things aren’t as you expected.
+Whether it’s subpar accommodation, transportation hiccups, or a guide who can’t answer your questions or you can’t communicate with.
+We know there’s nothing worse than arriving at your long-awaited (and expensive) trip and finding yourself in this situation.
+And that’s exactly why we’re here.
+
+The only travel agency in the Holy Land that matches you with a perfect fit guide
+You’ll tell us exactly what you’re looking for and get a personalized recommendation for private tours fitting your specific needs. Plus, you’ll pay significantly less because we match you directly with locals and don’t charge a premium. Whether your tour is 1 day or 15, you can expect interesting cultural insights and unforgettable adventures at every turn.
+
+I’m ready to find my perfect tour
+Tour Image
+See Israel through the eyes of a local
+Choose from hundreds of guided tours that will bring this rich land’s fascinating heritage to life.
+
+Christian pilgrimages
+Jewish Tours
+Muslim Tours
+Political Tours
+Historical Tours
+Cultural Tours
+Food Tours
+All-Inclusive Tour
+What makes Tourminded better?
+Feature	Tourminded	Other travel agencies
+Licensed guides	✓	
+Private, customizable tours	✓	
+Choose guide based on expertise	✓	
+Verified language proficiency	✓	
+Trusted reviews of the guide	✓	
+Price	$	$$$
+The trip of your dreams is waiting for you
+Explore our vast selection of Holy Land tours for every traveler and style.
+Or take our short quiz and get a personalized recommendation sent to your inbox.
+
+Explore tours
+Start quiz
+Your Journey, Personalized
+Discover tours tailored to your interests with our expert guides, exclusive deals, and flexible booking options.
+
+1
+Image description
+Expert guides
+Get exactly the trip you want with an engaging guide knowledgeable about what matters to you.
+
+2
+Image description
+Unbeatable price
+You’ll be connected directly with a local guide - not pay an agency premium.
+
+3
+Image description
+Book now, pay later
+Keep your travel plans flexible by booking your tour now and paying later on.
+Why Tourminded is the best choice for your trip to the Holy Land
+Tour Image
+No extra fees
+You’ll pay the lowest possible price. Guaranteed.
+
+Completely customizable
+Down to the finest detail. Even the car you’ll be picked up in.
+
+An unforgettable adventure
+Each tour is personally vetted and designed for maximum fun!
+
+Engaging, licensed guides
+From religion to history, politics or bird watching, you’ll connect with a topic expert.
+
+Verified language proficiency
+Check the language ratings and choose a guide you can communicate well with.
+
+Chat and support
+Got a question? You can message a guide directly or reach us via chat anytime.
+
+Why we exist
+Got a question? You can message a guide directly or reach us anytime through the chat.
+
+Why we exist
+
+Hero:
+Make your visit to the Holy Land the trip of a lifetime
+Tourminded matches you directly to expert local guides based on your interests and language
+Discover More
+Travel Dates
+2025-03-09
+# Of Travelers
+Guide Expertise
+Expertise
+Languages
+Languages
+
+Generate a clean, modular, and highly maintainable Next.js project based on the above detailed structure and specifications.
+ lets add to theguide also, active inactive -> inthe pages only active guides will be shown
+the text color is black!! this is the main text color !!!!! 
+
+shhadyse

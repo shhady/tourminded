@@ -1,0 +1,77 @@
+{
+  "common": {
+    "home": "Home",
+    "tours": "Tours",
+    "guides": "Guides",
+    "locations": "Locations",
+    "quiz": "Quiz",
+    "about": "About",
+    "login": "Login",
+    "register": "Register",
+    "search": "Search",
+    "viewAll": "View All",
+    "explore": "Explore",
+    "book": "Book Now",
+    "readMore": "Read More",
+    "contactUs": "Contact Us",
+    "language": "Language",
+    "english": "English",
+    "arabic": "Arabic"
+  },
+  "home": {
+    "hero": {
+      "title": "Make your visit to the Holy Land the trip of a lifetime",
+      "subtitle": "Tourminded matches you directly to expert local guides based on your interests and language",
+      "startQuiz": "Start Quiz",
+      "travelDate": "Travel Date",
+      "travelers": "# Of Travelers",
+      "guideExpertise": "Guide Expertise",
+      "languages": "Languages",
+      "searchTours": "Search Tours"
+    },
+    "tourTypes": {
+      "title": "Explore Tour Types",
+      "subtitle": "Discover the perfect tour experience based on your interests and preferences",
+      "exploreTours": "Explore Tours →"
+    },
+    "locations": {
+      "title": "Top Locations",
+      "subtitle": "Explore the most fascinating destinations in the Holy Land",
+      "viewAllLocations": "View All Locations"
+    },
+    "guides": {
+      "title": "Top-Rated Guides",
+      "subtitle": "Meet our experienced local guides who will make your journey unforgettable",
+      "reviews": "reviews",
+      "viewAllGuides": "View All Guides"
+    },
+    "testimonials": {
+      "title": "What Our Travelers Say",
+      "subtitle": "Read testimonials from travelers who experienced our guided tours"
+    },
+    "cta": {
+      "title": "Ready to Experience the Holy Land with Expert Guides?",
+      "subtitle": "Start planning your perfect trip today. Browse our tours or take our personalized quiz to find the perfect match for your interests.",
+      "browseTours": "Browse Tours",
+      "takeQuiz": "Take the Quiz"
+    }
+  },
+  "footer": {
+    "company": "Company",
+    "aboutUs": "About Us",
+    "ourTeam": "Our Team",
+    "careers": "Careers",
+    "contact": "Contact",
+    "toursCategory": "Tours",
+    "support": "Support",
+    "helpCenter": "Help Center",
+    "safety": "Safety",
+    "cancellation": "Cancellation Options",
+    "covid": "COVID-19",
+    "legal": "Legal",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "cookies": "Cookie Policy",
+    "copyright": "All rights reserved."
+  }
+} 
