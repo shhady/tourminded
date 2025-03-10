@@ -3,7 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import User from '@/models/User';
 import { withAuth, withAdminAuth } from '@/lib/authMiddleware';
-import { auth } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs/server';
 
 // Get all guides (public)
 export async function GET(request) {
@@ -39,7 +39,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     // Get the authenticated user from Clerk
-    const { userId } = auth();
+    const { userId } = await currentUser();  
     
     if (!userId) {
       console.error('Guide creation failed: User not authenticated');
@@ -49,10 +49,10 @@ export async function POST(request) {
       );
     }
     
-    const { userId: mongoUserId, name, about, address, phone, languages, expertise, profileImage, driverLicense } = await request.json();
+    const { name, about, address, phone, languages, expertise, profileImage, driverLicense } = await request.json();
     
     // Validate input
-    if (!mongoUserId || !name || !about || !address || !phone || !languages || !expertise || !profileImage) {
+    if (!name || !about || !address || !phone || !languages || !expertise || !profileImage) {
       return NextResponse.json(
         { success: false, message: 'Please provide all required fields' },
         { status: 400 }
@@ -63,7 +63,7 @@ export async function POST(request) {
     await connectDB();
     
     // Check if user exists
-    const user = await User.findById(mongoUserId);
+    const user = await User.findOne({ clerkId: userId });
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
@@ -80,7 +80,7 @@ export async function POST(request) {
     }
     
     // Check if guide already exists for this user
-    const guideExists = await Guide.findOne({ user: mongoUserId });
+    const guideExists = await Guide.findOne({ user: user._id });
     if (guideExists) {
       return NextResponse.json(
         { success: false, message: 'Guide profile already exists for this user' },
@@ -90,7 +90,7 @@ export async function POST(request) {
     
     // Create new guide
     const guide = await Guide.create({
-      user: mongoUserId,
+        user: user._id,
       name,
       about,
       address,
@@ -104,7 +104,7 @@ export async function POST(request) {
     
     // Update user role if not already a guide
     if (user.role !== 'guide') {
-      await User.findByIdAndUpdate(mongoUserId, { role: 'guide' });
+        await User.findOneAndUpdate({ clerkId: userId }, { role: 'guide' });
     }
     
     return NextResponse.json(

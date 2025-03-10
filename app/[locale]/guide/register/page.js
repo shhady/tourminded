@@ -7,11 +7,14 @@ import MainLayout from '@/components/layout/MainLayout';
 import ImageUploader from '@/components/ui/ImageUploader';
 import Button from '@/components/ui/Button';
 import { Loader } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
 
 export default function GuideRegistrationPage({ params }) {
   const unwrappedParams = React.use(params);
   const locale = unwrappedParams?.locale || 'en';
   const router = useRouter();
+  
+  const { user, isLoaded: isClerkLoaded } = useUser();
   
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -22,11 +25,27 @@ export default function GuideRegistrationPage({ params }) {
   
   const { register, handleSubmit, formState: { errors } } = useForm();
   
-  // Get the current user from the session
+  // Sync and get the current user from MongoDB using Clerk ID
   useEffect(() => {
-    const fetchUser = async () => {
+    const syncAndFetchUser = async () => {
+      if (!isClerkLoaded || !user) {
+        setIsPageLoading(false);
+        return;
+      }
+      
       try {
-        const response = await fetch('/api/auth/me');
+        // First, sync the user to MongoDB
+        const syncResponse = await fetch('/api/users/sync');
+        
+        if (!syncResponse.ok) {
+          throw new Error('Failed to sync user data');
+        }
+        
+        const syncData = await syncResponse.json();
+        console.log('User synced:', syncData);
+        
+        // Now fetch the MongoDB user
+        const response = await fetch(`/api/users/clerk/${user.id}`);
         
         if (response.ok) {
           const userData = await response.json();
@@ -42,15 +61,15 @@ export default function GuideRegistrationPage({ params }) {
           setError(locale === 'en' ? 'Failed to fetch user data' : 'فشل في جلب بيانات المستخدم');
         }
       } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error syncing/fetching user:', error);
         setError(locale === 'en' ? 'Failed to fetch user data' : 'فشل في جلب بيانات المستخدم');
       } finally {
         setIsPageLoading(false);
       }
     };
     
-    fetchUser();
-  }, [locale, router]);
+    syncAndFetchUser();
+  }, [isClerkLoaded, user, locale, router]);
   
   const handleProfileImageUploaded = (url) => {
     setProfileImage(url);
@@ -121,18 +140,19 @@ export default function GuideRegistrationPage({ params }) {
       const result = await response.json();
       console.log('Guide registration successful:', result);
       
-      // Update the user's role in the database
-      const updateRoleResponse = await fetch(`/api/users/${currentUser._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ role: 'guide' }),
-      });
-      
-      if (!updateRoleResponse.ok) {
-        console.error('Failed to update user role');
+      // Update the user's role in Clerk metadata
+      try {
+        await user.update({
+          publicMetadata: { role: 'guide' },
+        });
+        console.log('Clerk metadata updated successfully');
+      } catch (clerkError) {
+        console.error('Error updating Clerk metadata:', clerkError);
+        // Continue anyway since the guide was created in MongoDB
       }
+      
+      // Sync the updated role back to MongoDB
+      await fetch('/api/users/sync');
       
       // Redirect to dashboard
       router.push(`/${locale}/dashboard/guide`);
@@ -145,7 +165,7 @@ export default function GuideRegistrationPage({ params }) {
   };
   
   // Show loading state while fetching user
-  if (isPageLoading) {
+  if (isPageLoading || !isClerkLoaded) {
     return (
       <MainLayout locale={locale}>
         <div className="py-16 bg-secondary-50 min-h-screen">
@@ -163,13 +183,13 @@ export default function GuideRegistrationPage({ params }) {
   }
   
   // If user is not authenticated, redirect to sign in
-  if (!currentUser) {
-    router.push(`/${locale}/auth/login?redirect=/${locale}/guide/register`);
+  if (!user) {
+    router.push(`/sign-in?redirect=/${locale}/guide/register`);
     return null;
   }
   
   // If user is already a guide, redirect to dashboard
-  if (currentUser?.role === 'guide') {
+  if (currentUser?.role === 'guide' || user.publicMetadata?.role === 'guide') {
     router.push(`/${locale}/dashboard/guide`);
     return null;
   }
@@ -182,12 +202,12 @@ export default function GuideRegistrationPage({ params }) {
           <div className="container mx-auto px-4">
             <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-2xl font-bold mb-4 text-center text-red-600">
-                {locale === 'en' ? 'User Error' : 'خطأ في المستخدم'}
+                {locale === 'en' ? 'User Sync Error' : 'خطأ في مزامنة المستخدم'}
               </h2>
               <p className="mb-6 text-center">
                 {locale === 'en' 
-                  ? 'There was an error fetching your user data. Please try again or contact support.' 
-                  : 'حدث خطأ في جلب بيانات المستخدم الخاصة بك. يرجى المحاولة مرة أخرى أو الاتصال بالدعم.'}
+                  ? 'There was an error syncing your user data. Please try again or contact support.' 
+                  : 'حدث خطأ في مزامنة بيانات المستخدم الخاصة بك. يرجى المحاولة مرة أخرى أو الاتصال بالدعم.'}
               </p>
               <div className="flex justify-center">
                 <Button
