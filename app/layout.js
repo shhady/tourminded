@@ -1,7 +1,14 @@
 import { Inter, Tajawal } from "next/font/google";
 import "./globals.css";
 import { getDirection } from "@/lib/i18n";
-
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -26,14 +33,16 @@ export default async function RootLayout({ children, params }) {
   const dir = getDirection(locale);
 
   return (
-    <html lang={locale} dir={dir}>
-      <body
-        className={`${inter.variable} ${tajawal.variable} antialiased ${
+    <ClerkProvider>
+      <html lang={locale} dir={dir}>
+        <body
+          className={`${inter.variable} ${tajawal.variable} antialiased ${
           locale === "ar" ? "font-arabic" : "font-sans"
         }`}
       >
         {children}
       </body>
     </html>
+    </ClerkProvider>
   );
 }

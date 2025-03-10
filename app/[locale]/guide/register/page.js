@@ -7,11 +7,14 @@ import MainLayout from '@/components/layout/MainLayout';
 import ImageUploader from '@/components/ui/ImageUploader';
 import Button from '@/components/ui/Button';
 import { Loader } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
 
 export default function GuideRegistrationPage({ params }) {
   const unwrappedParams = React.use(params);
   const locale = unwrappedParams?.locale || 'en';
   const router = useRouter();
+  
+  const { user, isLoaded: isClerkLoaded } = useUser();
   
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -22,38 +25,51 @@ export default function GuideRegistrationPage({ params }) {
   
   const { register, handleSubmit, formState: { errors } } = useForm();
   
-  // Get the current user
+  // Sync and get the current user from MongoDB using Clerk ID
   useEffect(() => {
-    const fetchCurrentUser = async () => {
+    const syncAndFetchUser = async () => {
+      if (!isClerkLoaded || !user) {
+        setIsPageLoading(false);
+        return;
+      }
+      
       try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include'
-        });
+        // First, sync the user to MongoDB
+        const syncResponse = await fetch('/api/users/sync');
+        
+        if (!syncResponse.ok) {
+          throw new Error('Failed to sync user data');
+        }
+        
+        const syncData = await syncResponse.json();
+        console.log('User synced:', syncData);
+        
+        // Now fetch the MongoDB user
+        const response = await fetch(`/api/users/clerk/${user.id}`);
         
         if (response.ok) {
           const userData = await response.json();
           setCurrentUser(userData.user);
           
-          // If user is not a guide, redirect to home
-          if (userData.user && userData.user.role !== 'guide') {
-            console.log('User is not a guide, redirecting to home');
-            router.push(`/${locale}`);
+          // If user is already a guide, redirect to dashboard
+          if (userData.user && userData.user.role === 'guide') {
+            console.log('User is already a guide, redirecting to dashboard');
+            router.push(`/${locale}/dashboard/guide`);
           }
         } else {
-          console.log('User not authenticated, redirecting to login');
-          // Redirect to login if not authenticated
-          router.push(`/${locale}/auth/login?callbackUrl=/${locale}/guide/register`);
+          console.error('Failed to fetch user data');
+          setError(locale === 'en' ? 'Failed to fetch user data' : 'فشل في جلب بيانات المستخدم');
         }
       } catch (error) {
-        console.error('Error fetching current user:', error);
-        setError(locale === 'en' ? 'Failed to authenticate user' : 'فشل في مصادقة المستخدم');
+        console.error('Error syncing/fetching user:', error);
+        setError(locale === 'en' ? 'Failed to fetch user data' : 'فشل في جلب بيانات المستخدم');
       } finally {
         setIsPageLoading(false);
       }
     };
     
-    fetchCurrentUser();
-  }, [locale, router]);
+    syncAndFetchUser();
+  }, [isClerkLoaded, user, locale, router]);
   
   const handleProfileImageUploaded = (url) => {
     setProfileImage(url);
@@ -106,13 +122,14 @@ export default function GuideRegistrationPage({ params }) {
         ],
       };
       
+      console.log('Submitting guide data:', guideData);
+      
       const response = await fetch('/api/guides', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(guideData),
-        credentials: 'include'
       });
       
       if (!response.ok) {
@@ -121,6 +138,21 @@ export default function GuideRegistrationPage({ params }) {
       }
       
       const result = await response.json();
+      console.log('Guide registration successful:', result);
+      
+      // Update the user's role in Clerk metadata
+      try {
+        await user.update({
+          publicMetadata: { role: 'guide' },
+        });
+        console.log('Clerk metadata updated successfully');
+      } catch (clerkError) {
+        console.error('Error updating Clerk metadata:', clerkError);
+        // Continue anyway since the guide was created in MongoDB
+      }
+      
+      // Sync the updated role back to MongoDB
+      await fetch('/api/users/sync');
       
       // Redirect to dashboard
       router.push(`/${locale}/dashboard/guide`);
@@ -133,7 +165,7 @@ export default function GuideRegistrationPage({ params }) {
   };
   
   // Show loading state while fetching user
-  if (isPageLoading) {
+  if (isPageLoading || !isClerkLoaded) {
     return (
       <MainLayout locale={locale}>
         <div className="py-16 bg-secondary-50 min-h-screen">
@@ -150,9 +182,52 @@ export default function GuideRegistrationPage({ params }) {
     );
   }
   
-  // If user is not authenticated or not a guide, the useEffect will handle redirection
-  if (!currentUser || currentUser.role !== 'guide') {
+  // If user is not authenticated, redirect to sign in
+  if (!user) {
+    router.push(`/sign-in?redirect=/${locale}/guide/register`);
     return null;
+  }
+  
+  // If user is already a guide, redirect to dashboard
+  if (currentUser?.role === 'guide' || user.publicMetadata?.role === 'guide') {
+    router.push(`/${locale}/dashboard/guide`);
+    return null;
+  }
+  
+  // If we couldn't fetch the MongoDB user, show an error
+  if (!currentUser && !isPageLoading) {
+    return (
+      <MainLayout locale={locale}>
+        <div className="py-16 bg-secondary-50 min-h-screen">
+          <div className="container mx-auto px-4">
+            <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-2xl font-bold mb-4 text-center text-red-600">
+                {locale === 'en' ? 'User Sync Error' : 'خطأ في مزامنة المستخدم'}
+              </h2>
+              <p className="mb-6 text-center">
+                {locale === 'en' 
+                  ? 'There was an error syncing your user data. Please try again or contact support.' 
+                  : 'حدث خطأ في مزامنة بيانات المستخدم الخاصة بك. يرجى المحاولة مرة أخرى أو الاتصال بالدعم.'}
+              </p>
+              <div className="flex justify-center">
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="mr-4"
+                >
+                  {locale === 'en' ? 'Try Again' : 'حاول مرة أخرى'}
+                </Button>
+                <Button
+                  href={`/${locale}`}
+                  variant="outline"
+                >
+                  {locale === 'en' ? 'Go Home' : 'الذهاب إلى الصفحة الرئيسية'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
   }
   
   return (

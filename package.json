@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/elements": "^0.23.1",
+    "@clerk/nextjs": "^6.12.4",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
     "core-js": "^3.41.0",

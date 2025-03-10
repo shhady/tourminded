@@ -6,21 +6,21 @@ import { Globe, Menu, X, User, ChevronDown, LogOut, LayoutDashboard } from 'luci
 import Button from '../ui/Button';
 import { locales } from '@/lib/i18n';
 import Image from 'next/image';
-
-const Header = ({ locale, user }) => {
+import { SignOutButton } from '@clerk/nextjs';
+import { useUser } from '@clerk/clerk-react'
+const Header = ({ locale }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, isLoaded } = useUser();
+  // const { user } = currentUser();
+  console.log(user)
   const pathname = usePathname();
   const router = useRouter();
   const isHomePage = pathname === `/${locale}`;
 
-  // For debugging - remove in production
-  useEffect(() => {
-    console.log("Current user in Header:", user);
-  }, [user]);
-
+  
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -95,7 +95,7 @@ const Header = ({ locale, user }) => {
   const getDashboardLink = () => {
     if (!user) return null;
     
-    switch (user.role) {
+    switch (user.publicMetadata?.role) {
       case 'admin':
         return `/${locale}/dashboard/admin`;
       case 'guide':
@@ -187,7 +187,7 @@ const Header = ({ locale, user }) => {
                 </div>
               )}
             </div>
-
+           
             {/* User Menu or Login/Register Buttons */}
             {user ? (
               <div className="relative">
@@ -201,6 +201,7 @@ const Header = ({ locale, user }) => {
                 >
                   <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
                     <User className="text-primary-600 h-4 w-4" />
+                   
                   </div>
                   <span>{user.name}</span>
                   <ChevronDown className="ml-1 h-3 w-3" />
@@ -209,7 +210,7 @@ const Header = ({ locale, user }) => {
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-medium z-10 animate-fade-in overflow-hidden">
                     {/* Dashboard Link - only for admin and guide */}
-                    {user.role === 'admin' || user.role === 'guide' ? (
+                    {user.publicMetadata?.role === 'admin' || user.publicMetadata?.role === 'guide' ? (
                       <Link
                         href={getDashboardLink()}
                         className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
@@ -218,7 +219,23 @@ const Header = ({ locale, user }) => {
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         {locale === 'en' ? 'Dashboard' : 'لوحة التحكم'}
                       </Link>
-                    ) : null}
+                    ) : (
+                      // "Become a Guide" link for regular users
+                      <Link
+                        href={`/${locale}/guide/register`}
+                        className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                          <path d="M18 6h-5c-1.1 0-2 .9-2 2"></path>
+                          <path d="M9 14c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h9c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2h-2"></path>
+                          <path d="M3 10a7 7 0 0 0 7 7h.3"></path>
+                          <path d="M11 17.3a7 7 0 0 0 7 7"></path>
+                          <path d="M14 21h.01"></path>
+                        </svg>
+                        {locale === 'en' ? 'Become a Guide' : 'كن مرشدًا'}
+                      </Link>
+                    )}
                     
                     {/* Profile Link - for all users */}
                     <Link
@@ -231,7 +248,11 @@ const Header = ({ locale, user }) => {
                     </Link>
                     
                     {/* Logout Button */}
-                    <button
+                    <div className=' cursor-pointer flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors border-t border-secondary-100'>
+                    <LogOut className="mr-2 h-4 w-4" /> 
+                    <SignOutButton />
+                    </div>
+                    {/* <button
                       onClick={() => {
                         setIsUserMenuOpen(false);
                         handleLogout();
@@ -240,22 +261,22 @@ const Header = ({ locale, user }) => {
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       {locale === 'en' ? 'Logout' : 'تسجيل الخروج'}
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </div>
             ) : (
               <>
                 <Button
-                  href={getLocalizedHref('/auth/login')}
+                  href={'/sign-in'}
                   variant={useDarkText ? "outline" : "ghost"}
                   size="sm"
                   className={!useDarkText ? "border-white text-black hover:bg-white/20" : "text-secondary-900"}
                 >
-                  {locale === 'en' ? 'Login' : 'تسجيل الدخول'}
+                  {locale === 'en' ? 'Login' : 'تسجيل الدخول'}  
                 </Button>
                 <Button
-                  href={getLocalizedHref('/auth/register')}
+                  href={'/sign-up'}
                   variant="primary"
                   size="sm"
                   className="text-black"
@@ -306,7 +327,7 @@ const Header = ({ locale, user }) => {
                   </p>
                   
                   {/* Dashboard Link - only for admin and guide */}
-                  {user.role === 'admin' || user.role === 'guide' ? (
+                  {user.publicMetadata?.role === 'admin' || user.publicMetadata?.role === 'guide' ? (
                     <Link
                       href={getDashboardLink()}
                       className="flex items-center px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
