@@ -8,7 +8,7 @@ export async function POST(request) {
   try {
     const { name, email, password, becomeGuide } = await request.json();
 
-    // Validate input
+    // 🚨 Validate input fields
     if (!name || !email || !password) {
       return NextResponse.json(
         { success: false, message: 'Please provide all required fields' },
@@ -16,10 +16,10 @@ export async function POST(request) {
       );
     }
 
-    // Connect to database
+    // ✅ Connect to MongoDB (prevents unnecessary reconnections)
     await connectDB();
 
-    // Check if user already exists
+    // ✅ Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return NextResponse.json(
@@ -28,23 +28,26 @@ export async function POST(request) {
       );
     }
 
-    // Create new user
+    // 🔐 Secure Password Hashing (prevents saving raw password)
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // ✅ Create new user (using hashed password)
     const user = await User.create({
       name,
       email,
-      password,
-      role: becomeGuide ? 'guide' : 'user', // Set role based on becomeGuide option
+      password: hashedPassword, // Ensure only hashed password is stored
+      role: becomeGuide ? 'guide' : 'user',
     });
 
-    // Generate token
+    // 🔑 Generate Token
     const token = generateToken(user._id);
 
-    // Create a response
+    // ✅ Create response with user details
     const response = NextResponse.json(
       {
         success: true,
         user: {
-          _id: user._id,
+          _id: user._id.toString(),
           name: user.name,
           email: user.email,
           role: user.role,
@@ -53,26 +56,21 @@ export async function POST(request) {
       { status: 201 }
     );
 
-    // Set the token cookie directly on the response
-    response.cookies.set({
-      name: 'token',
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: '/',
-    });
+    // ✅ Fix: Proper Cookie Handling (Compatible with Next.js App Router)
+    response.headers.set(
+      'Set-Cookie',
+      `token=${token}; HttpOnly; Secure; SameSite=Strict; Max-Age=${30 * 24 * 60 * 60}; Path=/`
+    );
 
-    // Also use the helper function to set the cookie
+    // ✅ Use Helper Function (Ensures consistency)
     await setTokenCookie(token);
 
     return response;
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('❌ Registration Error:', error);
     return NextResponse.json(
       { success: false, message: 'Server error' },
       { status: 500 }
     );
   }
-} 
+}

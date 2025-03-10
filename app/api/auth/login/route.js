@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { generateToken, setTokenCookie } from '@/lib/auth';
@@ -7,39 +8,42 @@ export async function POST(request) {
   try {
     const { email, password } = await request.json();
 
-    // Validate input
+    // 🚨 Validate Input
     if (!email || !password) {
       return NextResponse.json(
-        { success: false, message: 'Please provide email and password' },
+        { success: false, message: 'Email and password are required' },
         { status: 400 }
       );
     }
 
-    // Connect to database
+    // ✅ Connect to MongoDB (prevents unnecessary connections)
     await connectDB();
 
-    // Find user
+    // ✅ Find user by email & return hashed password only
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'Invalid credentials' },
+        { success: false, message: 'Invalid email or password' },
         { status: 401 }
       );
     }
 
-    // Check password
-    const isMatch = await user.matchPassword(password);
+    // 🔐 Compare passwords securely
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return NextResponse.json(
-        { success: false, message: 'Invalid credentials' },
+        { success: false, message: 'Invalid email or password' },
         { status: 401 }
       );
     }
 
-    // Generate token
+    // ✅ Remove password from response for security
+    user.password = undefined;
+
+    // 🔑 Generate Auth Token
     const token = generateToken(user._id);
 
-    // Create a response
+    // ✅ Create Response Object
     const response = NextResponse.json(
       {
         success: true,
@@ -53,26 +57,21 @@ export async function POST(request) {
       { status: 200 }
     );
 
-    // Set the token cookie directly on the response
-    response.cookies.set({
-      name: 'token',
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: '/',
-    });
+    // ✅ Fix: Set Token Cookie in Response Headers (Vercel-compatible)
+    response.headers.set(
+      'Set-Cookie',
+      `token=${token}; HttpOnly; Secure; SameSite=Strict; Max-Age=${30 * 24 * 60 * 60}; Path=/`
+    );
 
-    // Also use the helper function to set the cookie
+    // ✅ Helper function to set the cookie
     await setTokenCookie(token);
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login Error:', error);
     return NextResponse.json(
-      { success: false, message: 'Server error' },
+      { success: false, message: 'Server error, please try again' },
       { status: 500 }
     );
   }
-} 
+}

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import User from '@/models/User';
-import { getTokenCookie, verifyToken, withAuth, withAdminAuth } from '@/lib/auth';
+import { getTokenCookie, verifyToken } from '@/lib/auth';
+import { withAuth, withAdminAuth } from '@/lib/authMiddleware';
 
 // GET a single guide by ID
 export async function GET(request, { params }) {
