@@ -10,18 +10,22 @@ const FeaturedGuides = dynamic(() => import('@/components/guides/FeaturedGuides'
 const Testimonials = dynamic(() => import('@/components/common/Testimonials'), { ssr: true });
 const CallToAction = dynamic(() => import('@/components/common/CallToAction'), { ssr: true });
 
+// Add ISR with a revalidation period of 60 seconds
+export const revalidate = 60;
+
 export default async function Home({ params }) {
   // Ensure params.locale is properly handled
-  const localeParams = await params
-
+  const localeParams = await params;
   const locale = await localeParams?.locale || 'en';
   
-  // Get current user
+  // Get current user with error handling
   let user = null;
   try {
+    // Simply call getCurrentUser which now has its own timeout handling
     user = await getCurrentUser();
   } catch (error) {
     console.error('Error getting current user:', error);
+    // Continue without user data
   }
   
   return (

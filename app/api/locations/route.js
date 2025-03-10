@@ -29,11 +29,27 @@ export async function GET(request) {
     // Connect to database
     await connectDB();
     
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Database query timeout')), 5000);
+    });
+    
     // If all parameter is true, return all locations without pagination
     if (all) {
-      const allLocations = await Location.find(filter)
+      // Use projection to limit fields returned
+      const projection = {
+        name: 1,
+        slug: 1,
+        coverImage: 1,
+        description: 1,
+      };
+      
+      // Race the query with a timeout
+      const locationsPromise = Location.find(filter, projection)
         .sort({ 'name.en': 1 })
         .lean();
+      
+      const allLocations = await Promise.race([locationsPromise, timeoutPromise]);
       
       return NextResponse.json({
         success: true,
@@ -45,14 +61,29 @@ export async function GET(request) {
     // Calculate pagination
     const skip = (page - 1) * limit;
     
-    // Find locations with filters
-    const locations = await Location.find(filter)
-      .skip(skip)
-      .limit(limit)
-      .sort({ 'name.en': 1 });
+    // Use projection to limit fields returned
+    const projection = {
+      name: 1,
+      slug: 1,
+      coverImage: 1,
+      description: 1,
+    };
     
-    // Count total locations for pagination
-    const total = await Location.countDocuments(filter);
+    // Race the queries with timeouts
+    const [locations, total] = await Promise.all([
+      Promise.race([
+        Location.find(filter, projection)
+          .skip(skip)
+          .limit(limit)
+          .sort({ 'name.en': 1 })
+          .lean(),
+        timeoutPromise
+      ]),
+      Promise.race([
+        Location.countDocuments(filter),
+        timeoutPromise
+      ])
+    ]);
     
     return NextResponse.json({
       success: true,
@@ -67,9 +98,15 @@ export async function GET(request) {
     });
   } catch (error) {
     console.error('Error fetching locations:', error);
+    
+    // Return appropriate error message
+    const errorMessage = error.message === 'Database query timeout'
+      ? 'Request timed out. Please try again.'
+      : 'Server error';
+    
     return NextResponse.json(
-      { success: false, message: 'Server error' },
-      { status: 500 }
+      { success: false, message: errorMessage },
+      { status: error.message === 'Database query timeout' ? 504 : 500 }
     );
   }
 }
@@ -134,10 +171,24 @@ export async function GETAll() {
   try {
     await connectDB();
     
-    // Fetch all locations sorted by name
-    const locations = await Location.find({})
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Database query timeout')), 5000);
+    });
+    
+    // Use projection to limit fields returned
+    const projection = {
+      name: 1,
+      slug: 1,
+      coverImage: 1,
+    };
+    
+    // Race the query with a timeout
+    const locationsPromise = Location.find({}, projection)
       .sort({ 'name.en': 1 })
       .lean();
+    
+    const locations = await Promise.race([locationsPromise, timeoutPromise]);
     
     return NextResponse.json({
       success: true,
@@ -145,9 +196,15 @@ export async function GETAll() {
     });
   } catch (error) {
     console.error('Error fetching locations:', error);
+    
+    // Return appropriate error message
+    const errorMessage = error.message === 'Database query timeout'
+      ? 'Request timed out. Please try again.'
+      : 'Failed to fetch locations';
+    
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch locations' },
-      { status: 500 }
+      { success: false, message: errorMessage },
+      { status: error.message === 'Database query timeout' ? 504 : 500 }
     );
   }
 }
