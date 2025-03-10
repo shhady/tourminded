@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Loader, Check, X } from 'lucide-react';
+import Image from 'next/image';
 
 const ImageUploader = ({ 
   onImageUploaded, 
@@ -147,9 +148,11 @@ const ImageUploader = ({
           ) : preview ? (
             <div className="flex flex-col items-center justify-center">
               <div className="relative w-full h-full">
-                <img 
+                <Image 
                   src={preview} 
                   alt="Preview" 
+                  width={100}
+                  height={100}
                   className="object-contain w-full h-full max-h-24"
                 />
                 <div className="absolute top-0 right-0 p-1 bg-green-100 rounded-full">

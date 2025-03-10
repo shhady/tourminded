@@ -180,15 +180,17 @@ export default async function GuideProfilePage({ params }) {
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                 <div className="w-32 h-32 rounded-full overflow-hidden bg-white border-4 border-white shadow-md">
                   {guide.profileImage ? (
-                    <img 
+                    <Image 
                       src={typeof guide.profileImage === 'object' ? guide.profileImage.url : guide.profileImage} 
                       alt={guide.name?.[locale] || guide.name?.en || 'Guide'} 
+                      width={128}
+                      height={128}
                       className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full bg-secondary-200 flex items-center justify-center text-secondary-500">
                       <span className="text-4xl font-bold">
-                        {(guide.name?.[locale]?.charAt(0) || guide.name?.en?.charAt(0) || 'G').toUpperCase()}
+                        {(guide.name?.[locale] || guide.name?.en || 'Guide').charAt(0)}
                       </span>
                     </div>
                   )}
@@ -286,23 +288,15 @@ export default async function GuideProfilePage({ params }) {
               {tours.map((tour) => (
                 <div key={tour._id} className="bg-white rounded-lg shadow overflow-hidden">
                   <div className="relative h-48">
-                    <img
+                    <Image
                       src={tour.images?.cover?.url || placeholderImage}
                       alt={tour.title?.[locale] || tour.title?.en || 'Tour'}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <h3 className="text-xl font-bold">
-                        {tour.title?.[locale] || tour.title?.en || 'Tour'}
-                      </h3>
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold">${tour.price}</span>
-                        <span className="flex items-center text-yellow-500">
-                          {tour.rating || '5.0'}
-                          <Star className="ml-1" size={16} />
-                        </span>
-                      </div>
+                      <h3 className="text-lg font-semibold">{tour.title?.[locale] || tour.title?.en}</h3>
                     </div>
                   </div>
                   

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import ImageUploader from '../ui/ImageUploader';
+import Image from 'next/image';
 
 const ImageUploadExample = ({ locale }) => {
   const [imageUrl, setImageUrl] = useState('');
@@ -33,9 +34,11 @@ const ImageUploadExample = ({ locale }) => {
             {locale === 'en' ? 'Uploaded Image' : 'الصورة المحملة'}
           </h3>
           <div className="border rounded-md p-4">
-            <img 
+            <Image 
               src={imageUrl} 
               alt="Uploaded" 
+              width={500}
+              height={300}
               className="w-full h-auto rounded-md"
             />
             <p className="mt-2 text-sm text-secondary-700 break-all">

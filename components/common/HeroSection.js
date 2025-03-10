@@ -33,7 +33,7 @@ const HeroSection = ({ locale }) => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [bgImages.length]);
 
   const handleSearch = (e) => {
     e.preventDefault();

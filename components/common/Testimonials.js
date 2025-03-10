@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Star, Quote } from 'lucide-react';
 
@@ -53,7 +53,19 @@ const Testimonials = ({ locale }) => {
     setIsClient(true);
   }, []);
 
-  // Auto-rotate testimonials only on client-side
+  // Wrap changeTestimonial in useCallback
+  const changeTestimonial = useCallback((index) => {
+    if (index === activeIndex) return;
+    
+    setIsAnimating(true);
+    setActiveIndex(index);
+    
+    // Reset animation after transition
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 500);
+  }, [activeIndex]);
+
   useEffect(() => {
     if (!isClient || isAnimating) return;
     
@@ -61,22 +73,10 @@ const Testimonials = ({ locale }) => {
       changeTestimonial((activeIndex + 1) % testimonials.length);
     }, 8000);
     return () => clearInterval(interval);
-  }, [testimonials.length, isClient, activeIndex, isAnimating]);
+  }, [testimonials.length, isClient, activeIndex, isAnimating, changeTestimonial]);
 
   // Placeholder image for development
   const placeholderImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzBkNDdhMSIvPjwvc3ZnPg==';
-
-  const changeTestimonial = (index) => {
-    if (index === activeIndex) return;
-    
-    setIsAnimating(true);
-    setActiveIndex(index);
-    
-    // Reset animation state after animation completes
-    setTimeout(() => {
-      setIsAnimating(false);
-    }, 600);
-  };
 
   if (!isClient) {
     return <div className="py-16 bg-gray-100 text-secondary-900">Loading testimonials...</div>;
@@ -141,7 +141,7 @@ const Testimonials = ({ locale }) => {
                 </div>
                 
                 <p className="text-lg md:text-xl mb-6 text-secondary-900 italic">
-                  "{testimonials[activeIndex].text[locale]}"
+                  &ldquo;{testimonials[activeIndex].text[locale]}&rdquo;
                 </p>
                 
                 <div>

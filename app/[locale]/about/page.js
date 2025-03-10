@@ -68,7 +68,7 @@ export default async function AboutPage({ params }) {
         <div className="max-w-4xl mx-auto">
           <p className="text-xl text-secondary-700 mb-12 text-center">
             {locale === 'en'
-              ? 'You\'ll be matched with a personable guide who perfectly aligns with your passions and needs, so your trip to the Holy Land is everything you hoped for and more.'
+              ? 'You&rsquo;ll be matched with a personable guide who perfectly aligns with your passions and needs, so your trip to the Holy Land is everything you hoped for and more.'
               : 'سيتم مطابقتك مع مرشد ودود يتوافق تمامًا مع شغفك واحتياجاتك، حتى تكون رحلتك إلى الأرض المقدسة كل ما تمنيته وأكثر.'}
           </p>
           
@@ -85,16 +85,16 @@ export default async function AboutPage({ params }) {
             <div className="p-6 md:p-8 bg-white">
               <div className="space-y-4">
                 <blockquote className="text-lg md:text-xl italic text-secondary-700">
-                  "It was an amazing day and I learned so much."
+                  &ldquo;It was an amazing day and I learned so much.&rdquo;
                 </blockquote>
                 <blockquote className="text-lg md:text-xl italic text-secondary-700">
-                  "Ariel was an absolute joy on our tour and made the experience so smooth and wonderful."
+                  &ldquo;Ariel was an absolute joy on our tour and made the experience so smooth and wonderful.&rdquo;
                 </blockquote>
                 <blockquote className="text-lg md:text-xl italic text-secondary-700">
-                  "Ariel was an absolute joy on our tour and made the experience so smooth and wonderful."
+                  &ldquo;Ariel was an absolute joy on our tour and made the experience so smooth and wonderful.&rdquo;
                 </blockquote>
                 <blockquote className="text-lg md:text-xl italic text-secondary-700">
-                  "Ariel was an absolute joy on our tour and made the experience so smooth and wonderful."
+                  &ldquo;Ariel was an absolute joy on our tour and made the experience so smooth and wonderful.&rdquo;
                 </blockquote>
               </div>
             </div>
@@ -116,27 +116,27 @@ export default async function AboutPage({ params }) {
               </h3>
               <p className="text-secondary-700 mb-4">
                 {locale === 'en'
-                  ? 'Tickets have been booked for months. Bags are packed. Finally, the big day is here. It\'s time for your vacation.'
+                  ? 'Tickets have been booked for months. Bags are packed. Finally, the big day is here. It&rsquo;s time for your vacation.'
                   : 'تم حجز التذاكر منذ أشهر. الحقائب جاهزة. أخيرًا، اليوم الكبير هنا. حان وقت عطلتك.'}
               </p>
               <p className="text-secondary-700 mb-4">
                 {locale === 'en'
-                  ? 'But when you arrive after a long, exhausting flight, things aren\'t as you expected.'
+                  ? 'But when you arrive after a long, exhausting flight, things aren&rsquo;t as you expected.'
                   : 'ولكن عندما تصل بعد رحلة طويلة ومرهقة، الأمور ليست كما توقعت.'}
               </p>
               <p className="text-secondary-700 mb-4">
                 {locale === 'en'
-                  ? 'Whether it\'s subpar accommodation, transportation hiccups, or a guide who can\'t answer your questions or you can\'t communicate with.'
+                  ? 'Whether it&rsquo;s subpar accommodation, transportation hiccups, or a guide who can&rsquo;t answer your questions or you can&rsquo;t communicate with.'
                   : 'سواء كان ذلك إقامة دون المستوى، أو مشاكل في النقل، أو مرشد لا يستطيع الإجابة على أسئلتك أو لا يمكنك التواصل معه.'}
               </p>
               <p className="text-secondary-700 mb-4">
                 {locale === 'en'
-                  ? 'We know there\'s nothing worse than arriving at your long-awaited (and expensive) trip and finding yourself in this situation.'
+                  ? 'We know there&rsquo;s nothing worse than arriving at your long-awaited (and expensive) trip and finding yourself in this situation.'
                   : 'نعلم أنه لا يوجد شيء أسوأ من الوصول إلى رحلتك التي طال انتظارها (والمكلفة) ووجود نفسك في هذا الموقف.'}
               </p>
               <p className="text-secondary-700 font-medium">
                 {locale === 'en'
-                  ? 'And that\'s exactly why we\'re here.'
+                  ? 'And that&rsquo;s exactly why we&rsquo;re here.'
                   : 'وهذا بالضبط هو سبب وجودنا.'}
               </p>
             </div>
@@ -149,7 +149,7 @@ export default async function AboutPage({ params }) {
               </h3>
               <p className="text-secondary-700 mb-6">
                 {locale === 'en'
-                  ? 'You\'ll tell us exactly what you\'re looking for and get a personalized recommendation for private tours fitting your specific needs. Plus, you\'ll pay significantly less because we match you directly with locals and don\'t charge a premium. Whether your tour is 1 day or 15, you can expect interesting cultural insights and unforgettable adventures at every turn.'
+                  ? 'You&rsquo;ll tell us exactly what you&rsquo;re looking for and get a personalized recommendation for private tours fitting your specific needs. Plus, you&rsquo;ll pay significantly less because we match you directly with locals and don&rsquo;t charge a premium. Whether your tour is 1 day or 15, you can expect interesting cultural insights and unforgettable adventures at every turn.'
                   : 'ستخبرنا بالضبط عما تبحث عنه وستحصل على توصية شخصية للجولات الخاصة التي تناسب احتياجاتك المحددة. بالإضافة إلى ذلك، ستدفع أقل بكثير لأننا نطابقك مباشرة مع السكان المحليين ولا نفرض رسومًا إضافية. سواء كانت جولتك ليوم واحد أو 15 يومًا، يمكنك توقع رؤى ثقافية مثيرة للاهتمام ومغامرات لا تُنسى في كل منعطف.'}
               </p>
               <div className="text-center">
@@ -158,7 +158,7 @@ export default async function AboutPage({ params }) {
                   variant="primary"
                   size="lg"
                 >
-                  {locale === 'en' ? 'I\'m ready to find my perfect tour' : 'أنا مستعد للعثور على جولتي المثالية'}
+                  {locale === 'en' ? 'I&rsquo;m ready to find my perfect tour' : 'أنا مستعد للعثور على جولتي المثالية'}
                 </Button>
               </div>
             </div>
@@ -186,7 +186,7 @@ export default async function AboutPage({ params }) {
               </h2>
               <p className="text-lg text-secondary-700 mb-6">
                 {locale === 'en'
-                  ? 'Choose from hundreds of guided tours that will bring this rich land\'s fascinating heritage to life.'
+                  ? 'Choose from hundreds of guided tours that will bring this rich land&rsquo;s fascinating heritage to life.'
                   : 'اختر من بين مئات الجولات المصحوبة بمرشدين التي ستحيي التراث الرائع لهذه الأرض الغنية.'}
               </p>
               
