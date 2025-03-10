@@ -129,18 +129,7 @@ export default async function GuidesPage({ searchParams, params }) {
       </div>
       
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-secondary-900 mb-2">
-              {locale === 'en' ? 'Meet Our Expert Guides' : 'تعرف على مرشدينا الخبراء'}
-            </h1>
-            <p className="text-secondary-600 max-w-2xl">
-              {locale === 'en'
-                ? 'Discover our knowledgeable local guides who will make your Holy Land experience unforgettable.'
-                : 'اكتشف مرشدينا المحليين ذوي المعرفة الذين سيجعلون تجربتك في الأرض المقدسة لا تُنسى.'}
-            </p>
-          </div>
-        </div>
+      
         
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">

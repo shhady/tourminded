@@ -1,28 +1,17 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-import { auth } from '@clerk/nextjs';
 
 export async function GET(request, { params }) {
   try {
-    // Get the Clerk ID from the URL
+    // Get the ID from the URL
     const { id } = params;
-    
-    // Verify that the request is authenticated
-    const { userId } = auth();
-    
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, message: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
     
     // Connect to database
     await connectDB();
     
-    // Find user by Clerk ID
-    const user = await User.findOne({ clerkId: id });
+    // Find user by ID
+    const user = await User.findById(id);
     
     if (!user) {
       return NextResponse.json(
@@ -44,7 +33,7 @@ export async function GET(request, { params }) {
       },
     });
   } catch (error) {
-    console.error('Error fetching user by Clerk ID:', error);
+    console.error('Error fetching user by ID:', error);
     return NextResponse.json(
       { success: false, message: 'Server error' },
       { status: 500 }

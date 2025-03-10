@@ -128,18 +128,7 @@ export default async function ToursPage({ searchParams, params }) {
       </div>
       
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-secondary-900 mb-2">
-              {locale === 'en' ? 'Explore Our Tours' : 'استكشف جولاتنا'}
-            </h1>
-            <p className="text-secondary-600 max-w-2xl">
-              {locale === 'en'
-                ? 'Discover the Holy Land with our expert guides. Filter by expertise, language, and more to find your perfect tour.'
-                : 'اكتشف الأرض المقدسة مع مرشدينا الخبراء. قم بالتصفية حسب الخبرة واللغة والمزيد للعثور على جولتك المثالية.'}
-            </p>
-          </div>
-        </div>
+       
         
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
