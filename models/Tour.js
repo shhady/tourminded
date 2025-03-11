@@ -111,12 +111,7 @@ const TourSchema = new mongoose.Schema({
   averageTemperature: {
     type: Number,
   },
-  locations: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Location',
-    },
-  ],
+ 
   locationNames: [String],
   rating: {
     type: Number,

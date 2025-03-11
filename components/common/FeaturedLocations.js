@@ -81,7 +81,7 @@ const FeaturedLocations = ({ locale }) => {
           {locations.map((location) => (
             <Link
               key={location.id}
-              href={location.href}
+              href={`/${locale}/tours?location=${location.id}`}
               className="group overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow"
             >
               <div className="relative h-64 w-full overflow-hidden">
@@ -103,8 +103,8 @@ const FeaturedLocations = ({ locale }) => {
         </div>
 
         <div className="text-center mt-12">
-          <Link
-            href="/locations"
+            <Link
+              href={`/${locale}/tours`}
             className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-primary-600 hover:bg-primary-700 transition-colors"
           >
             {locale === 'en' ? 'View All Locations' : 'عرض جميع المواقع'}

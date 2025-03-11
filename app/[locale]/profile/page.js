@@ -8,7 +8,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import Button from '@/components/ui/Button';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Loader, User, Shield, MapPin, Phone, Mail, Globe, BookOpen, ArrowUpRight, ArrowLeft, Clock } from 'lucide-react';
+import { Loader, User, Shield, MapPin, Phone, Mail, Globe, BookOpen, ArrowUpRight, ArrowLeft, Clock, X, Plus } from 'lucide-react';
+import GuideProfileUpdateForm from '@/components/guide/GuideProfileUpdateForm';
 
 export default function ProfilePage({ params }) {
   const unwrappedParams = React.use(params);
@@ -36,6 +37,15 @@ export default function ProfilePage({ params }) {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  // Add these state variables
+  const [languages, setLanguages] = useState([
+    { language: 'en', proficiency: 5 }
+  ]);
+
+  const [expertiseAreas, setExpertiseAreas] = useState([
+    { area: '', licenseIssueDate: '' }
+  ]);
   
   // Translations
   const t = {
@@ -103,57 +113,80 @@ export default function ProfilePage({ params }) {
   
   // Fetch user and guide data
   useEffect(() => {
-    const fetchData = async () => {
-      if (!isSignedIn || !clerkLoaded || userContextLoading) {
+    const fetchGuideData = async () => {
+      if (!user || user.role !== 'guide') {
+        setIsLoading(false); // Set loading to false if not a guide
         return;
       }
       
       try {
-        // Set basic user data from context
-        if (user) {
-          setFormData({
-            name: user.name || '',
-            email: user.email || '',
-            phone: user.phone || '',
-            address: user.address || '',
-          });
+        setIsLoading(true); // Set loading to true before fetching
+        const response = await fetch('/api/guides/me');
+        if (response.ok) {
+          const data = await response.json();
           
-          // If user is a guide, fetch guide data
-          if (user.role === 'guide' && user._id) {
-            const response = await fetch(`/api/guides/user/${user._id}`);
-            if (response.ok) {
-              const data = await response.json();
-              if (data.guide) {
-                setGuideData(data.guide);
-                setGuideFormData({
-                  nickname: data.guide.nickname || '',
-                  about: {
-                    en: data.guide.about?.en || '',
-                    ar: data.guide.about?.ar || '',
-                  },
-                  languages: data.guide.languages || [],
-                  expertise: data.guide.expertise || [],
-                  profileImage: data.guide.profileImage || { url: '' },
-                });
-                setFormData(prev => ({
-                  ...prev,
-                  phone: data.guide.phone || user.phone || '',
-                  address: data.guide.address || user.address || ''
-                }));
-              }
-            }
+          // Set guide data
+          setGuideData(data.guide);
+          
+          // Initialize languages from guide data
+          if (data.guide.languages && data.guide.languages.length > 0) {
+            setLanguages(data.guide.languages);
+          }
+          
+          // Initialize expertise areas from guide data
+          if (data.guide.expertise && data.guide.expertise.length > 0) {
+            setExpertiseAreas(data.guide.expertise);
+          }
+          
+          // Initialize names and about sections
+          if (data.guide.names) {
+            data.guide.names.forEach(name => {
+              setFormData(prev => ({
+                ...prev,
+                [`name_${name.language}`]: name.value
+              }));
+            });
+          }
+          
+          if (data.guide.aboutSections) {
+            data.guide.aboutSections.forEach(about => {
+              setFormData(prev => ({
+                ...prev,
+                [`about_${about.language}`]: about.content
+              }));
+            });
+          }
+          
+          // Set other guide form data
+          setFormData(prev => ({
+            ...prev,
+            nickname: data.guide.nickname || '',
+            phone: data.guide.phone || '',
+            address: data.guide.address || '',
+          }));
+          
+          // Set profile image
+          if (data.guide.profileImage?.url) {
+            setGuideFormData(prev => ({
+              ...prev,
+              profileImage: { url: data.guide.profileImage.url }
+            }));
           }
         }
       } catch (error) {
-        console.error('Error fetching profile data:', error);
-        setError(t.error);
+        console.error('Error fetching guide data:', error);
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // Set loading to false after fetching
       }
     };
     
-    fetchData();
-  }, [isSignedIn, clerkLoaded, user, userContextLoading]);
+    // Set loading to false if user data is not yet loaded
+    if (userContextLoading) {
+      setIsLoading(true);
+    } else {
+      fetchGuideData();
+    }
+  }, [user, userContextLoading]);
   
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -161,6 +194,44 @@ export default function ProfilePage({ params }) {
       router.push(`/${locale}/sign-in?callbackUrl=/${locale}/profile`);
     }
   }, [clerkLoaded, isSignedIn, locale, router]);
+  
+  // Update the useEffect that fetches user data to properly handle the name
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!isSignedIn || !clerkLoaded) {
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        
+        // Fetch user data from our API
+        const response = await fetch('/api/users/me');
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Set user form data with proper name handling
+          const fullName = data.user.firstName && data.user.lastName 
+            ? `${data.user.firstName} ${data.user.lastName}` 
+            : clerkUser?.fullName || '';
+          
+          setFormData({
+            name: fullName,
+            email: clerkUser?.emailAddresses[0]?.emailAddress || '',
+            phone: data.user.phone || '',
+            address: data.user.address || '',
+          });
+        }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserData();
+  }, [isSignedIn, clerkLoaded, clerkUser]);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -210,20 +281,35 @@ export default function ProfilePage({ params }) {
   };
   
   const addLanguage = () => {
-    setGuideFormData({
-      ...guideFormData,
-      languages: [...guideFormData.languages, { language: '', proficiency: 3 }]
-    });
+    setLanguages([...languages, { language: '', proficiency: 5 }]);
   };
   
   const removeLanguage = (index) => {
-    const updatedLanguages = [...guideFormData.languages];
-    updatedLanguages.splice(index, 1);
+    if (languages.length > 1) {
+      const newLanguages = [...languages];
+      const removedLanguage = newLanguages[index].language;
+      newLanguages.splice(index, 1);
+      setLanguages(newLanguages);
+      
+      // Clear form values for the removed language
+      if (removedLanguage) {
+        setValue(`name_${removedLanguage}`, '');
+        setValue(`about_${removedLanguage}`, '');
+      }
+    }
+  };
+  
+  const updateLanguage = (index, field, value) => {
+    const newLanguages = [...languages];
     
-    setGuideFormData({
-      ...guideFormData,
-      languages: updatedLanguages
-    });
+    // If changing language, clear previous language form values
+    if (field === 'language' && newLanguages[index].language) {
+      setValue(`name_${newLanguages[index].language}`, '');
+      setValue(`about_${newLanguages[index].language}`, '');
+    }
+    
+    newLanguages[index][field] = value;
+    setLanguages(newLanguages);
   };
   
   const handleExpertiseChange = (index, field, value) => {
@@ -256,6 +342,32 @@ export default function ProfilePage({ params }) {
     });
   };
   
+  const addExpertiseArea = () => {
+    setExpertiseAreas([...expertiseAreas, { area: '', licenseIssueDate: expertiseAreas[0].licenseIssueDate }]);
+  };
+  
+  const removeExpertiseArea = (index) => {
+    if (expertiseAreas.length > 1) {
+      const newExpertiseAreas = [...expertiseAreas];
+      newExpertiseAreas.splice(index, 1);
+      setExpertiseAreas(newExpertiseAreas);
+    }
+  };
+  
+  const updateExpertiseArea = (index, field, value) => {
+    const newExpertiseAreas = [...expertiseAreas];
+    newExpertiseAreas[index][field] = value;
+    
+    // If updating license date on first expertise, update all others too
+    if (index === 0 && field === 'licenseIssueDate') {
+      newExpertiseAreas.forEach(exp => {
+        exp.licenseIssueDate = value;
+      });
+    }
+    
+    setExpertiseAreas(newExpertiseAreas);
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
@@ -263,80 +375,32 @@ export default function ProfilePage({ params }) {
     setSuccess('');
     
     try {
-      // Determine which form is being submitted
-      const isGuideForm = e.currentTarget.contains(document.querySelector('[name="nickname"]'));
+      // Handle regular user form submission
+      const [firstName, ...lastNameParts] = formData.name.split(' ');
+      const lastName = lastNameParts.join(' ');
       
-      if (isGuideForm && guideData) {
-        // Handle guide form submission - update both guide and user data
-        
-        // First update user data (phone and address)
-        const userUpdateData = {
-          phone: formData.phone,
-          address: formData.address,
-        };
-        
-        console.log('Submitting user update with data:', userUpdateData);
-        
-        const userResponse = await fetch(`/api/users/${user._id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userUpdateData),
-        });
-        
-        if (!userResponse.ok) {
-          throw new Error(t.error);
-        }
-        
-        // Then update guide data
-        const guideUpdateData = {
-          nickname: guideFormData.nickname,
-          about: guideFormData.about,
-          profileImage: guideFormData.profileImage,
-          languages: guideFormData.languages,
-          expertise: guideFormData.expertise,
-          phone: formData.phone,
-          address: formData.address
-        };
-        
-        const guideResponse = await fetch(`/api/guides/${guideData._id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(guideUpdateData),
-        });
-        
-        if (!guideResponse.ok) {
-          throw new Error(t.error);
-        }
-        
-        setSuccess(t.success);
-      } else {
-        // Handle regular user form submission
-        const userUpdateData = {
-          name: formData.name,
-          phone: formData.phone,
-          address: formData.address,
-        };
-        
-        console.log('Submitting user update with data:', userUpdateData);
-        
-        const response = await fetch(`/api/users/${user._id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userUpdateData),
-        });
-        
-        if (!response.ok) {
-          throw new Error(t.error);
-        }
-        
-        setSuccess(t.success);
+      const userUpdateData = {
+        firstName,
+        lastName,
+        phone: formData.phone,
+        address: formData.address,
+      };
+      
+      const response = await fetch('/api/users/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userUpdateData),
+      });
+      
+      if (!response.ok) {
+        throw new Error(t.error);
       }
+      
+      setSuccess(t.success);
+      
+      // No navigation, just show success message
     } catch (error) {
       console.error('Error updating profile:', error);
       setError(error.message || t.error);
@@ -470,237 +534,15 @@ export default function ProfilePage({ params }) {
                 <TabsContent value="guide">
                   <div className="bg-white p-8 rounded-lg shadow-md">
                     <h2 className="text-xl font-semibold text-secondary-900 mb-6 flex items-center">
-                      <User className="mr-2 h-5 w-5 text-primary-500" />
+                      <BookOpen className="mr-2 h-5 w-5 text-primary-500" />
                       {t.guideInfo}
                     </h2>
                     
-                    {guideData?.active === false && (
-                      <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-700 flex items-start">
-                        <Clock className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium">{locale === 'en' ? 'Pending Approval' : 'في انتظار الموافقة'}</p>
-                          <p className="text-sm mt-1">
-                            {locale === 'en' 
-                              ? 'Your guide profile is pending approval from administrators. You can still update your information.' 
-                              : 'ملف المرشد الخاص بك في انتظار الموافقة من المسؤولين. لا يزال بإمكانك تحديث معلوماتك.'}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {error && (
-                      <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-700">
-                        {error}
-                      </div>
-                    )}
-                    
-                    {success && (
-                      <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md text-green-700">
-                        {success}
-                      </div>
-                    )}
-                    
-                    <form onSubmit={handleSubmit}>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                          <label className="block text-sm font-medium text-secondary-700 mb-2">
-                            {t.nickname}
-                          </label>
-                          <input
-                            type="text"
-                            name="nickname"
-                            value={guideFormData.nickname}
-                            onChange={handleGuideInputChange}
-                            className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-secondary-700 mb-2">
-                            {t.phone}
-                          </label>
-                          <input
-                            type="text"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-secondary-700 mb-2">
-                            {t.address}
-                          </label>
-                          <input
-                            type="text"
-                            name="address"
-                            value={formData.address}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                          />
-                        </div>
-                        
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-secondary-700 mb-2">
-                            {t.profileImage}
-                          </label>
-                          <div className="flex items-center space-x-4">
-                            {guideFormData.profileImage?.url && (
-                              <div className="w-24 h-24 rounded-full overflow-hidden bg-secondary-100">
-                                <img 
-                                  src={guideFormData.profileImage.url} 
-                                  alt="Profile" 
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            )}
-                            <ImageUploader 
-                              onImageUploaded={handleProfileImageUploaded}
-                              folder="guides"
-                              buttonText={locale === 'en' ? 'Upload Image' : 'رفع صورة'}
-                            />
-                          </div>
-                        </div>
-                        
-                        {/* Languages section */}
-                        <div className="md:col-span-2">
-                          <h3 className="text-lg font-medium text-secondary-900 mb-3 flex items-center">
-                            <Globe className="mr-2 h-4 w-4 text-primary-500" />
-                            {t.languages}
-                          </h3>
-                          
-                          {guideFormData.languages.map((lang, index) => (
-                            <div key={index} className="flex items-center gap-4 mb-3">
-                              <div className="flex-1">
-                                <input
-                                  type="text"
-                                  name={`language-${index}`}
-                                  value={lang.language}
-                                  onChange={(e) => handleLanguageChange(index, 'language', e.target.value)}
-                                  placeholder={locale === 'en' ? 'Language' : 'اللغة'}
-                                  className="w-full px-4 py-2 border border-secondary-300 rounded-md"
-                                />
-                              </div>
-                              <div className="flex-1">
-                                <select
-                                  name={`proficiency-${index}`}
-                                  value={lang.proficiency}
-                                  onChange={(e) => handleLanguageChange(index, 'proficiency', parseInt(e.target.value))}
-                                  className="w-full px-4 py-2 border border-secondary-300 rounded-md"
-                                >
-                                  <option value="1">{locale === 'en' ? 'Basic' : 'أساسي'}</option>
-                                  <option value="2">{locale === 'en' ? 'Intermediate' : 'متوسط'}</option>
-                                  <option value="3">{locale === 'en' ? 'Advanced' : 'متقدم'}</option>
-                                  <option value="4">{locale === 'en' ? 'Fluent' : 'طلاقة'}</option>
-                                  <option value="5">{locale === 'en' ? 'Native' : 'اللغة الأم'}</option>
-                                </select>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => removeLanguage(index)}
-                                className="p-2 text-red-500 hover:text-red-700"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))}
-                          
-                          <button
-                            type="button"
-                            onClick={addLanguage}
-                            className="mt-2 text-sm text-primary-600 hover:text-primary-800 flex items-center"
-                          >
-                            + {locale === 'en' ? 'Add Language' : 'إضافة لغة'}
-                          </button>
-                        </div>
-                        
-                        {/* Expertise section */}
-                        <div className="md:col-span-2">
-                          <h3 className="text-lg font-medium text-secondary-900 mb-3 flex items-center">
-                            <BookOpen className="mr-2 h-4 w-4 text-primary-500" />
-                            {t.expertise}
-                          </h3>
-                          
-                          {guideFormData.expertise.map((exp, index) => (
-                            <div key={index} className="flex items-center gap-4 mb-3">
-                              <div className="flex-1">
-                                <input
-                                  type="text"
-                                  name={`area-${index}`}
-                                  value={exp.area}
-                                  onChange={(e) => handleExpertiseChange(index, 'area', e.target.value)}
-                                  placeholder={locale === 'en' ? 'Area of Expertise' : 'مجال الخبرة'}
-                                  className="w-full px-4 py-2 border border-secondary-300 rounded-md"
-                                />
-                              </div>
-                              <div className="flex-1">
-                                <input
-                                  type="number"
-                                  name={`years-${index}`}
-                                  value={exp.years}
-                                  onChange={(e) => handleExpertiseChange(index, 'years', parseInt(e.target.value))}
-                                  placeholder={locale === 'en' ? 'Years of Experience' : 'سنوات الخبرة'}
-                                  min="0"
-                                  className="w-full px-4 py-2 border border-secondary-300 rounded-md"
-                                />
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => removeExpertise(index)}
-                                className="p-2 text-red-500 hover:text-red-700"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))}
-                          
-                          <button
-                            type="button"
-                            onClick={addExpertise}
-                            className="mt-2 text-sm text-primary-600 hover:text-primary-800 flex items-center"
-                          >
-                            + {locale === 'en' ? 'Add Expertise' : 'إضافة مجال خبرة'}
-                          </button>
-                        </div>
-                        
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-secondary-700 mb-2">
-                            {t.aboutEn}
-                          </label>
-                          <textarea
-                            name="aboutEn"
-                            value={guideFormData.about.en}
-                            onChange={handleGuideInputChange}
-                            rows={4}
-                            className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                          />
-                        </div>
-                        
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-secondary-700 mb-2">
-                            {t.aboutAr}
-                          </label>
-                          <textarea
-                            name="aboutAr"
-                            value={guideFormData.about.ar}
-                            onChange={handleGuideInputChange}
-                            rows={4}
-                            dir="rtl"
-                            className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-end">
-                        <Button
-                          type="submit"
-                          disabled={isSaving}
-                        >
-                          {isSaving ? t.saving : t.save}
-                        </Button>
-                      </div>
-                    </form>
+                    <GuideProfileUpdateForm 
+                      locale={locale} 
+                      guideData={guideData} 
+                      loading={isLoading} 
+                    />
                   </div>
                 </TabsContent>
               )}

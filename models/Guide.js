@@ -6,18 +6,17 @@ const GuideSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  name: {
-    en: {
+  names: [{
+    language: {
       type: String,
-      required: [true, 'Please provide a name in English'],
+      required: [true, 'Please provide a language for the name'],
+    },
+    value: {
+      type: String,
+      required: [true, 'Please provide a name'],
       trim: true,
     },
-    ar: {
-      type: String,
-      required: [true, 'Please provide a name in Arabic'],
-      trim: true,
-    },
-  },
+  }],
   active: {
     type: Boolean,
     default: false, // Guides start as inactive until approved by admin
@@ -51,21 +50,21 @@ const GuideSchema = new mongoose.Schema({
       type: String,
       required: [true, 'Please provide an expertise area'],
     },
-    years: {
-      type: Number,
-      required: [true, 'Please provide years of experience'],
+    licenseIssueDate: {
+      type: Date,
+      required: [true, 'Please provide a license issue date'],
+    }
+  }],
+  aboutSections: [{
+    language: {
+      type: String,
+      required: [true, 'Please provide a language for the about section'],
+    },
+    content: {
+      type: String,
+      required: [true, 'Please provide an about section'],
     },
   }],
-  about: {
-    en: {
-      type: String,
-      required: [true, 'Please provide an about section in English'],
-    },
-    ar: {
-      type: String,
-      required: [true, 'Please provide an about section in Arabic'],
-    },
-  },
   profileImage: {
     url: {
       type: String,
@@ -75,20 +74,13 @@ const GuideSchema = new mongoose.Schema({
       type: String,
     },
   },
-  driverLicense: {
-    date: {
-      type: Date,
-    },
-    number: {
+  coverImage: {
+    url: {
       type: String,
+      default: '', // Optional cover image
     },
-    image: {
-      url: {
-        type: String,
-      },
-      publicId: {
-        type: String,
-      },
+    publicId: {
+      type: String,
     },
   },
   vehicle: {
@@ -103,6 +95,14 @@ const GuideSchema = new mongoose.Schema({
     },
     capacity: {
       type: Number,
+    },
+    image: {
+      url: {
+        type: String,
+      },
+      publicId: {
+        type: String,
+      },
     },
   },
   rating: {
@@ -122,6 +122,17 @@ const GuideSchema = new mongoose.Schema({
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
+});
+
+// Add a virtual property to calculate years of experience
+GuideSchema.virtual('yearsOfExperience').get(function() {
+  if (!this.expertise || this.expertise.length === 0 || !this.expertise[0].licenseIssueDate) {
+    return 0;
+  }
+  
+  const issueDate = new Date(this.expertise[0].licenseIssueDate);
+  const today = new Date();
+  return Math.floor((today - issueDate) / (365.25 * 24 * 60 * 60 * 1000));
 });
 
 // Virtual populate reviews

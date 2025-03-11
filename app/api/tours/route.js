@@ -4,55 +4,69 @@ import Tour from '@/models/Tour';
 import Guide from '@/models/Guide';
 import User from '@/models/User';
 import { currentUser } from '@clerk/nextjs/server';
+import Location from '@/models/Location';
 
 // GET all tours with optional filtering
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url);
+    await connectDB();
     
-    // Extract filter parameters
-    const expertise = searchParams.get('expertise');
-    const language = searchParams.get('language');
-    const date = searchParams.get('date');
-    const travelers = searchParams.get('travelers');
-    const location = searchParams.get('location');
+    const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
+    const skip = (page - 1) * limit;
+    
+    // Get filter parameters
+    const guideId = searchParams.get('guideId');
+    const locationId = searchParams.get('locationId');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const duration = searchParams.get('duration');
+    const date = searchParams.get('date');
+    const search = searchParams.get('search');
     
     // Build filter object
     const filter = {};
     
-    if (expertise) {
-      filter.expertise = expertise;
+    if (guideId) filter.guide = guideId;
+    if (locationId) filter.locations = locationId;
+    if (minPrice) filter.price = { $gte: parseInt(minPrice) };
+    if (maxPrice) {
+      if (filter.price) {
+        filter.price.$lte = parseInt(maxPrice);
+      } else {
+        filter.price = { $lte: parseInt(maxPrice) };
+      }
     }
-    
-    if (language) {
-      filter.languages = { $in: [language] };
+    if (duration) filter.duration = parseInt(duration);
+    if (date) {
+      const searchDate = new Date(date);
+      filter.availableDates = {
+        $elemMatch: {
+          date: {
+            $gte: new Date(searchDate.setHours(0, 0, 0, 0)),
+            $lte: new Date(searchDate.setHours(23, 59, 59, 999))
+          }
+        }
+      };
     }
-    
-    if (travelers) {
-      filter.maxGroupSize = { $gte: parseInt(travelers) };
+    if (search) {
+      filter.$or = [
+        { 'title.en': { $regex: search, $options: 'i' } },
+        { 'title.ar': { $regex: search, $options: 'i' } },
+        { 'description.en': { $regex: search, $options: 'i' } },
+        { 'description.ar': { $regex: search, $options: 'i' } }
+      ];
     }
-    
-    if (location) {
-      filter.locations = location;
-    }
-    
-    // Connect to database
-    await connectDB();
-    
-    // Calculate pagination
-    const skip = (page - 1) * limit;
     
     // Find tours with filters
     const tours = await Tour.find(filter)
-      .populate('guide', 'name profileImage rating reviewCount')
+      .populate('guide', 'names profileImage rating reviewCount')
       .populate('locations', 'name')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
     
-    // Count total tours for pagination
     const total = await Tour.countDocuments(filter);
     
     return NextResponse.json({

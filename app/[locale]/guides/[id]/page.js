@@ -4,13 +4,14 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import MainLayout from '@/components/layout/MainLayout';
-import { Star, Languages, MapPin, Award, Mail, Phone, Share2, Download, MessageCircle, Camera, Calendar } from 'lucide-react';
+import { Star, Languages, MapPin, Award, Mail, Phone, Share2, Download, MessageCircle, Camera, Calendar, Car } from 'lucide-react';
 
 export default function GuideProfilePage() {
   const params = useParams();
   const { id, locale } = params;
   
   const [guide, setGuide] = useState(null);
+  const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [qrCode, setQrCode] = useState('');
   const [copied, setCopied] = useState(false);
@@ -25,6 +26,13 @@ export default function GuideProfilePage() {
         }
         const data = await response.json();
         setGuide(data);
+        
+        // Fetch tours by this guide
+        const toursResponse = await fetch(`/api/tours?guideId=${id}`);
+        if (toursResponse.ok) {
+          const toursData = await toursResponse.json();
+          setTours(toursData.tours || []);
+        }
       } catch (error) {
         console.error('Error fetching guide:', error);
       } finally {
@@ -50,7 +58,7 @@ export default function GuideProfilePage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: guide?.name?.[locale] || guide?.name?.en || 'Guide Profile',
+          title: getGuideName(),
           text: `Check out this guide profile on Tourminded`,
           url: url,
         });
@@ -69,8 +77,8 @@ export default function GuideProfilePage() {
   const generateVCard = () => {
     if (!guide) return;
     
-    const name = guide.name?.[locale] || guide.name?.en || guide.user?.name || 'Guide';
-    const phone = guide.phone || guide.user?.phone || '';
+    const name = getGuideName();
+    const phone = guide.phone || '';
     const email = guide.user?.email || '';
     const address = guide.address || 'Israel';
     
@@ -94,6 +102,123 @@ END:VCARD`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+  
+  // Helper function to get guide name in current locale
+  const getGuideName = () => {
+    if (!guide) return '';
+    
+    // Map locale to language code
+    const languageMap = {
+      'en': 'English',
+      'ar': 'Arabic',
+      'he': 'Hebrew'
+    };
+    
+    const languageToFind = languageMap[locale] || 'English';
+    
+    // Find name in current locale
+    const nameObj = guide.names?.find(n => n.language === languageToFind);
+    if (nameObj && nameObj.value) return nameObj.value;
+    
+    // Fallback to English name
+    const enNameObj = guide.names?.find(n => n.language === 'English');
+    if (enNameObj && enNameObj.value) return enNameObj.value;
+    
+    // Fallback to first available name
+    if (guide.names && guide.names.length > 0 && guide.names[0].value) {
+      return guide.names[0].value;
+    }
+    
+    // Last fallback to nickname
+    return guide.nickname || 'Guide';
+  };
+  
+  // Helper function to get guide bio in current locale
+  const getGuideBio = () => {
+    if (!guide) return '';
+    
+    // Map locale to language code
+    const languageMap = {
+      'en': 'English',
+      'ar': 'Arabic',
+      'he': 'Hebrew'
+    };
+    
+    const languageToFind = languageMap[locale] || 'English';
+    
+    // Find about section in current locale
+    const aboutObj = guide.aboutSections?.find(a => a.language === languageToFind);
+    if (aboutObj && aboutObj.content) return aboutObj.content;
+    
+    // Fallback to English about
+    const enAboutObj = guide.aboutSections?.find(a => a.language === 'English');
+    if (enAboutObj && enAboutObj.content) return enAboutObj.content;
+    
+    // Fallback to first available about
+    if (guide.aboutSections && guide.aboutSections.length > 0 && guide.aboutSections[0].content) {
+      return guide.aboutSections[0].content;
+    }
+    
+    return '';
+  };
+  
+  // Calculate years of experience
+  const calculateYearsOfExperience = () => {
+    if (!guide || !guide.expertise || guide.expertise.length === 0 || !guide.expertise[0].licenseIssueDate) {
+      return 0;
+    }
+    
+    try {
+      const licenseDate = new Date(guide.expertise[0].licenseIssueDate);
+      const today = new Date();
+      
+      let years = today.getFullYear() - licenseDate.getFullYear();
+      const monthDiff = today.getMonth() - licenseDate.getMonth();
+      
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < licenseDate.getDate())) {
+        years--;
+      }
+      
+      return years;
+    } catch (error) {
+      console.error('Error calculating years of experience:', error);
+      return 0;
+    }
+  };
+  
+  // Get language name from code
+  const getLanguageName = (code) => {
+    const languageNames = {
+      en: 'English',
+      ar: 'العربية',
+      fr: 'Français',
+      es: 'Español',
+      de: 'Deutsch',
+      it: 'Italiano',
+      ru: 'Русский',
+      zh: '中文',
+      ja: '日本語',
+      ko: '한국어'
+    };
+    
+    return languageNames[code] || code;
+  };
+  
+  // Helper function to get Arabic expertise area name
+  const getArabicExpertiseArea = (area) => {
+    const arabicAreas = {
+      'Christian': 'المسيحية',
+      'Jewish': 'اليهودية',
+      'Muslim': 'الإسلامية',
+      'Political': 'السياسية',
+      'Historical': 'التاريخية',
+      'Cultural': 'الثقافية',
+      'Food': 'الطعام',
+      'All-inclusive': 'الشاملة'
+    };
+    
+    return arabicAreas[area] || area;
   };
   
   if (loading) {
@@ -134,17 +259,17 @@ END:VCARD`;
   }
   
   // Extract guide data
-  const name = guide.name?.[locale] || guide.name?.en || guide.user?.name || 'Guide';
-  const bio = guide.about?.[locale] || guide.about?.en || '';
+  const name = getGuideName();
+  const bio = getGuideBio();
   const profileImage = guide.profileImage?.url || '/images/default-guide.jpg';
-  const coverImage = guide.coverImage?.url || 'https://res.cloudinary.com/tourminded/image/upload/v1689542321/jerusalem-cover_xzbjvf.jpg';
+  const coverImage = guide.coverImage?.url || '/images/default-cover.jpg';
   const rating = guide.rating || 5;
   const reviewCount = guide.reviewCount || 0;
   const languages = guide.languages || [];
   const expertise = guide.expertise || [];
   const address = guide.address || 'Israel';
-  const phone = guide.phone || guide.user?.phone || '';
-  const email = guide.user?.email || '';
+  const yearsExperience = calculateYearsOfExperience();
+  const vehicle = guide.vehicle || {};
   
   return (
     <MainLayout locale={locale}>
@@ -153,7 +278,7 @@ END:VCARD`;
         {/* Cover Image */}
         <div className="absolute inset-0">
           <Image 
-            src={'/tour-image-1.jpg'}
+            src={coverImage}
             alt={`${name} cover`}
             fill
             className="object-cover"
@@ -206,139 +331,131 @@ END:VCARD`;
         </div>
       </div>
       
+      {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Profile Card */}
+          {/* Left Column - Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden text-gray-800 sticky top-24">
-              {/* Profile Info */}
-              <div className="p-6">
-                {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-6 text-center">
-                  <div className="bg-primary-50 p-3 rounded-lg">
-                    <div className="text-primary-600 font-bold text-xl">{languages.length}</div>
-                    <div className="text-xs text-gray-600">{locale === 'en' ? 'Languages' : 'لغات'}</div>
+            <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
+              {/* Languages */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Languages className="w-5 h-5 mr-2 text-primary-600" />
+                  {locale === 'en' ? 'Languages' : 'اللغات'}
+                </h3>
+                
+                <div className="space-y-3">
+                  {languages.map((lang, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <span className="font-medium">{getLanguageName(lang.language)}</span>
+                      <div className="flex items-center">
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={`w-4 h-4 ${i < 5 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-gray-500 ml-2">(12)</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Experience */}
+              <div className="mb-8 pb-8 border-b border-gray-100">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Award className="w-5 h-5 mr-2 text-primary-600" />
+                  {locale === 'en' ? 'Experience' : 'الخبرة'}
+                </h3>
+                
+                <div className="flex items-center">
+                  <div className="w-16 h-16 rounded-full bg-primary-50 flex items-center justify-center mr-4">
+                    <span className="text-2xl font-bold text-primary-600">{yearsExperience}</span>
                   </div>
-                  <div className="bg-secondary-50 p-3 rounded-lg">
-                    <div className="text-secondary-600 font-bold text-xl">{expertise.length}</div>
-                    <div className="text-xs text-gray-600">{locale === 'en' ? 'Specialties' : 'تخصصات'}</div>
-                  </div>
-                  <div className="bg-yellow-50 p-3 rounded-lg">
-                    <div className="text-yellow-600 font-bold text-xl">{guide.yearsExperience || 5}+</div>
-                    <div className="text-xs text-gray-600">{locale === 'en' ? 'Years Exp.' : 'سنوات الخبرة'}</div>
+                  <div>
+                    <p className="font-medium">
+                      {locale === 'en' 
+                        ? `${yearsExperience} year${yearsExperience !== 1 ? 's' : ''}` 
+                        : `${yearsExperience} سنة${yearsExperience !== 1 ? '' : ''}`}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {locale === 'en' ? 'Professional Experience' : 'خبرة مهنية'}
+                    </p>
                   </div>
                 </div>
-                
-                {/* Availability Badge */}
-                <div className="mb-6 text-center">
-                  <span className="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    <span>{locale === 'en' ? 'Available for Booking' : 'متاح للحجز'}</span>
-                  </span>
-                </div>
-                
-                {/* Contact Buttons */}
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  {email && (
-                    <a 
-                      href={`mailto:${email}`}
-                      className="flex items-center justify-center bg-primary-100 hover:bg-primary-200 text-primary-800 py-2 px-4 rounded-lg transition-colors"
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      <span>{locale === 'en' ? 'Email' : 'البريد الإلكتروني'}</span>
-                    </a>
-                  )}
+              </div>
+              
+              {/* Vehicle Information (if available) */}
+              {vehicle && (vehicle.type || vehicle.model || vehicle.image) && (
+                <div className="mb-8 pb-8 border-b border-gray-100">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <Car className="w-5 h-5 mr-2 text-primary-600" />
+                    {locale === 'en' ? 'Vehicle' : 'المركبة'}
+                  </h3>
                   
-                  {phone && (
-                    <a 
-                      href={`tel:${phone}`}
-                      className="flex items-center justify-center bg-secondary-100 hover:bg-secondary-200 text-secondary-800 py-2 px-4 rounded-lg transition-colors"
-                    >
-                      <Phone className="w-4 h-4 mr-2" />
-                      <span>{locale === 'en' ? 'Call' : 'اتصال'}</span>
-                    </a>
-                  )}
-                </div>
-                
-                {/* QR Code */}
-                <div className="border-t border-gray-100 pt-6 mb-6">
-                  <p className="text-sm text-gray-500 mb-3 text-center">
-                    {locale === 'en' ? 'Scan to view profile' : 'امسح لعرض الملف الشخصي'}
-                  </p>
-                  <div className="flex justify-center">
-                    <div className="inline-block p-2 bg-white border border-gray-200 rounded-lg">
-                      {qrCode && (
-                        <img 
-                          src={qrCode}
-                          alt="QR Code"
-                          width={120}
-                          height={120}
-                          className="rounded"
+                  <div className="flex flex-col">
+                    {vehicle.image?.url && (
+                      <div className="relative h-40 w-full mb-4 rounded-lg overflow-hidden">
+                        <Image 
+                          src={vehicle.image.url}
+                          alt="Guide's vehicle"
+                          fill
+                          className="object-cover"
                         />
+                      </div>
+                    )}
+                    
+                    <div className="space-y-2">
+                      {vehicle.type && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">{locale === 'en' ? 'Type' : 'النوع'}:</span>
+                          <span className="font-medium">{vehicle.type}</span>
+                        </div>
+                      )}
+                      
+                      {vehicle.model && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">{locale === 'en' ? 'Model' : 'الطراز'}:</span>
+                          <span className="font-medium">{vehicle.model}</span>
+                        </div>
+                      )}
+                      
+                      {vehicle.year && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">{locale === 'en' ? 'Year' : 'السنة'}:</span>
+                          <span className="font-medium">{vehicle.year}</span>
+                        </div>
+                      )}
+                      
+                      {vehicle.capacity && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">{locale === 'en' ? 'Capacity' : 'السعة'}:</span>
+                          <span className="font-medium">{vehicle.capacity} {locale === 'en' ? 'persons' : 'أشخاص'}</span>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
-                
-                {/* Share and Save Contact */}
-                <div className="flex justify-center gap-3">
-                  <button 
-                    onClick={handleShare}
-                    className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition-colors relative"
-                  >
-                    <Share2 className="w-4 h-4 mr-2" />
-                    <span>{copied ? (locale === 'en' ? 'Copied!' : 'تم النسخ!') : (locale === 'en' ? 'Share' : 'مشاركة')}</span>
-                    
-                    {/* Tooltip for copied state */}
-                    {copied && (
-                      <span className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded">
-                        {locale === 'en' ? 'Link copied!' : 'تم نسخ الرابط!'}
-                      </span>
-                    )}
-                  </button>
-                  
-                  <button 
-                    onClick={generateVCard}
-                    className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition-colors"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    <span>{locale === 'en' ? 'Save Contact' : 'حفظ جهة الاتصال'}</span>
-                  </button>
-                </div>
-              </div>
+              )}
               
-              {/* Languages */}
-              <div className="bg-gray-50 p-6 border-t border-gray-100">
-                <h2 className="text-lg font-bold mb-4 flex items-center">
-                  <Languages className="w-5 h-5 mr-2 text-primary-600" />
-                  {locale === 'en' ? 'Languages' : 'اللغات'}
-                </h2>
+              {/* QR Code */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">
+                  {locale === 'en' ? 'Scan to Share' : 'امسح للمشاركة'}
+                </h3>
                 
-                <div className="space-y-4">
-                  {languages.map((lang, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <span className="font-medium">{lang.language}</span>
-                      
-                      <div className="flex items-center">
-                        {/* Proficiency indicator */}
-                        <div className="flex space-x-1">
-                          {[...Array(5)].map((_, i) => (
-                            <div 
-                              key={i} 
-                              className={`w-2 h-6 rounded-sm ${i < lang.proficiency ? 'bg-primary-500' : 'bg-gray-200'}`}
-                            ></div>
-                          ))}
-                        </div>
-                        <span className="ml-2 text-sm text-gray-500">
-                          {lang.proficiency === 5 ? (locale === 'en' ? 'Native' : 'اللغة الأم') : 
-                           lang.proficiency === 4 ? (locale === 'en' ? 'Fluent' : 'طلاقة') :
-                           lang.proficiency === 3 ? (locale === 'en' ? 'Advanced' : 'متقدم') :
-                           lang.proficiency === 2 ? (locale === 'en' ? 'Intermediate' : 'متوسط') :
-                           (locale === 'en' ? 'Basic' : 'أساسي')}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                <div className="bg-white p-2 border border-gray-200 rounded-lg inline-block">
+                  {qrCode && (
+                    <Image 
+                      src={qrCode}
+                      alt="QR Code"
+                      width={150}
+                      height={150}
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -388,11 +505,11 @@ END:VCARD`;
                     </div>
                     
                     <div className="flex items-center text-gray-600 mb-2">
-                      <span className="font-medium text-secondary-700">{exp.years}</span>
+                      <span className="font-medium text-secondary-700">{yearsExperience}</span>
                       <span className="ml-1">
                         {locale === 'en' 
-                          ? `year${exp.years !== 1 ? 's' : ''} of experience` 
-                          : `سنة${exp.years !== 1 ? '' : ''} من الخبرة`}
+                          ? `year${yearsExperience !== 1 ? 's' : ''} of experience` 
+                          : `سنة${yearsExperience !== 1 ? '' : ''} من الخبرة`}
                       </span>
                     </div>
                     
@@ -406,38 +523,71 @@ END:VCARD`;
               </div>
             </div>
             
-            {/* Gallery Section */}
+            {/* Tours by this Guide Section */}
             <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
               <h2 className="text-2xl font-bold mb-6 flex items-center">
-                <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3">
-                  <Camera className="w-5 h-5" />
+                <span className="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-lg">🧭</span>
                 </span>
-                {locale === 'en' ? 'Gallery' : 'معرض الصور'}
+                {locale === 'en' ? 'Tours by this Guide' : 'جولات هذا المرشد'}
               </h2>
               
-              {guide.gallery && guide.gallery.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {guide.gallery.map((image, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                      <Image
-                        src={image.url}
-                        alt={`Gallery image ${index + 1}`}
-                        fill
-                        className="object-cover hover:scale-110 transition-transform duration-300"
-                      />
-                    </div>
+              {tours && tours.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {tours.map((tour, index) => (
+                    <Link 
+                      key={index} 
+                      href={`/${locale}/tours/${tour._id}`}
+                      className="block group"
+                    >
+                      <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                        <div className="relative h-48 w-full">
+                          <Image 
+                            src={tour.images?.[0]?.url || '/images/default-tour.jpg'}
+                            alt={tour.title?.[locale] || tour.title?.en || 'Tour'}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold mb-2 group-hover:text-primary-600 transition-colors">
+                            {tour.title?.[locale] || tour.title?.en || 'Tour'}
+                          </h3>
+                          
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center text-yellow-500">
+                              <Star className="w-4 h-4 fill-current" />
+                              <span className="text-gray-700 ml-1">{tour.rating || 5}</span>
+                              <span className="text-gray-500 text-sm ml-1">({tour.reviewCount || 0})</span>
+                            </div>
+                            
+                            <span className="font-bold text-primary-600">
+                              ${tour.price || 0}
+                            </span>
+                          </div>
+                          
+                          <p className="text-sm text-gray-500 line-clamp-2">
+                            {tour.description?.[locale] || tour.description?.en || ''}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {/* Placeholder gallery images */}
-                  {[...Array(6)].map((_, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-                      <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                        <Camera className="w-8 h-8" />
-                      </div>
-                    </div>
-                  ))}
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    {locale === 'en' 
+                      ? 'No tours available from this guide yet' 
+                      : 'لا توجد جولات متاحة من هذا المرشد حتى الآن'}
+                  </p>
+                  <Link 
+                    href={`/${locale}/tours`}
+                    className="bg-primary-100 hover:bg-primary-200 text-primary-800 font-medium py-2 px-4 rounded-lg transition-colors inline-block"
+                  >
+                    {locale === 'en' ? 'Browse all tours' : 'تصفح جميع الجولات'}
+                  </Link>
                 </div>
               )}
             </div>
@@ -451,68 +601,15 @@ END:VCARD`;
                   </span>
                   {locale === 'en' ? 'Reviews' : 'التقييمات'}
                 </h2>
-                
-                <Link 
-                  href={`/${locale}/guides/${guide._id}/reviews`}
-                  className="text-primary-600 hover:text-primary-700 font-medium"
-                >
-                  {locale === 'en' ? 'View all' : 'عرض الكل'}
-                </Link>
               </div>
               
-              {reviewCount > 0 ? (
-                <div className="space-y-6">
-                  {/* Sample reviews would go here */}
-                  <div className="border-b border-gray-100 pb-6">
-                    <div className="flex items-center mb-2">
-                      <div className="w-10 h-10 rounded-full bg-gray-200 mr-3"></div>
-                      <div>
-                        <h4 className="font-medium">John Doe</h4>
-                        <div className="flex items-center text-yellow-500">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="w-4 h-4 fill-current" />
-                          ))}
-                          <span className="text-gray-500 text-sm ml-2">2 months ago</span>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-gray-600">
-                      Amazing guide! Very knowledgeable about the history and culture of the region.
-                      Made our trip truly memorable.
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <div className="flex items-center mb-2">
-                      <div className="w-10 h-10 rounded-full bg-gray-200 mr-3"></div>
-                      <div>
-                        <h4 className="font-medium">Jane Smith</h4>
-                        <div className="flex items-center text-yellow-500">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="w-4 h-4 fill-current" />
-                          ))}
-                          <span className="text-gray-500 text-sm ml-2">3 months ago</span>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-gray-600">
-                      Excellent experience! Our guide was friendly, professional, and very informative.
-                      Highly recommend!
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">
-                    {locale === 'en' 
-                      ? 'No reviews yet' 
-                      : 'لا توجد تقييمات حتى الآن'}
-                  </p>
-                  <button className="bg-primary-100 hover:bg-primary-200 text-primary-800 font-medium py-2 px-4 rounded-lg transition-colors">
-                    {locale === 'en' ? 'Be the first to review' : 'كن أول من يقيم'}
-                  </button>
-                </div>
-              )}
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">
+                  {locale === 'en' 
+                    ? 'Reviews coming soon!' 
+                    : 'التقييمات قادمة قريبًا!'}
+                </p>
+              </div>
             </div>
             
             {/* Contact Form */}

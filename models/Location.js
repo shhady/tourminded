@@ -51,4 +51,14 @@ LocationSchema.virtual('tours', {
   justOne: false,
 });
 
-export default mongoose.models.Location || mongoose.model('Location', LocationSchema); 
+// Use a try-catch block to handle potential errors
+let Location;
+try {
+  // Check if the model already exists
+  Location = mongoose.models.Location;
+} catch (error) {
+  // If not, create it
+  Location = mongoose.model('Location', LocationSchema);
+}
+
+export default Location; 

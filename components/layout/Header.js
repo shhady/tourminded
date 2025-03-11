@@ -383,14 +383,14 @@ const Header = ({ locale }) => {
                   
                   {/* Logout Button */}
                  
-                  <button
+                  <div
                   
                     className="flex items-center w-full text-left px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     <SignOutButton />
                     {/* {locale === 'en' ? 'Logout' : 'تسجيل الخروج'} */}
-                  </button>
+                  </div>
                 </div>
               )}
               

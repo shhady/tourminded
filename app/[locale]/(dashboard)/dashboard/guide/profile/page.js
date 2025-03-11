@@ -1,98 +1,107 @@
-import { redirect } from 'next/navigation';
-import { currentUser } from '@clerk/nextjs/server';
-import connectDB from '@/lib/mongodb';
-import Link from 'next/link';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import Image from 'next/image';
 import Button from '@/components/ui/Button';
-import User from '@/models/User';
-import Guide from '@/models/Guide';
+import { Loader } from 'lucide-react';
 
-export const metadata = {
-  title: 'Guide Profile | Tourminded',
-  description: 'Update your guide profile information',
-};
-
-async function getGuideProfile(userId) {
-  await connectDB();
+export default function GuideProfilePage({ params }) {
+  const localeParams = React.use(params);
+  const locale = localeParams?.locale || 'en';
+  const router = useRouter();
+  const { user, isLoaded: isClerkLoaded } = useUser();
   
-  try {
-    // Get guide profile
-    const guide = await Guide.findOne({ user: userId });
-    
-    if (!guide) {
-      return null;
-    }
-    
-    // Convert Mongoose document to plain object
-    const plainGuide = {
-      _id: guide._id.toString(),
-      name: {
-        en: guide.name?.en || '',
-        ar: guide.name?.ar || '',
-      },
-      email: guide.email || '',
-      nickname: guide.nickname || '',
-      address: guide.address || '',
-      phone: guide.phone || '',
-      languages: guide.languages || [],
-      expertise: guide.expertise || [],
-      about: {
-        en: guide.about?.en || '',
-        ar: guide.about?.ar || '',
-      },
-      // Convert complex objects to simple strings
-      profileImage: typeof guide.profileImage === 'object' ? 
-        guide.profileImage.url || '' : guide.profileImage || '',
-      driverLicense: guide.driverLicense ? {
-        date: guide.driverLicense.date ? new Date(guide.driverLicense.date).toISOString() : null,
-        number: guide.driverLicense.number || '',
-        image: typeof guide.driverLicense.image === 'object' ? 
-          guide.driverLicense.image.url || '' : guide.driverLicense.image || '',
-      } : null,
-      vehicle: guide.vehicle || {},
-      active: guide.active || false,
+  const [guide, setGuide] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  useEffect(() => {
+    const fetchGuideProfile = async () => {
+      if (!isClerkLoaded || !user) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/guides/me');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch guide profile');
+        }
+        
+        const data = await response.json();
+        setGuide(data.guide);
+      } catch (error) {
+        console.error('Error fetching guide profile:', error);
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
     };
     
-    return plainGuide;
-  } catch (error) {
-    console.error('Error getting guide profile:', error);
-    return null;
+    fetchGuideProfile();
+  }, [isClerkLoaded, user]);
+  
+  // Helper function to get name in current locale or first available
+  const getLocalizedName = () => {
+    if (!guide || !guide.names || guide.names.length === 0) return '';
+    
+    // Try to find name in current locale
+    const localeName = guide.names.find(name => name.language.toLowerCase() === locale);
+    if (localeName) return localeName.value;
+    
+    // Fallback to first available name
+    return guide.names[0].value;
+  };
+  
+  // Helper function to get about in current locale or first available
+  const getLocalizedAbout = () => {
+    if (!guide || !guide.aboutSections || guide.aboutSections.length === 0) return '';
+    
+    // Try to find about in current locale
+    const localeAbout = guide.aboutSections.find(about => about.language.toLowerCase() === locale);
+    if (localeAbout) return localeAbout.content;
+    
+    // Fallback to first available about
+    return guide.aboutSections[0].content;
+  };
+  
+  // Calculate years of experience
+  const calculateYearsOfExperience = () => {
+    if (!guide || !guide.expertise || guide.expertise.length === 0 || !guide.expertise[0].licenseIssueDate) {
+      return 0;
+    }
+    
+    const issueDate = new Date(guide.expertise[0].licenseIssueDate);
+    const today = new Date();
+    return Math.floor((today - issueDate) / (365.25 * 24 * 60 * 60 * 1000));
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader className="w-8 h-8 animate-spin text-primary-500" />
+      </div>
+    );
   }
-}
-
-export default async function GuideProfilePage({ params }) {
-  const localeParams = await params;
-  const locale = localeParams?.locale || 'en';
   
-  // Get current user with Clerk
-  const clerkUser = await currentUser();
-  
-  if (!clerkUser) {
-    redirect(`/${locale}/sign-in`);
-    return;
+  if (error) {
+    return (
+      <div>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+        <div className="mt-4">
+          <Button onClick={() => router.push(`/${locale}/dashboard/guide`)}>
+            {locale === 'en' ? 'Back to Dashboard' : 'العودة إلى لوحة التحكم'}
+          </Button>
+        </div>
+      </div>
+    );
   }
-  
-  // Connect to database
-  await connectDB();
-  
-  // Find user in our database
-  const user = await User.findOne({ clerkId: clerkUser.id });
-  
-  if (!user) {
-    redirect(`/${locale}/sign-in`);
-    return;
-  }
-  
-  // Redirect if not a guide
-  if (user.role !== 'guide') {
-    redirect(`/${locale}/dashboard`);
-    return;
-  }
-  
-  // Get guide profile
-  const guide = await getGuideProfile(user._id);
   
   if (!guide) {
-    // If guide profile doesn't exist, show a message to create one
     return (
       <div>
         <h1 className="text-2xl md:text-3xl font-bold mb-6">
@@ -109,7 +118,7 @@ export default async function GuideProfilePage({ params }) {
               : 'تحتاج إلى إنشاء ملف المرشد الخاص بك لبدء تقديم الجولات.'}
           </p>
           <Button 
-            href={`/${locale}/dashboard/guide/profile/create`}
+            href={`/${locale}/guide/register`}
             variant="primary"
             className="text-black"
           >
@@ -140,16 +149,16 @@ export default async function GuideProfilePage({ params }) {
         <div className="bg-primary-600 p-6 text-black">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <div className="w-32 h-32 rounded-full overflow-hidden bg-white border-4 border-white shadow-md">
-              {guide.profileImage ? (
+              {guide.profileImage?.url ? (
                 <img 
-                  src={guide.profileImage} 
-                  alt={guide.name?.en || 'Guide'} 
+                  src={guide.profileImage.url} 
+                  alt={getLocalizedName() || 'Guide'} 
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-secondary-200 flex items-center justify-center">
                   <span className="text-secondary-400 text-4xl">
-                    {(guide.name?.en?.[0] || guide.name?.[0] || '').toUpperCase()}
+                    {(getLocalizedName()?.[0] || '').toUpperCase()}
                   </span>
                 </div>
               )}
@@ -157,10 +166,10 @@ export default async function GuideProfilePage({ params }) {
             
             <div className="text-center md:text-left">
               <h2 className="text-2xl font-bold text-white">
-                {guide.name?.en || guide.name}
+                {getLocalizedName()}
               </h2>
               <p className="text-primary-100 mb-2">
-                {guide.title?.en || guide.title}
+                {guide.nickname || ''}
               </p>
               
               <div className="flex flex-wrap gap-2 mt-4 justify-center md:justify-start">
@@ -169,8 +178,8 @@ export default async function GuideProfilePage({ params }) {
                     {locale === 'en' ? 'Active' : 'نشط'}
                   </span>
                 ) : (
-                  <span className="px-3 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold">
-                    {locale === 'en' ? 'Inactive' : 'غير نشط'}
+                  <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">
+                    {locale === 'en' ? 'Pending Approval' : 'في انتظار الموافقة'}
                   </span>
                 )}
                 
@@ -195,20 +204,20 @@ export default async function GuideProfilePage({ params }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* About Section */}
             <div>
-              <h3 className="text-lg font-semibold mb-3 text-secondary-900">
+              {/* <h3 className="text-lg font-semibold mb-3 text-secondary-900">
                 {locale === 'en' ? 'About' : 'نبذة عني'}
               </h3>
               <p className="text-secondary-600 whitespace-pre-line">
-                {guide.about?.en || guide.about || (locale === 'en' ? 'No information provided.' : 'لم يتم تقديم معلومات.')}
+                {getLocalizedAbout() || (locale === 'en' ? 'No information provided.' : 'لم يتم تقديم معلومات.')}
               </p>
-              
+               */}
               <h3 className="text-lg font-semibold mt-6 mb-3 text-secondary-900">
                 {locale === 'en' ? 'Contact Information' : 'معلومات الاتصال'}
               </h3>
               <ul className="space-y-2 text-secondary-600">
                 <li className="flex items-start">
                   <span className="font-medium mr-2">{locale === 'en' ? 'Email:' : 'البريد الإلكتروني:'}</span>
-                  <span>{guide.email || user.email}</span>
+                  <span>{guide.user?.email || ''}</span>
                 </li>
                 <li className="flex items-start">
                   <span className="font-medium mr-2">{locale === 'en' ? 'Phone:' : 'الهاتف:'}</span>
@@ -216,9 +225,27 @@ export default async function GuideProfilePage({ params }) {
                 </li>
                 <li className="flex items-start">
                   <span className="font-medium mr-2">{locale === 'en' ? 'Address:' : 'العنوان:'}</span>
-                  <span>{guide.address?.en || guide.address || (locale === 'en' ? 'Not provided' : 'غير متوفر')}</span>
+                  <span>{guide.address || (locale === 'en' ? 'Not provided' : 'غير متوفر')}</span>
                 </li>
               </ul>
+              
+              {/* All language versions */}
+              {guide.aboutSections && guide.aboutSections.length > 1 && (
+                <div className="mt-6 border-t border-secondary-200 pt-4">
+                  <h3 className="text-lg font-medium mb-3">
+                    {locale === 'en' ? 'All Language Versions' : 'جميع إصدارات اللغة'}
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {guide.aboutSections.map((about, index) => (
+                      <div key={index} className="border-b border-secondary-100 pb-3 last:border-0 last:pb-0">
+                        <h4 className="font-medium text-primary-600 mb-1">{about.language}</h4>
+                        <p className="text-secondary-700">{about.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Expertise & Languages */}
@@ -226,14 +253,30 @@ export default async function GuideProfilePage({ params }) {
               <h3 className="text-lg font-semibold mb-3 text-secondary-900">
                 {locale === 'en' ? 'Expertise' : 'الخبرات'}
               </h3>
+              <div className="flex flex-wrap gap-2 mb-6">
+                    {guide.expertise.map((exp, index) => (
+                      <div key={index} className="bg-secondary-100  py-1 rounded-full text-secondary-800 text-sm">
+                        {exp.area}
+                      </div>
+                    ))}
+                  </div>
               {guide.expertise && guide.expertise.length > 0 ? (
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {guide.expertise.map((exp, index) => (
-                    <div key={index} className="bg-secondary-100 px-3 py-1 rounded-full text-secondary-800 text-sm">
-                      {exp.area?.en || exp.area}
-                      {exp.years && <span className="text-secondary-500 ml-1">({exp.years} {locale === 'en' ? 'years' : 'سنوات'})</span>}
-                    </div>
-                  ))}
+                <div>
+                  <div className="mb-4">
+                    <h4 className="text-lg font-semibold text-secondary-700">
+                      {locale === 'en' ? 'Years of Experience' : 'سنوات الخبرة'}
+                    </h4>
+                    <p className="text-2xl font-bold text-primary-600">
+                      {calculateYearsOfExperience()} {locale === 'en' ? 'years' : 'سنوات'}
+                    </p>
+                    <p className="text-sm text-secondary-500">
+                      {locale === 'en' 
+                        ? `Since ${new Date(guide.expertise[0].licenseIssueDate).getFullYear()}`
+                        : `منذ ${new Date(guide.expertise[0].licenseIssueDate).getFullYear()}`}
+                    </p>
+                  </div>
+                  
+                  
                 </div>
               ) : (
                 <p className="text-secondary-500 mb-6">
@@ -245,53 +288,52 @@ export default async function GuideProfilePage({ params }) {
                 {locale === 'en' ? 'Languages' : 'اللغات'}
               </h3>
               {guide.languages && guide.languages.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
+                <div className="space-y-2 mb-6">
                   {guide.languages.map((lang, index) => (
-                    <div key={index} className="bg-secondary-100 px-3 py-1 rounded-full text-secondary-800 text-sm">
-                      {lang.language?.en || lang.language}
-                      {lang.proficiency && <span className="text-secondary-500 ml-1">({lang.proficiency})</span>}
+                    <div key={index} className="flex items-center justify-between">
+                      <span>{lang.language}</span>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <span 
+                            key={i} 
+                            className={`w-4 h-4 rounded-full mx-0.5 ${
+                              i < lang.proficiency 
+                                ? 'bg-primary-500' 
+                                : 'bg-secondary-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-secondary-500">
+                <p className="text-secondary-500 mb-6">
                   {locale === 'en' ? 'No languages listed.' : 'لم يتم إدراج أي لغات.'}
                 </p>
               )}
               
-              {/* Driver License */}
-              {guide.driverLicense && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-3 text-secondary-900">
-                    {locale === 'en' ? 'Driver License' : 'رخصة القيادة'}
-                  </h3>
-                  <ul className="space-y-2 text-secondary-600">
-                    <li className="flex items-start">
-                      <span className="font-medium mr-2">{locale === 'en' ? 'License Number:' : 'رقم الرخصة:'}</span>
-                      <span>{guide.driverLicense.number || (locale === 'en' ? 'Not provided' : 'غير متوفر')}</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="font-medium mr-2">{locale === 'en' ? 'Expiry Date:' : 'تاريخ الانتهاء:'}</span>
-                      <span>
-                        {guide.driverLicense.expiryDate 
-                          ? new Date(guide.driverLicense.expiryDate).toLocaleDateString(locale === 'en' ? 'en-US' : 'ar-SA')
-                          : (locale === 'en' ? 'Not provided' : 'غير متوفر')}
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-              )}
-              
               {/* Vehicle Information */}
-              {guide.vehicle && (
+              {guide.vehicle && (guide.vehicle.type || guide.vehicle.model) && (
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold mb-3 text-secondary-900">
                     {locale === 'en' ? 'Vehicle Information' : 'معلومات المركبة'}
                   </h3>
+                  
+                  {guide.vehicle.image?.url && (
+                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4">
+                      <img 
+                        src={guide.vehicle.image.url} 
+                        alt="Vehicle" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  
                   <ul className="space-y-2 text-secondary-600">
                     <li className="flex items-start">
-                      <span className="font-medium mr-2">{locale === 'en' ? 'Make:' : 'الصنع:'}</span>
-                      <span>{guide.vehicle.make || (locale === 'en' ? 'Not provided' : 'غير متوفر')}</span>
+                      <span className="font-medium mr-2">{locale === 'en' ? 'Type:' : 'النوع:'}</span>
+                      <span>{guide.vehicle.type || (locale === 'en' ? 'Not provided' : 'غير متوفر')}</span>
                     </li>
                     <li className="flex items-start">
                       <span className="font-medium mr-2">{locale === 'en' ? 'Model:' : 'الطراز:'}</span>
@@ -303,11 +345,47 @@ export default async function GuideProfilePage({ params }) {
                     </li>
                     <li className="flex items-start">
                       <span className="font-medium mr-2">{locale === 'en' ? 'Capacity:' : 'السعة:'}</span>
-                      <span>{guide.vehicle.capacity || (locale === 'en' ? 'Not provided' : 'غير متوفر')}</span>
+                      <span>
+                        {guide.vehicle.capacity 
+                          ? `${guide.vehicle.capacity} ${locale === 'en' ? 'passengers' : 'ركاب'}`
+                          : (locale === 'en' ? 'Not provided' : 'غير متوفر')}
+                      </span>
                     </li>
                   </ul>
                 </div>
               )}
+              
+              {/* Statistics */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-3 text-secondary-900">
+                  {locale === 'en' ? 'Statistics' : 'الإحصائيات'}
+                </h3>
+                
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-secondary-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-secondary-500">
+                      {locale === 'en' ? 'Tours' : 'الجولات'}
+                    </h4>
+                    <p className="text-2xl font-bold text-secondary-900">{guide.tourCount || 0}</p>
+                  </div>
+                  
+                  <div className="bg-secondary-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-secondary-500">
+                      {locale === 'en' ? 'Reviews' : 'التقييمات'}
+                    </h4>
+                    <p className="text-2xl font-bold text-secondary-900">{guide.reviewCount || 0}</p>
+                  </div>
+                  
+                  <div className="bg-secondary-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-secondary-500">
+                      {locale === 'en' ? 'Rating' : 'التقييم'}
+                    </h4>
+                    <p className="text-2xl font-bold text-secondary-900">
+                      {guide.averageRating ? guide.averageRating.toFixed(1) : '-'}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -6,11 +6,16 @@ import { useForm } from 'react-hook-form';
 import Button from '@/components/ui/Button';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Loader } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
+import { useGuide } from '@/contexts/GuideContext';
 
 export default function NewTourPage({ params }) {
   const localeParams = React.use(params);
   const locale = localeParams?.locale || 'en';
   const router = useRouter();
+  
+  const { user } = useUser();
+  const { guide } = useGuide();
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,6 +23,7 @@ export default function NewTourPage({ params }) {
   const [galleryImages, setGalleryImages] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedLocations, setSelectedLocations] = useState([]);
+  const [guideLanguages, setGuideLanguages] = useState([]);
   
   // Hardcoded locations in Palestine and Israel
   const locations = [
@@ -38,7 +44,7 @@ export default function NewTourPage({ params }) {
     { _id: 'eilat', name: { en: 'Eilat', ar: 'إيلات' } },
   ];
   
-  const { register, handleSubmit, formState: { errors }, watch } = useForm();
+  const { register, handleSubmit, setValue, formState: { errors }, watch } = useForm();
   
   // Get the current user
   useEffect(() => {
@@ -62,6 +68,18 @@ export default function NewTourPage({ params }) {
     
     fetchCurrentUser();
   }, []);
+  
+  // Fetch guide languages when component mounts
+  useEffect(() => {
+    if (guide && guide.languages && guide.languages.length > 0) {
+      // Extract language names from guide's languages array
+      const languages = guide.languages.map(lang => lang.language).join(', ');
+      setGuideLanguages(languages);
+      
+      // Pre-fill the languages field with guide's languages
+      setValue('languages', languages);
+    }
+  }, [guide, setValue]);
   
   const handleCoverImageUploaded = (url) => {
     setCoverImage(url);
@@ -406,21 +424,19 @@ export default function NewTourPage({ params }) {
           {/* Languages & Locations */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="languages" className="block text-sm font-medium text-secondary-700 mb-1">
-                {locale === 'en' ? 'Languages (comma separated)' : 'اللغات (مفصولة بفواصل)'}*
+              <label className="block text-sm font-medium text-secondary-700 mb-1">
+                {locale === 'en' ? 'Languages' : 'اللغات'}
               </label>
-              <input
-                id="languages"
-                type="text"
-                placeholder={locale === 'en' ? 'English, Arabic, Hebrew' : 'الإنجليزية، العربية، العبرية'}
-                {...register('languages', {
-                  required: locale === 'en' ? 'Languages are required' : 'اللغات مطلوبة',
-                })}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-              {errors.languages && (
-                <p className="mt-1 text-sm text-red-600">{errors.languages.message}</p>
-              )}
+              <div className="w-full px-3 py-2 border border-secondary-300 rounded-md bg-secondary-50 text-secondary-700">
+                {guide && guide.languages ? 
+                  guide.languages.map(lang => lang.language).join(', ') : 
+                  (locale === 'en' ? 'Loading languages...' : 'جاري تحميل اللغات...')}
+              </div>
+              <p className="mt-1 text-xs text-secondary-500">
+                {locale === 'en' 
+                  ? 'Languages are automatically set from your guide profile' 
+                  : 'يتم تعيين اللغات تلقائيًا من ملف الدليل الخاص بك'}
+              </p>
             </div>
             
             <div className="mb-4">

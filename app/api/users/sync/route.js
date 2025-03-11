@@ -78,82 +78,58 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    // Get the current user from Clerk
     const clerkUser = await currentUser();
     
     if (!clerkUser) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'No authenticated user found' }, { status: 401 });
     }
-
-    // Connect to database
+    
     await connectDB();
     
-    // Get user data from request body
-    const userData = await request.json();
-    
-    // Check if user already exists in our database
+    // Check if user already exists in MongoDB
     let user = await User.findOne({ clerkId: clerkUser.id });
     
     if (user) {
-      // User exists, return the user
-      return NextResponse.json({ user });
+      // Update existing user with latest Clerk data
+      user.email = clerkUser.emailAddresses[0]?.emailAddress || user.email;
+      user.name = {
+        en: clerkUser.firstName ? `${clerkUser.firstName} ${clerkUser.lastName || ''}`.trim() : user.name.en,
+        ar: user.name.ar // Keep existing Arabic name
+      };
+      user.image = clerkUser.imageUrl || user.image;
+      
+      await user.save();
+      
+      return NextResponse.json({ 
+        message: 'User updated successfully',
+        user 
+      });
     } else {
-      // Create new user with data from Clerk
+      // Create new user
       const newUser = new User({
         clerkId: clerkUser.id,
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
-        email: clerkUser.emailAddresses[0]?.emailAddress || '',
-        role: userData.role || "user", // Default role is user
-        // Add other fields as needed
+        email: clerkUser.emailAddresses[0]?.emailAddress,
+        name: {
+          en: clerkUser.firstName ? `${clerkUser.firstName} ${clerkUser.lastName || ''}`.trim() : '',
+          ar: ''
+        },
+        image: clerkUser.imageUrl,
+        role: 'user'
       });
       
-      user = await newUser.save();
+      await newUser.save();
       
-      // If user is registering as a guide, create a guide profile
-      if (userData.role === "guide") {
-        const newGuide = new Guide({
-          user: user._id,
-          name: {
-            en: user.name || "",
-            ar: ""
-          },
-          email: user.email || "",
-          // Initialize other guide fields with empty values
-          nickname: "",
-          address: "",
-          phone: "",
-          languages: [],
-          expertise: [],
-          about: {
-            en: "",
-            ar: ""
-          },
-          profileImage: "",
-          driverLicense: {
-            date: null,
-            number: "",
-            image: ""
-          },
-          vehicle: {},
-          reviews: [],
-          rating: 0,
-          active: false // New guides start as inactive until approved
-        });
-        
-        await newGuide.save();
-      }
-      
-      return NextResponse.json({ user });
+      return NextResponse.json({ 
+        message: 'User created successfully',
+        user: newUser 
+      }, { status: 201 });
     }
   } catch (error) {
-    console.error("Error syncing user:", error);
-    return NextResponse.json(
-      { error: "Failed to sync user" },
-      { status: 500 }
-    );
+    console.error('Error syncing user:', error);
+    return NextResponse.json({ 
+      message: 'Failed to sync user',
+      error: error.message 
+    }, { status: 500 });
   }
 }
 

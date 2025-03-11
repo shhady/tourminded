@@ -8,6 +8,7 @@ import { Star, Languages, MapPin } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { getCurrentUser } from '@/lib/auth';
 
+
 export const metadata = {
   title: 'Guides | Tourminded',
   description: 'Meet our expert local guides in the Holy Land',
@@ -41,7 +42,8 @@ async function getGuides(searchParams) {
   
   // Find guides with filters
   const guides = await Guide.find(filter)
-    .select('name profileImage rating reviewCount languages expertise about address')
+    .populate('user', 'firstName lastName')
+    .select('names profileImage coverImage rating reviewCount languages expertise aboutSections address')
     .skip(skip)
     .limit(limit)
     .sort({ rating: -1, reviewCount: -1 });
@@ -59,6 +61,87 @@ async function getGuides(searchParams) {
     },
   };
 }
+
+// Helper function to get guide name based on locale
+const getGuideName = (guide, locale) => {
+  if (!guide || !guide.names) return '';
+  
+  // Map locale to language code
+  const languageMap = {
+    'en': 'English',
+    'ar': 'Arabic',
+    'he': 'Hebrew'
+  };
+  
+  const languageToFind = languageMap[locale] || 'English';
+  
+  // Find name in current locale
+  const nameObj = guide.names.find(n => n.language === languageToFind);
+  if (nameObj && nameObj.value) return nameObj.value;
+  
+  // Fallback to English name
+  const enNameObj = guide.names.find(n => n.language === 'English');
+  if (enNameObj && enNameObj.value) return enNameObj.value;
+  
+  // Fallback to first available name
+  if (guide.names.length > 0 && guide.names[0].value) {
+    return guide.names[0].value;
+  }
+  
+  return guide.nickname || 'Guide';
+};
+
+// Helper function to get language name from code
+const getLanguageName = (code) => {
+  const languageNames = {
+    'English': 'English',
+    'Arabic': 'العربية',
+    'Hebrew': 'עברית',
+    'Spanish': 'Español',
+    'French': 'Français',
+    'German': 'Deutsch',
+    'Italian': 'Italiano',
+    'Russian': 'Русский',
+    'Chinese': '中文',
+    'Japanese': '日本語',
+    'Korean': '한국어'
+  };
+  
+  return languageNames[code] || code;
+};
+
+// Helper function to get a short excerpt from the guide's about section
+const getGuideExcerpt = (guide, locale) => {
+  if (!guide || !guide.aboutSections) return '';
+  
+  // Map locale to language code
+  const languageMap = {
+    'en': 'English',
+    'ar': 'Arabic',
+    'he': 'Hebrew'
+  };
+  
+  const languageToFind = languageMap[locale] || 'English';
+  
+  // Find about section in current locale
+  const aboutObj = guide.aboutSections.find(a => a.language === languageToFind);
+  if (aboutObj && aboutObj.content) {
+    // Return first 100 characters with ellipsis
+    return aboutObj.content.length > 100 
+      ? aboutObj.content.substring(0, 100) + '...'
+      : aboutObj.content;
+  }
+  
+  // Fallback to English about
+  const enAboutObj = guide.aboutSections.find(a => a.language === 'English');
+  if (enAboutObj && enAboutObj.content) {
+    return enAboutObj.content.length > 100 
+      ? enAboutObj.content.substring(0, 100) + '...'
+      : enAboutObj.content;
+  }
+  
+  return '';
+};
 
 export default async function GuidesPage({ searchParams, params }) {
   const localeParams = await params;
@@ -208,93 +291,71 @@ export default async function GuidesPage({ searchParams, params }) {
         {guides.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {guides.map((guide) => (
-              <div 
+              <Link 
                 key={guide._id} 
-                className="group bg-white rounded-xl shadow-xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 relative"
+                href={`/${locale}/guides/${guide._id}`}
+                className="block group"
               >
-                {/* Decorative corner accent */}
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-primary-500/20 to-transparent z-10"></div>
-                
-                {/* Guide Profile Image with overlay */}
-                <div className="relative h-72 overflow-hidden">
-                  <Image
-                    src={guide.profileImage?.url || placeholderImage}
-                    alt={guide.name?.[locale] || guide.name?.en || guide.name}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-                  
-                  {/* Rating badge */}
-                  <div className="absolute top-4 left-4 flex items-center bg-yellow-400/90 text-gray-900 px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm">
-                    <Star className="w-4 h-4 mr-1 text-yellow-700 fill-yellow-700" />
-                    <span className="font-bold">{guide.rating?.toFixed(1) || "5.0"}</span>
-                    <span className="text-xs ml-1 opacity-80">({guide.reviewCount || 0})</span>
-                  </div>
-                  
-                  {/* Guide name and location */}
-                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white z-10">
-                    <h3 className="text-2xl font-bold tracking-tight drop-shadow-md mb-2">
-                      {guide.name?.[locale] || guide.name?.en || guide.name}
-                    </h3>
+                <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  {/* Cover Image */}
+                  <div className="relative h-32 w-full">
+                    <Image 
+                      src={guide.coverImage?.url || '/images/default-cover.jpg'}
+                      alt={`${getGuideName(guide, locale)} cover image`}
+                      fill
+                      className="object-cover"
+                    />
                     
-                    <div className="flex items-center text-white/80 text-sm">
-                      <MapPin className="w-4 h-4 mr-1.5 flex-shrink-0 text-primary-300" />
-                      <span>{guide.address || 'Israel'}</span>
+                    {/* Profile Image (Circular) */}
+                    <div className="absolute -bottom-10 left-5">
+                      <div className="relative w-20 h-20 rounded-full border-4 border-white overflow-hidden">
+                        <Image 
+                          src={guide.profileImage?.url || '/images/default-avatar.png'}
+                          alt={getGuideName(guide, locale) || 'Guide profile image'}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                {/* Guide Details Section */}
-                <div className="p-6 relative">
-                  {/* Expertise Badges */}
-                  <div className="flex flex-wrap gap-2 mb-4 -mt-10 relative z-20">
-                    {guide.expertise?.slice(0, 2).map((exp, index) => (
-                      <span
-                        key={index}
-                        className="inline-block bg-gradient-to-r from-gray-500 to-gray-400 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md"
-                      >
-                        {exp.area} {exp.years && `• ${exp.years} ${locale === 'en' ? 'yrs' : 'سنة'}`}
+                  
+                  <div className="p-5 pt-12">
+                    <h3 className="text-xl font-semibold mb-2 group-hover:text-primary-600 transition-colors">
+                      {getGuideName(guide, locale)}
+                    </h3>
+                    
+                    <div className="flex items-center mb-3">
+                      <div className="flex items-center text-yellow-500">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            className={`w-4 h-4 ${i < Math.floor(guide.rating || 5) ? 'fill-current' : ''}`} 
+                          />
+                        ))}
+                      </div>
+                      <span className="text-gray-500 text-sm ml-2">
+                        ({guide.reviewCount || 0} {locale === 'en' ? 'reviews' : 'تقييمات'})
                       </span>
-                    ))}
+                    </div>
+                    
+                    <div className="flex items-center text-gray-600 mb-3">
+                      <Languages className="w-4 h-4 mr-1" />
+                      <span className="text-sm">
+                        {guide.languages?.map(l => getLanguageName(l.language)).join(', ')}
+                      </span>
+                    </div>
+                    
+                    {/* About Excerpt */}
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      {getGuideExcerpt(guide, locale)}
+                    </p>
+                    
+                    <button className="w-full bg-gray-500 hover:bg-primary-700 text-white font-medium py-2 rounded-lg transition-colors">
+                      {locale === 'en' ? 'View Profile' : 'عرض الملف الشخصي'}
+                    </button>
                   </div>
-                  
-                  {/* Languages */}
-                  <div className="flex items-center mb-3 text-gray-700">
-                    <Languages className="w-5 h-5 mr-2 text-secondary-500" />
-                    <span className="text-sm font-medium">
-                      {guide.languages?.map(lang => lang.language).join(', ')}
-                    </span>
-                  </div>
-                  
-                  {/* About (Truncated) */} 
-                  <p className="text-gray-600 text-sm mb-5 line-clamp-2 group-hover:line-clamp-3 transition-all duration-300">
-                    {guide.about?.[locale] || guide.about?.en || ''}...
-                  </p>
-                  
-                  {/* Shine effect on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
-                  
-                  {/* CTA Button */}
-                  <Link 
-                    href={`/${locale}/guides/${guide._id}`}
-                    className="flex items-center justify-center w-full bg-gradient-to-r from-primary-200 to-gray-400 hover:from-primary-500 hover:to-primary-600 text-black font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-300 group-hover:shadow-lg"
-                  >
-                    <span className="mr-2">{locale === 'en' ? 'View Profile' : 'عرض الملف الشخصي'}</span>
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-5 w-5 transform group-hover:translate-x-1 transition-transform duration-300" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (
