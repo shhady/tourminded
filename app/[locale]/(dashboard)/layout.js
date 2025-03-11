@@ -29,27 +29,12 @@ export default async function DashboardLayout({ children, params }) {
   }
   
   return (
-    <div className="h-screen flex flex-col bg-secondary-50 overflow-hidden">
-      <header className="bg-white shadow-sm py-3 px-4 z-10 flex-shrink-0">
-        <div className="container mx-auto flex justify-between items-center">
-          <Link href={`/${locale}`} className="text-xl font-bold text-primary-600">
-            Tourminded
-          </Link>
-          <div className="flex items-center space-x-4">
-            {/* Add user menu or other header elements here */}
-          </div>
-        </div>
-      </header>
-      
-      <div className="flex-grow overflow-hidden container mx-auto px-3 py-4">
-        <div className="flex flex-col md:flex-row gap-4 h-full">
-          <aside className="md:w-64 flex-shrink-0 md:h-full overflow-auto">
-            <DashboardSidebar locale={locale} userRole={user.role} />
-          </aside>
-          <main className="flex-1 bg-white rounded-lg shadow-sm p-4 overflow-auto">
-            {children}
-          </main>
-        </div>
+    <div className="flex flex-col md:flex-row gap-6 container mx-auto px-4 py-8">
+      <div className="md:w-64 flex-shrink-0">
+        <DashboardSidebar locale={locale} userRole="guide" />
+      </div>
+      <div className="flex-grow">
+        {children}
       </div>
     </div>
   );

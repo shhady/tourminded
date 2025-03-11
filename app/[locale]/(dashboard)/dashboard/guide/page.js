@@ -57,9 +57,10 @@ export default function GuideDashboardPage({ params }) {
   return (
     <MainLayout locale={locale}>
       <div className="container mx-auto px-4 py-8">
+      
         <div className="flex flex-col md:flex-row gap-8">
           {/* <DashboardSidebar locale={locale} userRole="guide" /> */}
-          
+         
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-secondary-900 mb-6">
               {locale === 'en' ? 'Guide Dashboard' : 'لوحة تحكم المرشد'}

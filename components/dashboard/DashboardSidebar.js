@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Calendar, Map, MessageSquare, Settings, Home, Menu, X } from 'lucide-react';
+import { User, Calendar, Map, MessageSquare, Settings, Home, Menu, X, HomeIcon } from 'lucide-react';
 
 export default function DashboardSidebar({ locale, userRole }) {
   const pathname = usePathname();
@@ -34,6 +34,11 @@ export default function DashboardSidebar({ locale, userRole }) {
     //   icon: <MessageSquare className="w-5 h-5" />,
     //   label: locale === 'en' ? 'Messages' : 'الرسائل',
     // },
+     {
+      href: `/`,
+      icon: <HomeIcon className="w-5 h-5" />,
+      label: locale === 'en' ? 'Home Page' : 'الرئيسية',
+    },
     // {
     //   href: `/${locale}/dashboard/guide/settings`,
     //   icon: <Settings className="w-5 h-5" />,
@@ -50,7 +55,13 @@ export default function DashboardSidebar({ locale, userRole }) {
   return (
     <>
       {/* Mobile menu toggle */}
+      <h1 className="text-3xl font-bold mb-8">
+            <Link href="/" className="text-primary-600 hover:text-primary-700 transition-colors border-b-2 border-primary-600">
+              Tourminded.
+            </Link>
+          </h1>
       <div className="md:hidden bg-white rounded-lg shadow-md p-4 mb-4 flex justify-between items-center">
+        
         <h2 className="font-semibold text-secondary-900">
           {locale === 'en' ? 'Navigation' : 'التنقل'}
         </h2>
