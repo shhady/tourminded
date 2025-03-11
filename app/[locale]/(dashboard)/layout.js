@@ -2,8 +2,7 @@ import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
-import Link from 'next/link';
+import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 
 export default async function DashboardLayout({ children, params }) {
   const clerkUser = await currentUser();
@@ -29,13 +28,8 @@ export default async function DashboardLayout({ children, params }) {
   }
   
   return (
-    <div className="flex flex-col md:flex-row gap-6 container mx-auto px-4 py-8">
-      <div className="md:w-64 flex-shrink-0">
-        <DashboardSidebar locale={locale} userRole="guide" />
-      </div>
-      <div className="flex-grow">
-        {children}
-      </div>
-    </div>
+    <DashboardWrapper locale={locale} userRole={user.role || 'guide'}>
+      {children}
+    </DashboardWrapper>
   );
 } 
