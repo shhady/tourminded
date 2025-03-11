@@ -1,8 +1,5 @@
-'use client';
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@/contexts/UserContext';
+
 import { redirect } from 'next/navigation';
 import { currentUser } from '@clerk/nextjs/server';
 import connectDB from '@/lib/mongodb';
@@ -12,7 +9,6 @@ import Review from '@/models/Review';
 import User from '@/models/User';
 import { Calendar, Star, Map, Users } from 'lucide-react';
 import { Compass } from 'lucide-react';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 

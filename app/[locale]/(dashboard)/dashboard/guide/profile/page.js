@@ -127,7 +127,7 @@ export default async function GuideProfilePage({ params }) {
           {locale === 'en' ? 'Guide Profile' : 'الملف الشخصي للمرشد'}
         </h1>
         <Button 
-          href={`/${locale}/dashboard/guide/profile/edit`}
+          href={`/${locale}/profile`}
           variant="primary"
           className="text-black"
         >

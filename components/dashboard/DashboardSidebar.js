@@ -29,16 +29,16 @@ export default function DashboardSidebar({ locale, userRole }) {
       icon: <Calendar className="w-5 h-5" />,
       label: locale === 'en' ? 'Bookings' : 'الحجوزات',
     },
-    {
-      href: `/${locale}/dashboard/guide/messages`,
-      icon: <MessageSquare className="w-5 h-5" />,
-      label: locale === 'en' ? 'Messages' : 'الرسائل',
-    },
-    {
-      href: `/${locale}/dashboard/guide/settings`,
-      icon: <Settings className="w-5 h-5" />,
-      label: locale === 'en' ? 'Settings' : 'الإعدادات',
-    },
+    // {
+    //   href: `/${locale}/dashboard/guide/messages`,
+    //   icon: <MessageSquare className="w-5 h-5" />,
+    //   label: locale === 'en' ? 'Messages' : 'الرسائل',
+    // },
+    // {
+    //   href: `/${locale}/dashboard/guide/settings`,
+    //   icon: <Settings className="w-5 h-5" />,
+    //   label: locale === 'en' ? 'Settings' : 'الإعدادات',
+    // },
   ];
   
   const adminLinks = [
