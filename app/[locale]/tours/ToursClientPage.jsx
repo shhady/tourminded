@@ -176,7 +176,7 @@ export default function ToursClientPage({ initialTours, filterOptions, locale, i
                     type="date"
                     id="date"
                     name="date"
-                    defaultValue={filterValues.date ? new Date(filterValues.date).toISOString().split('T')[0] : ''}
+                    defaultValue={filterValues.date || ''}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                   />
                 </div>

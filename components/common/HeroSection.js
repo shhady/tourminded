@@ -140,7 +140,7 @@ const HeroSection = ({ locale }) => {
               <form onSubmit={handleSearch} className="space-y-4">
                 {/* Date Input */}
                 <div>
-                  <label className="text-secondary-900 text-sm font-medium mb-1 flex items-center">
+                  <label className="text-secondary-900 text-sm font-medium mb-1 flex gap-2 items-center">
                     <Calendar className="mr-2 text-primary-500" size={16} />
                     {locale === 'en' ? 'Travel Date' : 'تاريخ السفر'}
                   </label>
@@ -157,14 +157,14 @@ const HeroSection = ({ locale }) => {
 
                 {/* Travelers */}
                 <div>
-                  <label className="text-secondary-900 text-sm font-medium mb-1 flex items-center">
+                  <label className="text-secondary-900 text-sm font-medium mb-1 flex gap-2 items-center">
                     <Users className="mr-2 text-primary-500" size={16} />
                     {locale === 'en' ? '# Of Travelers' : 'عدد المسافرين'}
                   </label>
                   <select
                     value={travelers}
                     onChange={(e) => setTravelers(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white"
+                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                     style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
@@ -178,14 +178,14 @@ const HeroSection = ({ locale }) => {
 
                 {/* Expertise */}
                 <div>
-                  <label className="text-secondary-900 text-sm font-medium mb-1 flex items-center">
+                  <label className="text-secondary-900 text-sm font-medium mb-1 flex gap-2 items-center">
                     <GraduationCap className="mr-2 text-primary-500" size={16} />
                     {locale === 'en' ? 'Guide Expertise' : 'خبرة المرشد'}
                   </label>
                   <select
                     value={expertise}
                     onChange={(e) => setExpertise(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white"
+                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                     style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
                   >
                     {expertiseOptions.map((option) => (
@@ -198,14 +198,14 @@ const HeroSection = ({ locale }) => {
 
                 {/* Languages */}
                 <div>
-                  <label className=" text-secondary-900 text-sm font-medium mb-1 flex items-center">
+                  <label className=" text-secondary-900 text-sm font-medium mb-1 flex gap-2 items-center">
                     <Languages className="mr-2 text-primary-500" size={16} />
                     {locale === 'en' ? 'Languages' : 'اللغات'}
                   </label>
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white"
+                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                     style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
                   >
                     {languageOptions.map((option) => (
@@ -235,7 +235,7 @@ const HeroSection = ({ locale }) => {
           <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Date Input */}
             <div>
-              <label className="text-secondary-900 text-sm font-medium mb-2 flex items-center">
+              <label className="text-secondary-900 text-sm font-medium mb-2 flex gap-2 items-center">
                 <Calendar className="mr-2 text-primary-500" size={16} />
                 {locale === 'en' ? 'Travel Date' : 'تاريخ السفر'}
               </label>
@@ -252,14 +252,14 @@ const HeroSection = ({ locale }) => {
 
             {/* Travelers */}
             <div>
-              <label className=" text-secondary-900 text-sm font-medium mb-2 flex items-center">
+              <label className=" text-secondary-900 text-sm font-medium mb-2 flex gap-2 items-center">
                 <Users className="mr-2 text-primary-500" size={16} />
                 {locale === 'en' ? '# Of Travelers' : 'عدد المسافرين'}
               </label>
               <select
                 value={travelers}
                 onChange={(e) => setTravelers(e.target.value)}
-                className="w-full px-4 py-3 border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white"
+                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
@@ -273,14 +273,14 @@ const HeroSection = ({ locale }) => {
 
             {/* Expertise */}
             <div>
-              <label className=" text-secondary-900 text-sm font-medium mb-2 flex items-center">
+              <label className=" text-secondary-900 text-sm font-medium mb-2 flex gap-2 items-center">
                 <GraduationCap className="mr-2 text-primary-500" size={16} />
                 {locale === 'en' ? 'Guide Expertise' : 'خبرة المرشد'}
               </label>
               <select
                 value={expertise}
                 onChange={(e) => setExpertise(e.target.value)}
-                className="w-full px-4 py-3 border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white"
+                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
               >
                 {expertiseOptions.map((option) => (
@@ -293,14 +293,14 @@ const HeroSection = ({ locale }) => {
 
             {/* Languages */}
             <div>
-              <label className=" text-secondary-900 text-sm font-medium mb-2 flex items-center">
+              <label className=" text-secondary-900 text-sm font-medium mb-2 flex gap-2 items-center">
                 <Languages className="mr-2 text-primary-500" size={16} />
                 {locale === 'en' ? 'Languages' : 'اللغات'}
               </label>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="w-full px-4 py-3 border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white"
+                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
               >
                 {languageOptions.map((option) => (

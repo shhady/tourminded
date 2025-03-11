@@ -382,15 +382,14 @@ const Header = ({ locale }) => {
                   </Link>
                   
                   {/* Logout Button */}
+                 
                   <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      handleLogout();
-                    }}
+                  
                     className="flex items-center w-full text-left px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    {locale === 'en' ? 'Logout' : 'تسجيل الخروج'}
+                    <SignOutButton />
+                    {/* {locale === 'en' ? 'Logout' : 'تسجيل الخروج'} */}
                   </button>
                 </div>
               )}
@@ -432,7 +431,7 @@ const Header = ({ locale }) => {
               {!user && (
                 <div className="flex flex-col space-y-2 pt-4 border-t border-secondary-200 mt-4">
                   <Button
-                    href={getLocalizedHref('/auth/login')}
+                    href={getLocalizedHref('/sign-in')}
                     variant="outline"
                     size="md"
                     className="w-full text-secondary-900"
@@ -440,7 +439,7 @@ const Header = ({ locale }) => {
                     {locale === 'en' ? 'Login' : 'تسجيل الدخول'}
                   </Button>
                   <Button
-                    href={getLocalizedHref('/auth/register')}
+                    href={getLocalizedHref('/sign-up')}
                     variant="primary"
                     size="md"
                     className="w-full text-black"
