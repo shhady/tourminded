@@ -46,7 +46,7 @@ export default function Page() {
           <SignIn 
             appearance={appearance} 
             redirectUrl={`/${locale}`}
-            signUpUrl={`/sign-up`}
+            signUpUrl={`/${locale}/sign-up`}
           />
         </div>
       </div>
