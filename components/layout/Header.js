@@ -2,25 +2,53 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Globe, Menu, X, User, ChevronDown, LogOut, LayoutDashboard } from 'lucide-react';
+import { Globe, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Clock } from 'lucide-react';
 import Button from '../ui/Button';
 import { locales } from '@/lib/i18n';
 import Image from 'next/image';
 import { SignOutButton } from '@clerk/nextjs';
-import { useUser } from '@clerk/clerk-react'
+import { useUser } from '@/contexts/UserContext';
+// import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import { useUser as useUserClerk } from '@clerk/clerk-react';
 const Header = ({ locale }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { user, isLoaded } = useUser();
-  // const { user } = currentUser();
-  console.log(user)
+  const { user } = useUser();
+  const { user: userClerk } = useUserClerk();
+  const [guideStatus, setGuideStatus] = useState(null); // 'active', 'pending', or null
   const pathname = usePathname();
   const router = useRouter();
   const isHomePage = pathname === `/${locale}`;
 
-  
+  console.log(userClerk);
+  console.log(user);
+  // Fetch guide status when user is loaded
+  useEffect(() => {
+    const fetchGuideStatus = async () => {
+      if (!user || !user._id) return;
+      
+      try {
+        const response = await fetch(`/api/guides/user/${user._id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.guide) {
+            // Guide exists, check if active
+            setGuideStatus(data.guide.active ? 'active' : 'pending');
+          } else {
+            // No guide profile
+            setGuideStatus(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching guide status:', error);
+      }
+    };
+    
+    fetchGuideStatus();
+  }, [user]);
+
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -122,6 +150,43 @@ const Header = ({ locale }) => {
     }
   };
 
+  // Get guide-related menu item based on status
+  const getGuideMenuItem = () => {
+    if (guideStatus === 'active') {
+      return (
+        <Link
+          href={`/${locale}/dashboard/guide`}
+          className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+          onClick={() => setIsUserMenuOpen(false)}
+        >
+          <LayoutDashboard className="mr-2 h-4 w-4" />
+          {locale === 'en' ? 'Guide Dashboard' : 'لوحة المرشد'}
+        </Link>
+      );
+    } else if (guideStatus === 'pending') {
+      return (
+        <div
+          className="flex items-center w-full text-left px-4 py-3 text-sm text-yellow-600 bg-yellow-50"
+          onClick={() => setIsUserMenuOpen(false)}
+        >
+          <Clock className="mr-2 h-4 w-4" />
+          {locale === 'en' ? 'Guide Application Pending' : 'طلب المرشد قيد الانتظار'}
+        </div>
+      );
+    } else {
+      return (
+        <Link
+          href={`/${locale}/guide/register`}
+          className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+          onClick={() => setIsUserMenuOpen(false)}
+        >
+          <User className="mr-2 h-4 w-4" />
+          {locale === 'en' ? 'Become a Guide' : 'كن مرشداً'}
+        </Link>
+      );
+    }
+  };
+
   return (
     <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-soft py-2' : 'bg-transparent py-4'}`}>
       <div className="container mx-auto px-4">
@@ -203,41 +268,13 @@ const Header = ({ locale }) => {
                     <User className="text-primary-600 h-4 w-4" />
                    
                   </div>
-                  <span>{user.name}</span>
+                  <span>{userClerk?.fullName}</span>
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
 
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-medium z-10 animate-fade-in overflow-hidden">
-                    {/* Dashboard Link - only for admin and guide */}
-                    {user.publicMetadata?.role === 'admin' || user.publicMetadata?.role === 'guide' ? (
-                      <Link
-                        href={getDashboardLink()}
-                        className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        {locale === 'en' ? 'Dashboard' : 'لوحة التحكم'}
-                      </Link>
-                    ) : (
-                      // "Become a Guide" link for regular users
-                      <Link
-                        href={`/${locale}/guide/register`}
-                        className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
-                          <path d="M18 6h-5c-1.1 0-2 .9-2 2"></path>
-                          <path d="M9 14c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h9c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2h-2"></path>
-                          <path d="M3 10a7 7 0 0 0 7 7h.3"></path>
-                          <path d="M11 17.3a7 7 0 0 0 7 7"></path>
-                          <path d="M14 21h.01"></path>
-                        </svg>
-                        {locale === 'en' ? 'Become a Guide' : 'كن مرشدًا'}
-                      </Link>
-                    )}
-                    
-                    {/* Profile Link - for all users */}
+                    {/* Profile Link */}
                     <Link
                       href={`/${locale}/profile`}
                       className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
@@ -247,28 +284,33 @@ const Header = ({ locale }) => {
                       {locale === 'en' ? 'My Profile' : 'الملف الشخصي'}
                     </Link>
                     
+                    {/* Guide-related menu item (dynamic based on status) */}
+                    {user && getGuideMenuItem()}
+                    
+                    {/* Admin Dashboard - only for admins */}
+                    {user && user.publicMetadata?.role === 'admin' && (
+                      <Link
+                        href={`/${locale}/dashboard/admin`}
+                        className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        {locale === 'en' ? 'Admin Dashboard' : 'لوحة المسؤول'}
+                      </Link>
+                    )}
+                    
                     {/* Logout Button */}
                     <div className=' cursor-pointer flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors border-t border-secondary-100'>
                     <LogOut className="mr-2 h-4 w-4" /> 
                     <SignOutButton />
                     </div>
-                    {/* <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        handleLogout();
-                      }}
-                      className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors border-t border-secondary-100"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      {locale === 'en' ? 'Logout' : 'تسجيل الخروج'}
-                    </button> */}
                   </div>
                 )}
               </div>
             ) : (
               <>
                 <Button
-                  href={'/sign-in'}
+                  href={`/${locale}/sign-in`}
                   variant={useDarkText ? "outline" : "ghost"}
                   size="sm"
                   className={!useDarkText ? "border-white text-black hover:bg-white/20" : "text-secondary-900"}
@@ -276,7 +318,7 @@ const Header = ({ locale }) => {
                   {locale === 'en' ? 'Login' : 'تسجيل الدخول'}  
                 </Button>
                 <Button
-                  href={'/sign-up'}
+                  href={`/${locale}/sign-up`}
                   variant="primary"
                   size="sm"
                   className="text-black"
@@ -326,17 +368,8 @@ const Header = ({ locale }) => {
                     {locale === 'en' ? 'Account' : 'الحساب'}
                   </p>
                   
-                  {/* Dashboard Link - only for admin and guide */}
-                  {user.publicMetadata?.role === 'admin' || user.publicMetadata?.role === 'guide' ? (
-                    <Link
-                      href={getDashboardLink()}
-                      className="flex items-center px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      {locale === 'en' ? 'Dashboard' : 'لوحة التحكم'}
-                    </Link>
-                  ) : null}
+                  {/* Guide-related menu item (dynamic based on status) */}
+                  {user && getGuideMenuItem()}
                   
                   {/* Profile Link - for all users */}
                   <Link

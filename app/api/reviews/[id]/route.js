@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Review from '@/models/Review';
-import { getTokenCookie, verifyToken } from '@/lib/auth';
+import { currentUser } from '@clerk/nextjs/server';
+import User from '@/models/User';
 
 // GET a single review by ID
 export async function GET(request, { params }) {
@@ -42,22 +43,12 @@ export async function PUT(request, { params }) {
   try {
     const { id } = params;
     
-    // Get token from cookie
-    const token = getTokenCookie();
+    // Get current user from Clerk
+    const clerkUser = await currentUser();
     
-    if (!token) {
+    if (!clerkUser) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-    
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
         { status: 401 }
       );
     }
@@ -67,6 +58,16 @@ export async function PUT(request, { params }) {
     
     // Connect to database
     await connectDB();
+    
+    // Find user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
+    
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
     
     // Find review
     const review = await Review.findById(id);
@@ -79,16 +80,6 @@ export async function PUT(request, { params }) {
     }
     
     // Check if user is authorized (admin or the user who created the review)
-    const User = (await import('@/models/User')).default;
-    const user = await User.findById(decoded.id);
-    
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: 'User not found' },
-        { status: 404 }
-      );
-    }
-    
     if (user.role !== 'admin' && review.user.toString() !== user._id.toString()) {
       return NextResponse.json(
         { success: false, message: 'Not authorized to update this review' },
@@ -121,28 +112,28 @@ export async function DELETE(request, { params }) {
   try {
     const { id } = params;
     
-    // Get token from cookie
-    const token = getTokenCookie();
+    // Get current user from Clerk
+    const clerkUser = await currentUser();
     
-    if (!token) {
+    if (!clerkUser) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
       );
     }
     
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
-        { status: 401 }
-      );
-    }
-    
     // Connect to database
     await connectDB();
+    
+    // Find user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
+    
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
     
     // Find review
     const review = await Review.findById(id);
@@ -155,16 +146,6 @@ export async function DELETE(request, { params }) {
     }
     
     // Check if user is authorized (admin or the user who created the review)
-    const User = (await import('@/models/User')).default;
-    const user = await User.findById(decoded.id);
-    
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: 'User not found' },
-        { status: 404 }
-      );
-    }
-    
     if (user.role !== 'admin' && review.user.toString() !== user._id.toString()) {
       return NextResponse.json(
         { success: false, message: 'Not authorized to delete this review' },

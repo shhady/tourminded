@@ -1,358 +1,580 @@
-import { notFound } from 'next/navigation';
+'use client';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import MainLayout from '@/components/layout/MainLayout';
-import Button from '@/components/ui/Button';
-import { Star, Languages, MapPin, Calendar, Clock, Users } from 'lucide-react';
-import connectDB from '@/lib/mongodb';
-import { getCurrentUser } from '@/lib/auth';
+import { Star, Languages, MapPin, Award, Mail, Phone, Share2, Download, MessageCircle, Camera, Calendar } from 'lucide-react';
 
-export async function generateMetadata({ params }) {
-  const localeParams = await params;
-  const id = await localeParams.id;
-  const locale = await localeParams.locale;
+export default function GuideProfilePage() {
+  const params = useParams();
+  const { id, locale } = params;
   
-  await connectDB();
+  const [guide, setGuide] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [qrCode, setQrCode] = useState('');
+  const [copied, setCopied] = useState(false);
   
-  try {
-    const Guide = (await import('@/models/Guide')).default;
-    const guide = await Guide.findById(id);
-    
-    if (!guide) {
-      return {
-        title: 'Guide Not Found | Tourminded',
-        description: 'The requested guide could not be found.',
-      };
+  // Fetch guide data
+  useEffect(() => {
+    async function fetchGuide() {
+      try {
+        const response = await fetch(`/api/guides/${id}`);
+        if (!response.ok) {
+          throw new Error('Guide not found');
+        }
+        const data = await response.json();
+        setGuide(data);
+      } catch (error) {
+        console.error('Error fetching guide:', error);
+      } finally {
+        setLoading(false);
+      }
     }
     
-    return {
-      title: `${guide.name?.[locale] || guide.name?.en || 'Guide'} | Tourminded`,
-      description: guide.about?.[locale] || guide.about?.en || 'Expert local guide in the Holy Land',
-    };
-  } catch (error) {
-    console.error('Error generating metadata:', error);
-    return {
-      title: 'Guide | Tourminded',
-      description: 'Expert local guide in the Holy Land',
-    };
-  }
-}
-
-async function getGuide(id) {
-  await connectDB();
+    fetchGuide();
+  }, [id]);
   
-  try {
-    const Guide = (await import('@/models/Guide')).default;
-    const guide = await Guide.findById(id).populate('user', 'name email');
-    
-    if (!guide) {
-      return null;
+  // Generate QR code
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const url = window.location.href;
+      setQrCode(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`);
     }
-    
-    return guide;
-  } catch (error) {
-    console.error('Error getting guide:', error);
-    return null;
-  }
-}
-
-async function getGuideTours(guideId) {
-  await connectDB();
+  }, []);
   
-  try {
-    console.log('Looking for tours with guide ID:', guideId);
+  // Handle share functionality
+  const handleShare = async () => {
+    const url = window.location.href;
     
-    const Tour = (await import('@/models/Tour')).default;
-    
-    // Get all tours to see what's available
-    const allTours = await Tour.find({}).lean();
-    console.log('All tours:', JSON.stringify(allTours.map(t => ({
-      id: t._id.toString(),
-      title: t.title?.en,
-      guide: typeof t.guide === 'object' ? t.guide.toString() : t.guide,
-      isActive: t.isActive
-    }))));
-    
-    // Try different approaches to find the tours
-    
-    // 1. Try using the guide ID directly
-    const toursByGuideId = await Tour.find({ guide: guideId }).lean();
-    console.log('Tours by guide ID:', toursByGuideId.length);
-    
-    // 2. Try using the guide ID as a string
-    const toursByGuideIdString = await Tour.find({ guide: guideId.toString() }).lean();
-    console.log('Tours by guide ID string:', toursByGuideIdString.length);
-    
-    // 3. Try using a direct query for the specific guide ID we know works
-    const specificGuideId = '67ce4360974ea130348c9ee0'; // From your tour data
-    const toursBySpecificId = await Tour.find({ guide: specificGuideId }).lean();
-    console.log('Tours by specific ID:', toursBySpecificId.length);
-    
-    // Return any tours we found, prioritizing the direct match
-    if (toursByGuideId.length > 0) {
-      return toursByGuideId;
-    } else if (toursByGuideIdString.length > 0) {
-      return toursByGuideIdString;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: guide?.name?.[locale] || guide?.name?.en || 'Guide Profile',
+          text: `Check out this guide profile on Tourminded`,
+          url: url,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
     } else {
-      // For testing purposes, return all tours so we can see something
-      return allTours;
+      // Fallback to clipboard
+      navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
-  } catch (error) {
-    console.error('Error getting guide tours:', error);
-    return [];
+  };
+  
+  // Generate vCard data
+  const generateVCard = () => {
+    if (!guide) return;
+    
+    const name = guide.name?.[locale] || guide.name?.en || guide.user?.name || 'Guide';
+    const phone = guide.phone || guide.user?.phone || '';
+    const email = guide.user?.email || '';
+    const address = guide.address || 'Israel';
+    
+    const vCard = `BEGIN:VCARD
+VERSION:3.0
+FN:${name}
+TITLE:Tour Guide
+TEL;TYPE=WORK,VOICE:${phone}
+EMAIL;TYPE=WORK:${email}
+ADR;TYPE=WORK:;;${address};;;;
+URL:${window.location.href}
+NOTE:Professional tour guide on Tourminded
+END:VCARD`;
+    
+    const blob = new Blob([vCard], { type: 'text/vcard' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${name.replace(/\s+/g, '_')}_contact.vcf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
+  if (loading) {
+    return (
+      <MainLayout locale={locale}>
+        <div className="container mx-auto px-4 py-16 text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded mb-4"></div>
+            <div className="h-32 bg-gray-200 rounded mb-4"></div>
+          </div>
+        </div>
+      </MainLayout>
+    );
   }
-}
-
-// Function to directly fetch tours for the specific guide ID
-async function getToursForSpecificGuide(guideId) {
-  await connectDB();
-  
-  try {
-    const Tour = (await import('@/models/Tour')).default;
-    
-    // Get all tours to see what's available
-    const allTours = await Tour.find({}).lean();
-    console.log('All tours:', allTours.map(t => ({
-      id: t._id.toString(),
-      title: t.title?.en,
-      guide: typeof t.guide === 'object' ? t.guide.toString() : t.guide
-    })));
-    
-    // For the specific guide ID from the URL, use the guide ID we know works
-    if (guideId === '67ce439c974ea130348c9ee7') {
-      const specificGuideId = '67ce4360974ea130348c9ee0'; // From your tour data
-      console.log('Using specific guide ID:', specificGuideId);
-      return allTours.filter(tour => {
-        const tourGuideId = typeof tour.guide === 'object' 
-          ? tour.guide.toString() 
-          : tour.guide;
-        return tourGuideId === specificGuideId;
-      });
-    }
-    
-    // For other guide IDs, use the normal approach
-    return allTours.filter(tour => {
-      const tourGuideId = typeof tour.guide === 'object' 
-        ? tour.guide.toString() 
-        : tour.guide;
-      return tourGuideId === guideId;
-    });
-  } catch (error) {
-    console.error('Error getting tours for specific guide:', error);
-    return [];
-  }
-}
-
-export default async function GuideProfilePage({ params }) {
-  const localeParams = await params;
-  const id = await localeParams.id;
-  const locale = await localeParams.locale;
-  
-  console.log('Guide ID from URL:', id);
-  
-  // Get current user
-  const user = await getCurrentUser();
-  
-  // Get guide
-  const guide = await getGuide(id);
   
   if (!guide) {
-    notFound();
+    return (
+      <MainLayout locale={locale}>
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h1 className="text-3xl font-bold mb-4">
+            {locale === 'en' ? 'Guide Not Found' : 'لم يتم العثور على المرشد'}
+          </h1>
+          <p className="text-gray-600 mb-8">
+            {locale === 'en' 
+              ? 'The guide you are looking for does not exist or has been removed.' 
+              : 'المرشد الذي تبحث عنه غير موجود أو تمت إزالته.'}
+          </p>
+          <Link 
+            href={`/${locale}/guides`}
+            className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          >
+            {locale === 'en' ? 'Back to Guides' : 'العودة إلى المرشدين'}
+          </Link>
+        </div>
+      </MainLayout>
+    );
   }
   
-  console.log('Guide found:', guide._id.toString());
-  
-  // Get guide's tours using the direct approach
-  const tours = await getToursForSpecificGuide(id);
-  
-  console.log('Tours found for display:', tours.length);
-  
-  // Placeholder image for development
-  const placeholderImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iIzBkNDdhMSIvPjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMzYiIGZpbGw9IiNmZmZmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIj5JbWFnZSBQbGFjZWhvbGRlcjwvdGV4dD48L3N2Zz4=';
+  // Extract guide data
+  const name = guide.name?.[locale] || guide.name?.en || guide.user?.name || 'Guide';
+  const bio = guide.about?.[locale] || guide.about?.en || '';
+  const profileImage = guide.profileImage?.url || '/images/default-guide.jpg';
+  const coverImage = guide.coverImage?.url || 'https://res.cloudinary.com/tourminded/image/upload/v1689542321/jerusalem-cover_xzbjvf.jpg';
+  const rating = guide.rating || 5;
+  const reviewCount = guide.reviewCount || 0;
+  const languages = guide.languages || [];
+  const expertise = guide.expertise || [];
+  const address = guide.address || 'Israel';
+  const phone = guide.phone || guide.user?.phone || '';
+  const email = guide.user?.email || '';
   
   return (
-    <MainLayout locale={locale} user={user}>
-      <div className="py-16 bg-secondary-50">
-        <div className="container mx-auto px-4">
-          {/* Guide Profile Header */}
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-            <div className="bg-primary-600 p-6 text-black">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                <div className="w-32 h-32 rounded-full overflow-hidden bg-white border-4 border-white shadow-md">
-                  {guide.profileImage ? (
-                    <Image 
-                      src={typeof guide.profileImage === 'object' ? guide.profileImage.url : guide.profileImage} 
-                      alt={guide.name?.[locale] || guide.name?.en || 'Guide'} 
-                      width={128}
-                      height={128}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-secondary-200 flex items-center justify-center text-secondary-500">
-                      <span className="text-4xl font-bold">
-                        {(guide.name?.[locale] || guide.name?.en || 'Guide').charAt(0)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="text-center md:text-left">
-                  <h1 className="text-3xl font-bold">{guide.name?.[locale] || guide.name?.en || 'Guide'}</h1>
-                  {guide.nickname && (
-                    <p className="text-primary-100 mt-1">{guide.nickname}</p>
-                  )}
-                  
-                  <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-3">
-                    {guide.expertise && guide.expertise.map((exp, index) => (
-                      <span 
-                        key={index}
-                        className="inline-block bg-white/20 text-black text-xs px-2 py-1 rounded-full"
-                      >
-                        {exp.area} ({exp.years} {locale === 'en' ? 'years' : 'سنوات'})
-                      </span>
-                    ))}
-                  </div>
-                  
-                  <div className="flex items-center justify-center md:justify-start mt-3">
-                    <Star className="text-yellow-500 mr-1" size={20} />
-                    <span className="font-medium">{guide.rating || '5.0'}</span>
+    <MainLayout locale={locale}>
+      {/* Hero Cover Image Section */}
+      <div className="relative h-[50vh] min-h-[400px] w-full">
+        {/* Cover Image */}
+        <div className="absolute inset-0">
+          <Image 
+            src={'/tour-image-1.jpg'}
+            alt={`${name} cover`}
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/70"></div>
+        </div>
+        
+        {/* Back button */}
+        <div className="absolute top-8 left-8 z-10">
+          <Link 
+            href={`/${locale}/guides`}
+            className="inline-flex items-center text-white bg-black/30 hover:bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm transition-colors"
+          >
+            <span className="mr-2">←</span>
+            {locale === 'en' ? 'Back to Guides' : 'العودة إلى المرشدين'}
+          </Link>
+        </div>
+        
+        {/* Guide name overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-10">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center">
+              <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg mr-6">
+                <Image 
+                  src={profileImage}
+                  alt={name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-2 drop-shadow-md">{name}</h1>
+                <div className="flex items-center">
+                  <div className="flex items-center bg-yellow-400/90 text-gray-900 px-3 py-1 rounded-full shadow-md backdrop-blur-sm mr-4">
+                    <Star className="w-4 h-4 mr-1 text-yellow-700 fill-yellow-700" />
+                    <span className="font-bold">{rating.toFixed(1)}</span>
                     <span className="text-sm ml-1">
-                      ({guide.reviewCount || '0'} {locale === 'en' ? 'reviews' : 'تقييمات'})
+                      ({reviewCount} {locale === 'en' ? 'reviews' : 'تقييمات'})
                     </span>
+                  </div>
+                  <div className="flex items-center text-white/90">
+                    <MapPin className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                    <span className="text-sm font-medium">{address}</span>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* About */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-3 text-secondary-900 border-b border-secondary-200 pb-2">
-                    {locale === 'en' ? 'About' : 'نبذة عني'}
-                  </h2>
-                  <p className="text-secondary-700 whitespace-pre-line">
-                    {guide.about?.[locale] || guide.about?.en || (locale === 'en' ? 'No information provided.' : 'لم يتم تقديم معلومات.')}
-                  </p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Profile Card */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden text-gray-800 sticky top-24">
+              {/* Profile Info */}
+              <div className="p-6">
+                {/* Quick Stats */}
+                <div className="grid grid-cols-3 gap-4 mb-6 text-center">
+                  <div className="bg-primary-50 p-3 rounded-lg">
+                    <div className="text-primary-600 font-bold text-xl">{languages.length}</div>
+                    <div className="text-xs text-gray-600">{locale === 'en' ? 'Languages' : 'لغات'}</div>
+                  </div>
+                  <div className="bg-secondary-50 p-3 rounded-lg">
+                    <div className="text-secondary-600 font-bold text-xl">{expertise.length}</div>
+                    <div className="text-xs text-gray-600">{locale === 'en' ? 'Specialties' : 'تخصصات'}</div>
+                  </div>
+                  <div className="bg-yellow-50 p-3 rounded-lg">
+                    <div className="text-yellow-600 font-bold text-xl">{guide.yearsExperience || 5}+</div>
+                    <div className="text-xs text-gray-600">{locale === 'en' ? 'Years Exp.' : 'سنوات الخبرة'}</div>
+                  </div>
                 </div>
                 
-                {/* Languages & Contact */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-3 text-secondary-900 border-b border-secondary-200 pb-2">
-                    {locale === 'en' ? 'Languages' : 'اللغات'}
-                  </h2>
-                  {guide.languages && guide.languages.length > 0 ? (
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {guide.languages.map((lang, index) => (
-                        <div key={index} className="flex items-center bg-secondary-100 rounded-full px-3 py-1">
-                          <span className="text-secondary-900">{lang.language}</span>
-                          <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-800">
-                            {lang.proficiency}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-secondary-500 mb-6">
-                      {locale === 'en' ? 'No languages specified.' : 'لم يتم تحديد لغات.'}
-                    </p>
+                {/* Availability Badge */}
+                <div className="mb-6 text-center">
+                  <span className="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    <span>{locale === 'en' ? 'Available for Booking' : 'متاح للحجز'}</span>
+                  </span>
+                </div>
+                
+                {/* Contact Buttons */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  {email && (
+                    <a 
+                      href={`mailto:${email}`}
+                      className="flex items-center justify-center bg-primary-100 hover:bg-primary-200 text-primary-800 py-2 px-4 rounded-lg transition-colors"
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      <span>{locale === 'en' ? 'Email' : 'البريد الإلكتروني'}</span>
+                    </a>
                   )}
                   
-                  <h2 className="text-xl font-semibold mb-3 text-secondary-900 border-b border-secondary-200 pb-2">
-                    {locale === 'en' ? 'Location' : 'الموقع'}
-                  </h2>
-                  <div className="flex items-start mb-6">
-                    <MapPin className="text-secondary-500 mr-2 mt-1" size={18} />
-                    <span className="text-secondary-700">{guide.address || (locale === 'en' ? 'Not specified' : 'غير محدد')}</span>
+                  {phone && (
+                    <a 
+                      href={`tel:${phone}`}
+                      className="flex items-center justify-center bg-secondary-100 hover:bg-secondary-200 text-secondary-800 py-2 px-4 rounded-lg transition-colors"
+                    >
+                      <Phone className="w-4 h-4 mr-2" />
+                      <span>{locale === 'en' ? 'Call' : 'اتصال'}</span>
+                    </a>
+                  )}
+                </div>
+                
+                {/* QR Code */}
+                <div className="border-t border-gray-100 pt-6 mb-6">
+                  <p className="text-sm text-gray-500 mb-3 text-center">
+                    {locale === 'en' ? 'Scan to view profile' : 'امسح لعرض الملف الشخصي'}
+                  </p>
+                  <div className="flex justify-center">
+                    <div className="inline-block p-2 bg-white border border-gray-200 rounded-lg">
+                      {qrCode && (
+                        <img 
+                          src={qrCode}
+                          alt="QR Code"
+                          width={120}
+                          height={120}
+                          className="rounded"
+                        />
+                      )}
+                    </div>
                   </div>
-                  
-                  <Button 
-                    href={`mailto:${guide.email || guide.user?.email}`}
-                    variant="outline"
-                    className="w-full"
+                </div>
+                
+                {/* Share and Save Contact */}
+                <div className="flex justify-center gap-3">
+                  <button 
+                    onClick={handleShare}
+                    className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition-colors relative"
                   >
-                    {locale === 'en' ? 'Contact Guide' : 'تواصل مع المرشد'}
-                  </Button>
+                    <Share2 className="w-4 h-4 mr-2" />
+                    <span>{copied ? (locale === 'en' ? 'Copied!' : 'تم النسخ!') : (locale === 'en' ? 'Share' : 'مشاركة')}</span>
+                    
+                    {/* Tooltip for copied state */}
+                    {copied && (
+                      <span className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded">
+                        {locale === 'en' ? 'Link copied!' : 'تم نسخ الرابط!'}
+                      </span>
+                    )}
+                  </button>
+                  
+                  <button 
+                    onClick={generateVCard}
+                    className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition-colors"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    <span>{locale === 'en' ? 'Save Contact' : 'حفظ جهة الاتصال'}</span>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Languages */}
+              <div className="bg-gray-50 p-6 border-t border-gray-100">
+                <h2 className="text-lg font-bold mb-4 flex items-center">
+                  <Languages className="w-5 h-5 mr-2 text-primary-600" />
+                  {locale === 'en' ? 'Languages' : 'اللغات'}
+                </h2>
+                
+                <div className="space-y-4">
+                  {languages.map((lang, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <span className="font-medium">{lang.language}</span>
+                      
+                      <div className="flex items-center">
+                        {/* Proficiency indicator */}
+                        <div className="flex space-x-1">
+                          {[...Array(5)].map((_, i) => (
+                            <div 
+                              key={i} 
+                              className={`w-2 h-6 rounded-sm ${i < lang.proficiency ? 'bg-primary-500' : 'bg-gray-200'}`}
+                            ></div>
+                          ))}
+                        </div>
+                        <span className="ml-2 text-sm text-gray-500">
+                          {lang.proficiency === 5 ? (locale === 'en' ? 'Native' : 'اللغة الأم') : 
+                           lang.proficiency === 4 ? (locale === 'en' ? 'Fluent' : 'طلاقة') :
+                           lang.proficiency === 3 ? (locale === 'en' ? 'Advanced' : 'متقدم') :
+                           lang.proficiency === 2 ? (locale === 'en' ? 'Intermediate' : 'متوسط') :
+                           (locale === 'en' ? 'Basic' : 'أساسي')}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Guide's Tours */}
-          <h2 className="text-2xl font-bold mb-6 text-secondary-900">
-            {locale === 'en' ? 'Tours by this Guide' : 'جولات هذا المرشد'}
-          </h2>
-          
-          {tours.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-              {tours.map((tour) => (
-                <div key={tour._id} className="bg-white rounded-lg shadow overflow-hidden">
-                  <div className="relative h-48">
-                    <Image
-                      src={tour.images?.cover?.url || placeholderImage}
-                      alt={tour.title?.[locale] || tour.title?.en || 'Tour'}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <h3 className="text-lg font-semibold">{tour.title?.[locale] || tour.title?.en}</h3>
+          {/* Right Column - Main Content */}
+          <div className="lg:col-span-2">
+            {/* About Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
+              <h2 className="text-2xl font-bold mb-6 flex items-center">
+                <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-lg">👤</span>
+                </span>
+                {locale === 'en' ? 'About Me' : 'نبذة عني'}
+              </h2>
+              
+              <div className="prose max-w-none">
+                {bio ? (
+                  <p className="text-gray-600 whitespace-pre-line leading-relaxed">{bio}</p>
+                ) : (
+                  <p className="text-gray-500 italic">
+                    {locale === 'en' 
+                      ? 'This guide has not added a bio yet.' 
+                      : 'لم يضف هذا المرشد سيرة ذاتية بعد.'}
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            {/* Expertise Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
+              <h2 className="text-2xl font-bold mb-6 flex items-center">
+                <span className="w-8 h-8 bg-secondary-100 text-secondary-600 rounded-full flex items-center justify-center mr-3">
+                  <Award className="w-5 h-5" />
+                </span>
+                {locale === 'en' ? 'Areas of Expertise' : 'مجالات الخبرة'}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {expertise.map((exp, index) => (
+                  <div key={index} className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
+                    <div className="flex items-center mb-3">
+                      <div className="w-10 h-10 rounded-full bg-secondary-100 flex items-center justify-center mr-3">
+                        <Award className="w-5 h-5 text-secondary-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold">{exp.area}</h3>
                     </div>
-                  </div>
-                  
-                  <div className="p-4">
-                    <div className="flex items-center text-secondary-600 mb-2">
-                      <MapPin className="mr-1" size={16} />
-                      <span className="text-sm">
-                        {tour.locationNames?.join(', ') || 
-                         (Array.isArray(tour.locations) && tour.locations.length > 0
-                          ? tour.locations.map(loc => typeof loc === 'string' ? loc : (loc.name?.[locale] || loc.name?.en || loc.name)).join(', ')
-                          : (locale === 'en' ? 'Various locations' : 'مواقع متعددة'))}
+                    
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <span className="font-medium text-secondary-700">{exp.years}</span>
+                      <span className="ml-1">
+                        {locale === 'en' 
+                          ? `year${exp.years !== 1 ? 's' : ''} of experience` 
+                          : `سنة${exp.years !== 1 ? '' : ''} من الخبرة`}
                       </span>
                     </div>
                     
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center text-secondary-600">
-                        <Clock className="mr-1" size={16} />
-                        <span className="text-sm">
-                          {tour.duration} {tour.durationUnit === 'hours' 
-                            ? (locale === 'en' ? 'hours' : 'ساعات')
-                            : (locale === 'en' ? 'days' : 'أيام')}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center text-secondary-600">
-                        <Users className="mr-1" size={16} />
-                        <span className="text-sm">
-                          {locale === 'en' ? 'Max' : 'الحد الأقصى'} {tour.maxGroupSize}
-                        </span>
+                    <p className="text-sm text-gray-500">
+                      {locale === 'en'
+                        ? `Specialized knowledge and expertise in ${exp.area} topics and sites.`
+                        : `معرفة وخبرة متخصصة في مواضيع ومواقع ${exp.area}.`}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Gallery Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
+              <h2 className="text-2xl font-bold mb-6 flex items-center">
+                <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-3">
+                  <Camera className="w-5 h-5" />
+                </span>
+                {locale === 'en' ? 'Gallery' : 'معرض الصور'}
+              </h2>
+              
+              {guide.gallery && guide.gallery.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {guide.gallery.map((image, index) => (
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                      <Image
+                        src={image.url}
+                        alt={`Gallery image ${index + 1}`}
+                        fill
+                        className="object-cover hover:scale-110 transition-transform duration-300"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {/* Placeholder gallery images */}
+                  {[...Array(6)].map((_, index) => (
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                      <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                        <Camera className="w-8 h-8" />
                       </div>
                     </div>
-                    
-                    <Button 
-                      href={`/${locale}/tours/${tour._id}`}
-                      className="w-full text-black"
-                    >
-                      {locale === 'en' ? 'View Tour' : 'عرض الجولة'}
-                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Reviews Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold flex items-center">
+                  <span className="w-8 h-8 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mr-3">
+                    <Star className="w-5 h-5" />
+                  </span>
+                  {locale === 'en' ? 'Reviews' : 'التقييمات'}
+                </h2>
+                
+                <Link 
+                  href={`/${locale}/guides/${guide._id}/reviews`}
+                  className="text-primary-600 hover:text-primary-700 font-medium"
+                >
+                  {locale === 'en' ? 'View all' : 'عرض الكل'}
+                </Link>
+              </div>
+              
+              {reviewCount > 0 ? (
+                <div className="space-y-6">
+                  {/* Sample reviews would go here */}
+                  <div className="border-b border-gray-100 pb-6">
+                    <div className="flex items-center mb-2">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 mr-3"></div>
+                      <div>
+                        <h4 className="font-medium">John Doe</h4>
+                        <div className="flex items-center text-yellow-500">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 fill-current" />
+                          ))}
+                          <span className="text-gray-500 text-sm ml-2">2 months ago</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-600">
+                      Amazing guide! Very knowledgeable about the history and culture of the region.
+                      Made our trip truly memorable.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center mb-2">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 mr-3"></div>
+                      <div>
+                        <h4 className="font-medium">Jane Smith</h4>
+                        <div className="flex items-center text-yellow-500">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 fill-current" />
+                          ))}
+                          <span className="text-gray-500 text-sm ml-2">3 months ago</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-600">
+                      Excellent experience! Our guide was friendly, professional, and very informative.
+                      Highly recommend!
+                    </p>
                   </div>
                 </div>
-              ))}
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    {locale === 'en' 
+                      ? 'No reviews yet' 
+                      : 'لا توجد تقييمات حتى الآن'}
+                  </p>
+                  <button className="bg-primary-100 hover:bg-primary-200 text-primary-800 font-medium py-2 px-4 rounded-lg transition-colors">
+                    {locale === 'en' ? 'Be the first to review' : 'كن أول من يقيم'}
+                  </button>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center mb-8">
-              <h3 className="text-xl font-semibold mb-2 text-secondary-900">
-                {locale === 'en' ? 'No Tours Available' : 'لا توجد جولات متاحة'}
-              </h3>
-              <p className="text-secondary-600 mb-4">
-                {locale === 'en' 
-                  ? 'This guide has not created any tours yet.' 
-                  : 'لم يقم هذا المرشد بإنشاء أي جولات حتى الآن.'}
-              </p>
+            
+            {/* Contact Form */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-gray-800">
+              <h2 className="text-2xl font-bold mb-6 flex items-center">
+                <span className="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3">
+                  <MessageCircle className="w-5 h-5" />
+                </span>
+                {locale === 'en' ? 'Contact Me' : 'تواصل معي'}
+              </h2>
+              
+              <form className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      {locale === 'en' ? 'Your Name' : 'اسمك'}
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      placeholder={locale === 'en' ? 'Enter your name' : 'أدخل اسمك'}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      {locale === 'en' ? 'Your Email' : 'بريدك الإلكتروني'}
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      placeholder={locale === 'en' ? 'Enter your email' : 'أدخل بريدك الإلكتروني'}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                    {locale === 'en' ? 'Message' : 'الرسالة'}
+                  </label>
+                  <textarea
+                    id="message"
+                    rows="4"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder={locale === 'en' ? 'What would you like to know?' : 'ماذا تريد أن تعرف؟'}
+                  ></textarea>
+                </div>
+                
+                <button 
+                  type="submit"
+                  className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center"
+                >
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  {locale === 'en' ? 'Send Message' : 'إرسال رسالة'}
+                </button>
+              </form>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </MainLayout>
   );
-} 
+}

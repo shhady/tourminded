@@ -1,35 +1,36 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
-import { getTokenCookie, verifyToken } from '@/lib/auth';
+import { currentUser } from '@clerk/nextjs/server';
+import User from '@/models/User';
 
 // GET a single booking by ID (requires authentication)
 export async function GET(request, { params }) {
   try {
     const { id } = params;
     
-    // Get token from cookie
-    const token = getTokenCookie();
+    // Get current user from Clerk
+    const clerkUser = await currentUser();
     
-    if (!token) {
+    if (!clerkUser) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
       );
     }
     
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
-        { status: 401 }
-      );
-    }
-    
     // Connect to database
     await connectDB();
+    
+    // Find user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
+    
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
     
     // Find booking by ID
     const booking = await Booking.findById(id)
@@ -40,17 +41,6 @@ export async function GET(request, { params }) {
     if (!booking) {
       return NextResponse.json(
         { success: false, message: 'Booking not found' },
-        { status: 404 }
-      );
-    }
-    
-    // Check if user is authorized to view this booking
-    const User = (await import('@/models/User')).default;
-    const user = await User.findById(decoded.id);
-    
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: 'User not found' },
         { status: 404 }
       );
     }
@@ -110,22 +100,12 @@ export async function PUT(request, { params }) {
   try {
     const { id } = params;
     
-    // Get token from cookie
-    const token = getTokenCookie();
+    // Get current user from Clerk
+    const clerkUser = await currentUser();
     
-    if (!token) {
+    if (!clerkUser) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-    
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
         { status: 401 }
       );
     }
@@ -136,23 +116,22 @@ export async function PUT(request, { params }) {
     // Connect to database
     await connectDB();
     
+    // Find user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
+    
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
+    
     // Find booking
     const booking = await Booking.findById(id);
     
     if (!booking) {
       return NextResponse.json(
         { success: false, message: 'Booking not found' },
-        { status: 404 }
-      );
-    }
-    
-    // Check if user is authorized to update this booking
-    const User = (await import('@/models/User')).default;
-    const user = await User.findById(decoded.id);
-    
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: 'User not found' },
         { status: 404 }
       );
     }
@@ -239,22 +218,12 @@ export async function DELETE(request, { params }) {
   try {
     const { id } = params;
     
-    // Get token from cookie
-    const token = getTokenCookie();
+    // Get current user from Clerk
+    const clerkUser = await currentUser();
     
-    if (!token) {
+    if (!clerkUser) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-    
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
         { status: 401 }
       );
     }
@@ -262,9 +231,8 @@ export async function DELETE(request, { params }) {
     // Connect to database
     await connectDB();
     
-    // Check if user is admin
-    const User = (await import('@/models/User')).default;
-    const user = await User.findById(decoded.id);
+    // Find user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
     
     if (!user || user.role !== 'admin') {
       return NextResponse.json(

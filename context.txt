@@ -3,6 +3,7 @@
 never use auth from clerk/nextjs
 or currentUser from clerk/nextjs/server
 or useUser from clerk/nextjs/
+deleted the auth.js file !!! we are using clerk now to fetch the users data!
 **Project Description:**
 Create a high-performance, multilingual (Arabic and English) Next.js web application to connect travelers directly with expert local guides. Guides will manage their own profiles and tours via a dedicated dashboard. Users will browse, filter, and book tours. Include powerful search, filtering, reviews, ratings, personalized quiz recommendations, and robust admin management.
 

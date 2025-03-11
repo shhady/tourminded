@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Location from '@/models/Location';
-import { getTokenCookie, verifyToken } from '@/lib/auth';
+import { currentUser } from '@clerk/nextjs/server';
+import User from '@/models/User';
 
 // GET a single location by ID
 export async function GET(request, { params }) {
@@ -12,71 +13,6 @@ export async function GET(request, { params }) {
     await connectDB();
     
     // Find location by ID
-    const location = await Location.findById(id).populate('tours');
-    
-    if (!location) {
-      return NextResponse.json(
-        { success: false, message: 'Location not found' },
-        { status: 404 }
-      );
-    }
-    
-    return NextResponse.json({
-      success: true,
-      data: location,
-    });
-  } catch (error) {
-    console.error('Error fetching location:', error);
-    return NextResponse.json(
-      { success: false, message: 'Server error' },
-      { status: 500 }
-    );
-  }
-}
-
-// PUT update a location (requires authentication as admin)
-export async function PUT(request, { params }) {
-  try {
-    const { id } = params;
-    
-    // Get token from cookie
-    const token = getTokenCookie();
-    
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-    
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
-        { status: 401 }
-      );
-    }
-    
-    // Parse request body
-    const locationData = await request.json();
-    
-    // Connect to database
-    await connectDB();
-    
-    // Check if user is admin
-    const User = (await import('@/models/User')).default;
-    const user = await User.findById(decoded.id);
-    
-    if (!user || user.role !== 'admin') {
-      return NextResponse.json(
-        { success: false, message: 'Not authorized to update locations' },
-        { status: 403 }
-      );
-    }
-    
-    // Find location
     const location = await Location.findById(id);
     
     if (!location) {
@@ -86,47 +22,108 @@ export async function PUT(request, { params }) {
       );
     }
     
+    // Convert MongoDB document to plain object
+    const plainLocation = {
+      _id: location._id.toString(),
+      name: location.name,
+      description: location.description,
+      image: location.image,
+      featured: location.featured,
+      // Add other fields as needed
+    };
+    
+    return NextResponse.json({
+      success: true,
+      data: plainLocation
+    });
+    
+  } catch (error) {
+    console.error('Error fetching location:', error);
+    return NextResponse.json(
+      { success: false, message: 'Server error: ' + error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// UPDATE a location (admin only)
+export async function PATCH(request, { params }) {
+  try {
+    const { id } = params;
+    
+    // Get current user from Clerk
+    const clerkUser = await currentUser();
+    
+    if (!clerkUser) {
+      return NextResponse.json(
+        { success: false, message: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+    
+    // Connect to database
+    await connectDB();
+    
+    // Find user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
+    
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: 'Not authorized' },
+        { status: 403 }
+      );
+    }
+    
+    // Get location data from request body
+    const locationData = await request.json();
+    
     // Update location
-    const updatedLocation = await Location.findByIdAndUpdate(
+    const location = await Location.findByIdAndUpdate(
       id,
       locationData,
       { new: true, runValidators: true }
     );
     
+    if (!location) {
+      return NextResponse.json(
+        { success: false, message: 'Location not found' },
+        { status: 404 }
+      );
+    }
+    
     return NextResponse.json({
       success: true,
-      data: updatedLocation,
+      data: location
     });
+    
   } catch (error) {
     console.error('Error updating location:', error);
     return NextResponse.json(
-      { success: false, message: error.message || 'Server error' },
+      { success: false, message: 'Server error: ' + error.message },
       { status: 500 }
     );
   }
 }
 
-// DELETE a location (requires authentication as admin)
+// DELETE a location (admin only)
 export async function DELETE(request, { params }) {
   try {
     const { id } = params;
     
-    // Get token from cookie
-    const token = getTokenCookie();
+    // Get current user from Clerk
+    const clerkUser = await currentUser();
     
-    if (!token) {
+    if (!clerkUser) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-    
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
         { status: 401 }
       );
     }
@@ -134,19 +131,26 @@ export async function DELETE(request, { params }) {
     // Connect to database
     await connectDB();
     
-    // Check if user is admin
-    const User = (await import('@/models/User')).default;
-    const user = await User.findById(decoded.id);
+    // Find user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
     
-    if (!user || user.role !== 'admin') {
+    if (!user) {
       return NextResponse.json(
-        { success: false, message: 'Not authorized to delete locations' },
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: 'Not authorized' },
         { status: 403 }
       );
     }
     
-    // Find location
-    const location = await Location.findById(id);
+    // Delete location
+    const location = await Location.findByIdAndDelete(id);
     
     if (!location) {
       return NextResponse.json(
@@ -155,17 +159,15 @@ export async function DELETE(request, { params }) {
       );
     }
     
-    // Delete location
-    await location.deleteOne();
-    
     return NextResponse.json({
       success: true,
-      data: {},
+      data: {}
     });
+    
   } catch (error) {
     console.error('Error deleting location:', error);
     return NextResponse.json(
-      { success: false, message: 'Server error' },
+      { success: false, message: 'Server error: ' + error.message },
       { status: 500 }
     );
   }

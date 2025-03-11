@@ -1,11 +1,12 @@
 import { useLocale } from 'next-intl';
-import { getCurrentUser } from '@/lib/auth';
+import { currentUser } from '@clerk/nextjs/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Tour from '@/models/Tour';
 import Review from '@/models/Review';
 import { Calendar, Star, Map, Users } from 'lucide-react';
 import { Compass } from 'lucide-react';
+import User from '@/models/User';
 
 export const metadata = {
   title: 'Dashboard | Tourminded',
@@ -77,9 +78,10 @@ async function getStats(userId, role) {
 export default async function DashboardPage({ params }) {
   const localeParams = await params;
   const locale = localeParams?.locale || 'en';
-  const user = await getCurrentUser();
+  const user = await currentUser();
   const stats = await getStats(user._id, user.role);
   
+  const userData = await User.findOne({ clerkId: user.id });
   // Format date based on locale
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString(locale === 'en' ? 'en-US' : 'ar-SA', {
@@ -109,7 +111,7 @@ export default async function DashboardPage({ params }) {
           </div>
         </div>
         
-        {user.role === 'admin' || user.role === 'guide' ? (
+        {userData.role === 'admin' || user.role === 'guide' ? (
           <div className="bg-white rounded-lg shadow p-6 flex items-center">
             <div className="rounded-full bg-primary-100 p-3 mr-4">
               <Compass className="text-primary-600 text-xl" />
@@ -135,7 +137,7 @@ export default async function DashboardPage({ params }) {
           </div>
         </div>
         
-        {user.role === 'admin' && (
+        {userData.role === 'admin' && (
           <>
             <div className="bg-white rounded-lg shadow p-6 flex items-center">
               <div className="rounded-full bg-primary-100 p-3 mr-4">
@@ -217,7 +219,7 @@ export default async function DashboardPage({ params }) {
                         {booking.tour.title?.en || booking.tour.title}
                       </div>
                     </td>
-                    {user.role === 'admin' || user.role === 'guide' ? (
+                    {userData.role === 'admin' || user.role === 'guide' ? (
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-secondary-500">
                           {booking.user.name}

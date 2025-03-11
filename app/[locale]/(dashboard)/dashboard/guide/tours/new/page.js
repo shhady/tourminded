@@ -17,8 +17,26 @@ export default function NewTourPage({ params }) {
   const [coverImage, setCoverImage] = useState('');
   const [galleryImages, setGalleryImages] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [locations, setLocations] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
+  
+  // Hardcoded locations in Palestine and Israel
+  const locations = [
+    { _id: 'jerusalem', name: { en: 'Jerusalem', ar: 'القدس' } },
+    { _id: 'bethlehem', name: { en: 'Bethlehem', ar: 'بيت لحم' } },
+    { _id: 'nazareth', name: { en: 'Nazareth', ar: 'الناصرة' } },
+    { _id: 'telaviv', name: { en: 'Tel Aviv', ar: 'تل أبيب' } },
+    { _id: 'haifa', name: { en: 'Haifa', ar: 'حيفا' } },
+    { _id: 'jericho', name: { en: 'Jericho', ar: 'أريحا' } },
+    { _id: 'hebron', name: { en: 'Hebron', ar: 'الخليل' } },
+    { _id: 'ramallah', name: { en: 'Ramallah', ar: 'رام الله' } },
+    { _id: 'nablus', name: { en: 'Nablus', ar: 'نابلس' } },
+    { _id: 'jenin', name: { en: 'Jenin', ar: 'جنين' } },
+    { _id: 'akko', name: { en: 'Acre', ar: 'عكا' } },
+    { _id: 'tiberias', name: { en: 'Tiberias', ar: 'طبريا' } },
+    { _id: 'deadsea', name: { en: 'Dead Sea', ar: 'البحر الميت' } },
+    { _id: 'masada', name: { en: 'Masada', ar: 'مسادا' } },
+    { _id: 'eilat', name: { en: 'Eilat', ar: 'إيلات' } },
+  ];
   
   const { register, handleSubmit, formState: { errors }, watch } = useForm();
   
@@ -45,26 +63,6 @@ export default function NewTourPage({ params }) {
     fetchCurrentUser();
   }, []);
   
-  // Fetch locations
-  useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const response = await fetch('/api/locations?all=true');
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch locations');
-        }
-        
-        const data = await response.json();
-        setLocations(data.data || []);
-      } catch (error) {
-        console.error('Error fetching locations:', error);
-      }
-    };
-    
-    fetchLocations();
-  }, []);
-  
   const handleCoverImageUploaded = (url) => {
     setCoverImage(url);
   };
@@ -79,15 +77,14 @@ export default function NewTourPage({ params }) {
     setGalleryImages(newImages);
   };
   
-  const handleLocationChange = (e) => {
-    const options = e.target.options;
-    const selectedValues = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selectedValues.push(options[i].value);
+  const handleLocationChange = (locationId) => {
+    setSelectedLocations(prev => {
+      if (prev.includes(locationId)) {
+        return prev.filter(id => id !== locationId);
+      } else {
+        return [...prev, locationId];
       }
-    }
-    setSelectedLocations(selectedValues);
+    });
   };
   
   const onSubmit = async (data) => {
@@ -427,32 +424,28 @@ export default function NewTourPage({ params }) {
             </div>
             
             <div className="mb-4">
-              <label htmlFor="locations" className="block mb-1 font-medium">
+              <label className="block mb-1 font-medium">
                 {locale === 'en' ? 'Locations (select multiple)' : 'المواقع (اختر متعدد)'}*
               </label>
-              <select
-                id="locations"
-                multiple
-                {...register('locations', {
-                  validate: () => selectedLocations.length > 0 || 
-                    (locale === 'en' ? 'At least one location is required' : 'مطلوب موقع واحد على الأقل')
-                })}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                onChange={handleLocationChange}
-                size="4"
-              >
+              <div className="border border-secondary-300 rounded-md p-2 h-48 overflow-y-auto">
                 {locations.map((location) => (
-                  <option key={location._id} value={location.name[locale]}>
-                    {location.name[locale]}
-                  </option>
+                  <div key={location._id} className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      id={`location-${location._id}`}
+                      checked={selectedLocations.includes(location._id)}
+                      onChange={() => handleLocationChange(location._id)}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                    />
+                    <label htmlFor={`location-${location._id}`} className="ml-2 block text-sm text-secondary-700">
+                      {locale === 'en' ? location.name.en : location.name.ar}
+                    </label>
+                  </div>
                 ))}
-              </select>
-              {errors.locations && (
-                <p className="mt-1 text-sm text-red-600">{errors.locations.message}</p>
-              )}
-              {locations.length === 0 && (
-                <p className="mt-1 text-sm text-amber-600">
-                  {locale === 'en' ? 'Loading locations...' : 'جاري تحميل المواقع...'}
+              </div>
+              {selectedLocations.length === 0 && errors.locations && (
+                <p className="mt-1 text-sm text-red-600">
+                  {locale === 'en' ? 'At least one location is required' : 'مطلوب موقع واحد على الأقل'}
                 </p>
               )}
             </div>

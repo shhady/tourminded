@@ -1,28 +1,56 @@
+import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import { getCurrentUser } from '@/lib/auth';
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import Link from 'next/link';
 
-export const metadata = {
-  title: 'Dashboard | Tourminded',
-  description: 'Manage your tours, bookings, and profile',
-};
-
-export default async function DashboardPageLayout({ children, params }) {
+export default async function DashboardLayout({ children, params }) {
+  const clerkUser = await currentUser();
+  
+  if (!clerkUser) {
+    const localeParams = await params;
+    const locale = localeParams?.locale || 'en';
+    redirect(`/${locale}/sign-in?callbackUrl=/${locale}/dashboard`);
+  }
+  
   const localeParams = await params;
   const locale = localeParams?.locale || 'en';
   
-  // Get current user
-  let user = null;
-  try {
-    user = await getCurrentUser();
-  } catch (error) {
-    console.error('Error getting current user:', error);
-  }
+  // Connect to database
+  await connectDB();
   
-  // Redirect to login if not authenticated
+  // Find user in our database
+  const user = await User.findOne({ clerkId: clerkUser.id });
+  
   if (!user) {
-    redirect(`/${locale}/auth/login?callbackUrl=/${locale}/dashboard`);
+    redirect(`/${locale}/sign-in`);
+    return;
   }
   
-  return <DashboardLayout user={user} locale={locale}>{children}</DashboardLayout>;
+  return (
+    <div className="h-screen flex flex-col bg-secondary-50 overflow-hidden">
+      <header className="bg-white shadow-sm py-3 px-4 z-10 flex-shrink-0">
+        <div className="container mx-auto flex justify-between items-center">
+          <Link href={`/${locale}`} className="text-xl font-bold text-primary-600">
+            Tourminded
+          </Link>
+          <div className="flex items-center space-x-4">
+            {/* Add user menu or other header elements here */}
+          </div>
+        </div>
+      </header>
+      
+      <div className="flex-grow overflow-hidden container mx-auto px-3 py-4">
+        <div className="flex flex-col md:flex-row gap-4 h-full">
+          <aside className="md:w-64 flex-shrink-0 md:h-full overflow-auto">
+            <DashboardSidebar locale={locale} userRole={user.role} />
+          </aside>
+          <main className="flex-1 bg-white rounded-lg shadow-sm p-4 overflow-auto">
+            {children}
+          </main>
+        </div>
+      </div>
+    </div>
+  );
 } 

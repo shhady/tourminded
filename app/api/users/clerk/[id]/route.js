@@ -1,17 +1,25 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import Guide from '@/models/Guide';
 
 export async function GET(request, { params }) {
   try {
-    // Get the ID from the URL
-    const { id } = params;
-    
     // Connect to database
     await connectDB();
+    const {id} = await params;
+    // Get the Clerk user ID from the URL parameter
+    const clerkId = id;
     
-    // Find user by ID
-    const user = await User.findById(id);
+    if (!clerkId) {
+      return NextResponse.json(
+        { success: false, message: 'No user ID provided' },
+        { status: 400 }
+      );
+    }
+
+    // Find user by Clerk ID (not MongoDB _id)
+    const user = await User.findOne({ clerkId: clerkId });
     
     if (!user) {
       return NextResponse.json(
@@ -20,22 +28,22 @@ export async function GET(request, { params }) {
       );
     }
     
-    // Return user data
+    // If user is a guide, fetch guide data
+    let guideData = null;
+    if (user.role === "guide") {
+      guideData = await Guide.findOne({ user: user._id });
+    }
+    
     return NextResponse.json({
       success: true,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
+      user,
+      guide: guideData
     });
+    
   } catch (error) {
-    console.error('Error fetching user by ID:', error);
+    console.error('Error fetching user by Clerk ID:', error);
     return NextResponse.json(
-      { success: false, message: 'Server error' },
+      { success: false, message: 'Server error: ' + error.message },
       { status: 500 }
     );
   }

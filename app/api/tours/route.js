@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Tour from '@/models/Tour';
-import { getTokenCookie, verifyToken } from '@/lib/auth';
+import Guide from '@/models/Guide';
+import User from '@/models/User';
+import { currentUser } from '@clerk/nextjs/server';
 
 // GET all tours with optional filtering
 export async function GET(request) {
@@ -76,35 +78,21 @@ export async function GET(request) {
 // POST create a new tour (requires authentication as a guide)
 export async function POST(request) {
   try {
-    // Get token from cookie
-    const token = await getTokenCookie();
+    // Get current user from Clerk
+    const clerkUser = await currentUser();
     
-    if (!token) {
+    if (!clerkUser) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
       );
     }
     
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
-        { status: 401 }
-      );
-    }
-    
-    // Parse request body
-    const tourData = await request.json();
-    
     // Connect to database
     await connectDB();
     
-    // Check if user exists and is a guide
-    const { default: User } = await import('@/models/User');
-    const user = await User.findById(decoded.id);
+    // Find user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
     
     if (!user) {
       return NextResponse.json(
@@ -113,42 +101,33 @@ export async function POST(request) {
       );
     }
     
-    if (user.role !== 'guide' && user.role !== 'admin') {
+    // Check if user is a guide
+    if (user.role !== 'guide') {
       return NextResponse.json(
-        { success: false, message: 'Not authorized to create tours' },
+        { success: false, message: 'Only guides can create tours' },
         { status: 403 }
       );
     }
     
-    // If guide ID is not provided, use the authenticated user's ID
-    if (!tourData.guide) {
-      tourData.guide = user._id;
-    }
+    // Get tour data from request body
+    const tourData = await request.json();
     
-    // Log the guide ID for debugging
-    console.log('Using guide ID for tour:', tourData.guide);
-    
-    // Handle locations - for now, we'll just use the location names as strings
-    // In a production app, you would create or look up location IDs
-    if (tourData.locationsText && tourData.locationsText.length > 0) {
-      // Store the location names directly in the tour document
-      // This is a temporary solution until we implement proper location references
-      tourData.locationNames = tourData.locationsText;
-      delete tourData.locations; // Remove the empty locations array
-      delete tourData.locationsText; // Remove the temporary field
-    }
-    
-    // Create tour
-    const tour = await Tour.create(tourData);
+    // Create tour with user ID as guide
+    const tour = await Tour.create({
+      ...tourData,
+      guide: user._id, // Use user ID directly
+      rating: 5, // Default rating
+      reviewCount: 0
+    });
     
     return NextResponse.json(
       { success: true, data: tour },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Create tour error:', error);
+    console.error('Error creating tour:', error);
     return NextResponse.json(
-      { success: false, message: error.message || 'Server error' },
+      { success: false, message: 'Server error: ' + error.message },
       { status: 500 }
     );
   }

@@ -1,14 +1,10 @@
 import { Inter, Tajawal } from "next/font/google";
 import "./globals.css";
 import { getDirection } from "@/lib/i18n";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs'
+import { ClerkProvider } from '@clerk/nextjs'
+import { UserProvider } from "@/contexts/UserContext";
+import { GuideProvider } from "@/contexts/GuideContext";
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -28,21 +24,18 @@ export const metadata = {
   keywords: ["tours", "travel", "guides", "Holy Land", "Jerusalem", "Israel", "Palestine"],
 };
 
-export default async function RootLayout({ children, params }) {
-  const locale = await params?.locale || "en";
-  const dir = getDirection(locale);
-
+export default function RootLayout({ children, params }) {
   return (
     <ClerkProvider>
-      <html lang={locale} dir={dir}>
-        <body
-          className={`${inter.variable} ${tajawal.variable} antialiased ${
-          locale === "ar" ? "font-arabic" : "font-sans"
-        }`}
-      >
-        {children}
-      </body>
-    </html>
+      <UserProvider>
+        <GuideProvider>
+          <html lang="en" dir="ltr">
+            <body className={`${inter.variable} ${tajawal.variable} font-sans antialiased`}>
+              {children}
+            </body>
+          </html>
+        </GuideProvider>
+      </UserProvider>
     </ClerkProvider>
   );
 }

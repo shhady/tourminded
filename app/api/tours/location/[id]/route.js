@@ -4,7 +4,8 @@ import connectDB from '@/lib/mongodb';
 export async function GET(request, { params }) {
   try {
     // Await params to get the id
-    const id = await params.id;
+    const localeParams = await params;
+    const id = await localeParams.id;
     
     if (!id) {
       return NextResponse.json(

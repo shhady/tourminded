@@ -38,88 +38,93 @@ export async function GET(request) {
 // Create a new guide (authenticated)
 export async function POST(request) {
   try {
-    // Get the authenticated user from Clerk
-    const { userId } = await currentUser();  
+    // Get the current user from Clerk
+    const clerkUser = await currentUser();
     
-    if (!userId) {
-      console.error('Guide creation failed: User not authenticated');
+    if (!clerkUser) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
       );
     }
     
-    const { name, about, address, phone, languages, expertise, profileImage, driverLicense } = await request.json();
-    
-    // Validate input
-    if (!name || !about || !address || !phone || !languages || !expertise || !profileImage) {
-      return NextResponse.json(
-        { success: false, message: 'Please provide all required fields' },
-        { status: 400 }
-      );
-    }
-    
     // Connect to database
     await connectDB();
     
-    // Check if user exists
-    const user = await User.findOne({ clerkId: userId });
+    // Find the user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
+    
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'User not found' },
+        { success: false, message: 'User not found in our database' },
         { status: 404 }
       );
     }
     
-    // Verify that the authenticated user matches the MongoDB user
-    if (user.clerkId !== userId) {
-      return NextResponse.json(
-        { success: false, message: 'Not authorized to create guide profile for this user' },
-        { status: 403 }
-      );
-    }
+    // Get guide data from request
+    const guideData = await request.json();
     
-    // Check if guide already exists for this user
-    const guideExists = await Guide.findOne({ user: user._id });
-    if (guideExists) {
+    // Check if guide profile already exists
+    let existingGuide = await Guide.findOne({ user: user._id });
+    
+    if (existingGuide) {
       return NextResponse.json(
         { success: false, message: 'Guide profile already exists for this user' },
         { status: 400 }
       );
     }
     
-    // Create new guide
-    const guide = await Guide.create({
-        user: user._id,
-      name,
-      about,
-      address,
-      phone,
-      languages,
-      expertise,
-      profileImage,
-      driverLicense,
-      active: false, // Guides start as inactive until approved by admin
+    // Update user role to guide
+    await User.findByIdAndUpdate(user._id, { role: 'guide' });
+    
+    // Create new guide profile with default values for required fields
+    const newGuide = new Guide({
+      user: user._id,
+      name: {
+        en: guideData.name?.en || user.name || guideData.nickname,
+        ar: guideData.name?.ar || guideData.aboutAr ? guideData.aboutAr.substring(0, 30) : "مرشد سياحي" // Default Arabic name if not provided
+      },
+      email: user.email,
+      nickname: guideData.nickname || "",
+      address: guideData.address || "",
+      phone: guideData.phone || "",
+      languages: guideData.languages || [],
+      expertise: guideData.expertise || [],
+      about: {
+        en: guideData.about?.en || guideData.about || "",
+        ar: guideData.about?.ar || guideData.aboutAr || "نبذة عن المرشد" // Default Arabic description
+      },
+      profileImage: guideData.profileImage || "",
+      driverLicense: {
+        date: guideData.driverLicense?.date || null,
+        number: guideData.driverLicense?.number || "",
+        image: guideData.driverLicense?.image || ""
+      },
+      vehicle: guideData.vehicle || {},
+      reviews: [],
+      rating: 5, // Default rating to pass validation
+      active: false // New guides start as inactive until approved
     });
     
-    // Update user role if not already a guide
-    if (user.role !== 'guide') {
-        await User.findOneAndUpdate({ clerkId: userId }, { role: 'guide' });
+    try {
+      await newGuide.save();
+    } catch (validationError) {
+      console.error('Validation error:', validationError);
+      return NextResponse.json({
+        success: false,
+        message: 'Validation error: ' + validationError.message,
+        details: validationError.errors
+      }, { status: 400 });
     }
     
-    return NextResponse.json(
-      {
-        success: true,
-        guide: {
-          _id: guide._id,
-          name: guide.name,
-          active: guide.active,
-        },
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      success: true,
+      message: 'Guide profile created successfully',
+      guide: newGuide
+    });
+    
   } catch (error) {
-    console.error('Guide creation error:', error);
+    console.error('Error creating guide profile:', error);
     return NextResponse.json(
       { success: false, message: 'Server error: ' + error.message },
       { status: 500 }

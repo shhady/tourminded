@@ -53,9 +53,10 @@ export default async function ToursPage({ params }) {
         </h1>
         
         {(user.role === 'admin' || user.role === 'guide') && (
-          <Button href={`/${locale}/dashboard/guide/tours/new`} className="flex items-center">
-            <Plus className="mr-2" />
-            {locale === 'en' ? 'Add Tour' : 'إضافة جولة'}
+          <Button href={`/${locale}/dashboard/guide/tours/new`} className="flex justify-center gap-1 items-center">
+            <div><Plus className="mr-2" />  </div>
+           <div>{locale === 'en' ? 'Add Tour' : 'إضافة جولة'}</div>
+        
           </Button>
         )}
       </div>
@@ -125,7 +126,7 @@ export default async function ToursPage({ params }) {
                   {(user.role === 'admin' || user.role === 'guide') && (
                     <>
                       <Link
-                        href={`/dashboard/tours/${tour._id}/edit`}
+                        href={`/dashboard/tours/edit/${tour._id}`}
                         className="text-blue-600 hover:text-blue-900 p-1"
                       >
                         <Edit />

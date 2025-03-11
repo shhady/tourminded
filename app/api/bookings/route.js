@@ -2,27 +2,18 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Tour from '@/models/Tour';
-import { getTokenCookie, verifyToken } from '@/lib/auth';
+import { currentUser } from '@clerk/nextjs/server';
+import User from '@/models/User';
 
 // GET all bookings with optional filtering (requires authentication)
 export async function GET(request) {
   try {
-    // Get token from cookie
-    const token = getTokenCookie();
+    // Get current user from Clerk
+    const clerkUser = await currentUser();
     
-    if (!token) {
+    if (!clerkUser) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-    
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
         { status: 401 }
       );
     }
@@ -39,9 +30,8 @@ export async function GET(request) {
     // Connect to database
     await connectDB();
     
-    // Find user
-    const User = (await import('@/models/User')).default;
-    const user = await User.findById(decoded.id);
+    // Find user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
     
     if (!user) {
       return NextResponse.json(
@@ -123,22 +113,12 @@ export async function GET(request) {
 // POST create a new booking (requires authentication)
 export async function POST(request) {
   try {
-    // Get token from cookie
-    const token = getTokenCookie();
+    // Get current user from Clerk
+    const clerkUser = await currentUser();
     
-    if (!token) {
+    if (!clerkUser) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-    
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
         { status: 401 }
       );
     }
@@ -149,9 +129,8 @@ export async function POST(request) {
     // Connect to database
     await connectDB();
     
-    // Check if user exists
-    const User = (await import('@/models/User')).default;
-    const user = await User.findById(decoded.id);
+    // Find user in our database
+    const user = await User.findOne({ clerkId: clerkUser.id });
     
     if (!user) {
       return NextResponse.json(

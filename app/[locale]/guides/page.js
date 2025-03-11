@@ -41,7 +41,7 @@ async function getGuides(searchParams) {
   
   // Find guides with filters
   const guides = await Guide.find(filter)
-    .select('name profileImage rating reviewCount languages expertise about')
+    .select('name profileImage rating reviewCount languages expertise about address')
     .skip(skip)
     .limit(limit)
     .sort({ rating: -1, reviewCount: -1 });
@@ -208,64 +208,91 @@ export default async function GuidesPage({ searchParams, params }) {
         {guides.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {guides.map((guide) => (
-              <div key={guide._id} className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="relative h-64">
+              <div 
+                key={guide._id} 
+                className="group bg-white rounded-xl shadow-xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 relative"
+              >
+                {/* Decorative corner accent */}
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-primary-500/20 to-transparent z-10"></div>
+                
+                {/* Guide Profile Image with overlay */}
+                <div className="relative h-72 overflow-hidden">
                   <Image
                     src={guide.profileImage?.url || placeholderImage}
                     alt={guide.name?.[locale] || guide.name?.en || guide.name}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                    <h3 className="text-xl font-bold">
+                  
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+                  
+                  {/* Rating badge */}
+                  <div className="absolute top-4 left-4 flex items-center bg-yellow-400/90 text-gray-900 px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm">
+                    <Star className="w-4 h-4 mr-1 text-yellow-700 fill-yellow-700" />
+                    <span className="font-bold">{guide.rating?.toFixed(1) || "5.0"}</span>
+                    <span className="text-xs ml-1 opacity-80">({guide.reviewCount || 0})</span>
+                  </div>
+                  
+                  {/* Guide name and location */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white z-10">
+                    <h3 className="text-2xl font-bold tracking-tight drop-shadow-md mb-2">
                       {guide.name?.[locale] || guide.name?.en || guide.name}
                     </h3>
-                    <div className="flex items-center mt-1">
-                      <Star className="text-yellow-500 mr-1" />
-                      <span>{guide.rating}</span>
-                      <span className="text-sm ml-1">
-                        ({guide.reviewCount} {locale === 'en' ? 'reviews' : 'تقييمات'})
-                      </span>
+                    
+                    <div className="flex items-center text-white/80 text-sm">
+                      <MapPin className="w-4 h-4 mr-1.5 flex-shrink-0 text-primary-300" />
+                      <span>{guide.address || 'Israel'}</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="p-4">
-                  {/* Languages */}
-                  <div className="flex items-center mb-3 text-secondary-700">
-                    <Languages className="mr-2 text-lg" />
-                    <span>
-                      {guide.languages?.map(lang => lang.language).join(', ')}
-                    </span>
-                  </div>
-                  
-                  {/* Expertise */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {guide.expertise?.map((exp, index) => (
+                {/* Guide Details Section */}
+                <div className="p-6 relative">
+                  {/* Expertise Badges */}
+                  <div className="flex flex-wrap gap-2 mb-4 -mt-10 relative z-20">
+                    {guide.expertise?.slice(0, 2).map((exp, index) => (
                       <span
                         key={index}
-                        className="inline-block bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded-full"
+                        className="inline-block bg-gradient-to-r from-gray-500 to-gray-400 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md"
                       >
-                        {exp.area}
+                        {exp.area} {exp.years && `• ${exp.years} ${locale === 'en' ? 'yrs' : 'سنة'}`}
                       </span>
                     ))}
                   </div>
                   
-                  {/* About (truncated) */}
-                  <p className="text-secondary-600 mb-4 line-clamp-3">
-                    {guide.about?.[locale] || guide.about?.en || ''}
-                  </p>
-                  
-                  {/* Location */}
-                  <div className="flex items-center text-secondary-700">
-                    <MapPin className="mr-2 text-lg" />
-                    <span>{guide.address}</span>
+                  {/* Languages */}
+                  <div className="flex items-center mb-3 text-gray-700">
+                    <Languages className="w-5 h-5 mr-2 text-secondary-500" />
+                    <span className="text-sm font-medium">
+                      {guide.languages?.map(lang => lang.language).join(', ')}
+                    </span>
                   </div>
                   
-                  <Button href={`/guides/${guide._id}`} className="w-full">
-                    {locale === 'en' ? 'View Profile' : 'عرض الملف الشخصي'}
-                  </Button>
+                  {/* About (Truncated) */} 
+                  <p className="text-gray-600 text-sm mb-5 line-clamp-2 group-hover:line-clamp-3 transition-all duration-300">
+                    {guide.about?.[locale] || guide.about?.en || ''}...
+                  </p>
+                  
+                  {/* Shine effect on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                  
+                  {/* CTA Button */}
+                  <Link 
+                    href={`/${locale}/guides/${guide._id}`}
+                    className="flex items-center justify-center w-full bg-gradient-to-r from-primary-200 to-gray-400 hover:from-primary-500 hover:to-primary-600 text-black font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-300 group-hover:shadow-lg"
+                  >
+                    <span className="mr-2">{locale === 'en' ? 'View Profile' : 'عرض الملف الشخصي'}</span>
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-5 w-5 transform group-hover:translate-x-1 transition-transform duration-300" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
                 </div>
               </div>
             ))}
@@ -280,7 +307,7 @@ export default async function GuidesPage({ searchParams, params }) {
                 ? 'Try adjusting your filters or explore our other guide options'
                 : 'حاول تعديل الفلاتر أو استكشف خيارات المرشدين الأخرى'}
             </p>
-            <Button href="/guides">
+            <Button href={`/${locale}/guides`}>
               {locale === 'en' ? 'View All Guides' : 'عرض جميع المرشدين'}
             </Button>
           </div>

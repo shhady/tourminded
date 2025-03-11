@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+import User from './User';
 const GuideSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,

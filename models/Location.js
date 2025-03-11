@@ -23,16 +23,17 @@ const LocationSchema = new mongoose.Schema({
       required: [true, 'Please provide a description in Arabic'],
     },
   },
-  images: [
-    {
-      url: {
-        type: String,
-      },
-      publicId: {
-        type: String,
-      },
+  image: {
+    url: {
+      type: String,
+      required: [true, 'Please provide an image URL'],
     },
-  ],
+    publicId: String,
+  },
+  featured: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

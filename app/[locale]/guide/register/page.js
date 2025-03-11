@@ -22,6 +22,7 @@ export default function GuideRegistrationPage({ params }) {
   const [profileImage, setProfileImage] = useState('');
   const [licenseImage, setLicenseImage] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+  const [redirectNeeded, setRedirectNeeded] = useState(false);
   
   const { register, handleSubmit, formState: { errors } } = useForm();
   
@@ -51,25 +52,29 @@ export default function GuideRegistrationPage({ params }) {
           const userData = await response.json();
           setCurrentUser(userData.user);
           
-          // If user is already a guide, redirect to dashboard
-          if (userData.user && userData.user.role === 'guide') {
-            console.log('User is already a guide, redirecting to dashboard');
-            router.push(`/${locale}/dashboard/guide`);
+          // Check if user is already a guide
+          if (userData.user.role === 'guide') {
+            setRedirectNeeded(true);
           }
         } else {
           console.error('Failed to fetch user data');
-          setError(locale === 'en' ? 'Failed to fetch user data' : 'فشل في جلب بيانات المستخدم');
         }
       } catch (error) {
-        console.error('Error syncing/fetching user:', error);
-        setError(locale === 'en' ? 'Failed to fetch user data' : 'فشل في جلب بيانات المستخدم');
+        console.error('Error fetching user:', error);
       } finally {
         setIsPageLoading(false);
       }
     };
     
     syncAndFetchUser();
-  }, [isClerkLoaded, user, locale, router]);
+  }, [isClerkLoaded, user]);
+  
+  // Handle redirect if needed
+  useEffect(() => {
+    if (redirectNeeded) {
+      router.push(`/${locale}/dashboard/guide`);
+    }
+  }, [redirectNeeded, router, locale]);
   
   const handleProfileImageUploaded = (url) => {
     setProfileImage(url);
@@ -89,21 +94,17 @@ export default function GuideRegistrationPage({ params }) {
       return;
     }
     
-    if (!currentUser || !currentUser._id) {
-      setError(locale === 'en' ? 'User authentication failed' : 'فشل مصادقة المستخدم');
-      setIsLoading(false);
-      return;
-    }
-    
     try {
       const guideData = {
-        ...data,
-        userId: currentUser._id,
+        nickname: data.nickname,
+        address: data.address,
+        phone: data.phone,
         profileImage: {
           url: profileImage,
         },
         driverLicense: {
-          ...data.driverLicense,
+          date: data.driverLicense?.date,
+          number: data.driverLicense?.number,
           image: {
             url: licenseImage,
           },
@@ -120,6 +121,10 @@ export default function GuideRegistrationPage({ params }) {
             years: parseInt(data.primaryExpertiseYears),
           },
         ],
+        about: {
+          en: data.about,
+          ar: data.aboutAr || "",
+        }
       };
       
       console.log('Submitting guide data:', guideData);
@@ -140,25 +145,11 @@ export default function GuideRegistrationPage({ params }) {
       const result = await response.json();
       console.log('Guide registration successful:', result);
       
-      // Update the user's role in Clerk metadata
-      try {
-        await user.update({
-          publicMetadata: { role: 'guide' },
-        });
-        console.log('Clerk metadata updated successfully');
-      } catch (clerkError) {
-        console.error('Error updating Clerk metadata:', clerkError);
-        // Continue anyway since the guide was created in MongoDB
-      }
-      
-      // Sync the updated role back to MongoDB
-      await fetch('/api/users/sync');
-      
-      // Redirect to dashboard
-      router.push(`/${locale}/dashboard/guide`);
+      // Redirect to success page
+      router.push(`/${locale}/guide/registration-success`);
     } catch (error) {
       console.error('Guide registration error:', error);
-      setError(error.message || 'An unexpected error occurred');
+      setError(error.message || (locale === 'en' ? 'Failed to register as guide' : 'فشل التسجيل كمرشد'));
     } finally {
       setIsLoading(false);
     }
@@ -342,13 +333,13 @@ export default function GuideRegistrationPage({ params }) {
                   <textarea
                     id="aboutEn"
                     rows="4"
-                    {...register('about.en', {
+                    {...register('about', {
                       required: locale === 'en' ? 'About section in English is required' : 'النبذة بالإنجليزية مطلوبة',
                     })}
                     className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   ></textarea>
-                  {errors.about?.en && (
-                    <p className="mt-1 text-sm text-red-600">{errors.about.en.message}</p>
+                  {errors.about && (
+                    <p className="mt-1 text-sm text-red-600">{errors.about.message}</p>
                   )}
                 </div>
                 
@@ -360,14 +351,9 @@ export default function GuideRegistrationPage({ params }) {
                   <textarea
                     id="aboutAr"
                     rows="4"
-                    {...register('about.ar', {
-                      required: locale === 'en' ? 'About section in Arabic is required' : 'النبذة بالعربية مطلوبة',
-                    })}
+                    {...register('aboutAr')}
                     className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   ></textarea>
-                  {errors.about?.ar && (
-                    <p className="mt-1 text-sm text-red-600">{errors.about.ar.message}</p>
-                  )}
                 </div>
                 
                 {/* Primary Language */}
