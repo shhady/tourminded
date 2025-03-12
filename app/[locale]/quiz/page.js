@@ -194,7 +194,7 @@ export default async function QuizPage({ params }) {
                 : 'غير متأكد مما تبحث عنه؟'}
             </p>
             <Link
-              href="/tours"
+              href={`/${locale}/tours`}
               className="text-primary-600 hover:text-primary-700 font-medium"
             >
               {locale === 'en' ? 'Browse all tours instead' : 'تصفح جميع الجولات بدلاً من ذلك'}

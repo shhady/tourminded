@@ -2,12 +2,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 import { getCurrentUser } from '@/lib/auth';
-import { Check, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight, Star } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { Metadata } from 'next';
+import ComparisonTable from '@/components/common/ComparisonTable';
+import CallToAction from '@/components/common/CallToAction';
 
 export const metadata = {
-  title: 'About Us | Tourminded',
-  description: 'Learn about Tourminded - the only travel agency in the Holy Land that matches you with a perfect fit guide for your journey.',
+  title: 'About Tourminded | Connecting Travelers with Local Guides',
+  description: 'Learn about Tourminded\'s mission to transform tourism in the Holy Land by connecting travelers with expert local guides',
 };
 
 export default async function AboutPage({ params }) {
@@ -35,251 +38,466 @@ export default async function AboutPage({ params }) {
     { id: 'all-inclusive', name: locale === 'en' ? 'All-Inclusive Tour' : 'جولة شاملة' },
   ];
   
-  // Comparison table data
-  const comparisonFeatures = [
-    { id: 'licensed', name: locale === 'en' ? 'Licensed guides' : 'مرشدين مرخصين' },
-    { id: 'customizable', name: locale === 'en' ? 'Private, customizable tours' : 'جولات خاصة قابلة للتخصيص' },
-    { id: 'expertise', name: locale === 'en' ? 'Choose guide based on expertise' : 'اختيار المرشد بناءً على الخبرة' },
-    { id: 'language', name: locale === 'en' ? 'Verified language proficiency' : 'إتقان اللغة المثبت' },
-    { id: 'reviews', name: locale === 'en' ? 'Trusted reviews of the guide' : 'مراجعات موثوقة للمرشد' },
-    { id: 'price', name: locale === 'en' ? 'Price' : 'السعر', tourminded: '$', others: '$$$' },
-  ];
-  
   return (
     <MainLayout locale={locale} user={user}>
       {/* Hero Section */}
-      <div className="bg-primary-900 text-black py-16 md:py-24">
+      <section className="relative bg-gradient-to-r from-primary-600 to-primary-800 text-black py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              {locale === 'en' ? 'About Tourminded' : 'عن توورمايندد'}
+              {locale === 'en' ? 'About Tourminded' : 'عن Tourminded'}
             </h1>
-            <p className="text-xl md:text-2xl">
+            <p className="text-xl opacity-90 mb-8">
               {locale === 'en' 
-                ? 'Seamless, fun-filled tours with local experts' 
-                : 'جولات سلسة ومليئة بالمرح مع خبراء محليين'}
+                ? 'Transforming tourism in the Holy Land through authentic connections' 
+                : 'تحويل السياحة في الأرض المقدسة من خلال روابط أصيلة'}
             </p>
           </div>
         </div>
-      </div>
-      
-      {/* Introduction Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-xl text-secondary-700 mb-12 text-center">
-            {locale === 'en'
-              ? 'You&rsquo;ll be matched with a personable guide who perfectly aligns with your passions and needs, so your trip to the Holy Land is everything you hoped for and more.'
-              : 'سيتم مطابقتك مع مرشد ودود يتوافق تمامًا مع شغفك واحتياجاتك، حتى تكون رحلتك إلى الأرض المقدسة كل ما تمنيته وأكثر.'}
-          </p>
-          
-          {/* Testimonials */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-16">
-            <div className="relative h-64 md:h-80">
-              <Image
-                src="/tour-image-1.jpg"
-                alt="Tour Image"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="p-6 md:p-8 bg-white">
-              <div className="space-y-4">
-                <blockquote className="text-lg md:text-xl italic text-secondary-700">
-                  &ldquo;It was an amazing day and I learned so much.&rdquo;
-                </blockquote>
-                <blockquote className="text-lg md:text-xl italic text-secondary-700">
-                  &ldquo;Ariel was an absolute joy on our tour and made the experience so smooth and wonderful.&rdquo;
-                </blockquote>
-                <blockquote className="text-lg md:text-xl italic text-secondary-700">
-                  &ldquo;Ariel was an absolute joy on our tour and made the experience so smooth and wonderful.&rdquo;
-                </blockquote>
-                <blockquote className="text-lg md:text-xl italic text-secondary-700">
-                  &ldquo;Ariel was an absolute joy on our tour and made the experience so smooth and wonderful.&rdquo;
-                </blockquote>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        <div className="absolute bottom-0 left-0 w-full h-16 bg-white" style={{ clipPath: 'polygon(0 100%, 100% 100%, 100% 0)' }}></div>
+      </section>
       
       {/* Why We Exist Section */}
-      <div className="bg-secondary-50 py-16">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-secondary-900">
-              {locale === 'en' ? 'Why we exist' : 'لماذا نحن موجودون'}
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              {locale === 'en' ? 'Why We Exist' : 'لماذا نحن موجودون'}
             </h2>
             
-            <div className="bg-white rounded-lg shadow-md p-8 mb-12">
-              <h3 className="text-2xl font-bold mb-4 text-secondary-900">
+            <div className="bg-white rounded-xl shadow-md p-8 mb-12">
+              <h3 className="text-xl font-semibold mb-4 text-center">
                 {locale === 'en' ? 'Avoid unpleasant surprises on your vacation' : 'تجنب المفاجآت غير السارة في عطلتك'}
               </h3>
-              <p className="text-secondary-700 mb-4">
-                {locale === 'en'
-                  ? 'Tickets have been booked for months. Bags are packed. Finally, the big day is here. It&rsquo;s time for your vacation.'
-                  : 'تم حجز التذاكر منذ أشهر. الحقائب جاهزة. أخيرًا، اليوم الكبير هنا. حان وقت عطلتك.'}
-              </p>
-              <p className="text-secondary-700 mb-4">
-                {locale === 'en'
-                  ? 'But when you arrive after a long, exhausting flight, things aren&rsquo;t as you expected.'
-                  : 'ولكن عندما تصل بعد رحلة طويلة ومرهقة، الأمور ليست كما توقعت.'}
-              </p>
-              <p className="text-secondary-700 mb-4">
-                {locale === 'en'
-                  ? 'Whether it&rsquo;s subpar accommodation, transportation hiccups, or a guide who can&rsquo;t answer your questions or you can&rsquo;t communicate with.'
-                  : 'سواء كان ذلك إقامة دون المستوى، أو مشاكل في النقل، أو مرشد لا يستطيع الإجابة على أسئلتك أو لا يمكنك التواصل معه.'}
-              </p>
-              <p className="text-secondary-700 mb-4">
-                {locale === 'en'
-                  ? 'We know there&rsquo;s nothing worse than arriving at your long-awaited (and expensive) trip and finding yourself in this situation.'
-                  : 'نعلم أنه لا يوجد شيء أسوأ من الوصول إلى رحلتك التي طال انتظارها (والمكلفة) ووجود نفسك في هذا الموقف.'}
-              </p>
-              <p className="text-secondary-700 font-medium">
-                {locale === 'en'
-                  ? 'And that&rsquo;s exactly why we&rsquo;re here.'
-                  : 'وهذا بالضبط هو سبب وجودنا.'}
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-md p-8 mb-12">
-              <h3 className="text-2xl font-bold mb-4 text-secondary-900">
-                {locale === 'en' 
-                  ? 'The only travel agency in the Holy Land that matches you with a perfect fit guide' 
-                  : 'وكالة السفر الوحيدة في الأرض المقدسة التي تطابقك مع مرشد مناسب تمامًا'}
-              </h3>
-              <p className="text-secondary-700 mb-6">
-                {locale === 'en'
-                  ? 'You&rsquo;ll tell us exactly what you&rsquo;re looking for and get a personalized recommendation for private tours fitting your specific needs. Plus, you&rsquo;ll pay significantly less because we match you directly with locals and don&rsquo;t charge a premium. Whether your tour is 1 day or 15, you can expect interesting cultural insights and unforgettable adventures at every turn.'
-                  : 'ستخبرنا بالضبط عما تبحث عنه وستحصل على توصية شخصية للجولات الخاصة التي تناسب احتياجاتك المحددة. بالإضافة إلى ذلك، ستدفع أقل بكثير لأننا نطابقك مباشرة مع السكان المحليين ولا نفرض رسومًا إضافية. سواء كانت جولتك ليوم واحد أو 15 يومًا، يمكنك توقع رؤى ثقافية مثيرة للاهتمام ومغامرات لا تُنسى في كل منعطف.'}
-              </p>
-              <div className="text-center">
-                <Button 
-                  href={`/${locale}/quiz`}
-                  variant="primary"
-                  size="lg"
-                >
-                  {locale === 'en' ? 'I&rsquo;m ready to find my perfect tour' : 'أنا مستعد للعثور على جولتي المثالية'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* See Israel Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center gap-8 mb-16">
-            <div className="md:w-1/2">
-              <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-lg">
-                <Image
-                  src="/tour-image-2.jpg"
-                  alt="Tour Image"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
-            <div className="md:w-1/2">
-              <h2 className="text-3xl font-bold mb-4 text-secondary-900">
-                {locale === 'en' ? 'See Israel through the eyes of a local' : 'شاهد إسرائيل من خلال عيون محلية'}
-              </h2>
-              <p className="text-lg text-secondary-700 mb-6">
-                {locale === 'en'
-                  ? 'Choose from hundreds of guided tours that will bring this rich land&rsquo;s fascinating heritage to life.'
-                  : 'اختر من بين مئات الجولات المصحوبة بمرشدين التي ستحيي التراث الرائع لهذه الأرض الغنية.'}
-              </p>
               
-              <div className="grid grid-cols-2 gap-4">
-                {tourTypes.map((type) => (
-                  <Link 
-                    key={type.id}
-                    href={`/${locale}/tours?expertise=${type.id}`}
-                    className="text-secondary-800 hover:text-primary-600 transition-colors flex items-center"
+              <div className="flex flex-col md:flex-row gap-10 items-center mb-8">
+                <div className="md:w-1/2">
+                  <div className="relative h-64 w-full rounded-xl overflow-hidden shadow-lg">
+                    <Image 
+                      src="/tour-image-1.jpg" 
+                      alt="Vacation stress"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+                
+                <div className="md:w-1/2">
+                  <p className="text-gray-700 mb-4">
+                    {locale === 'en' 
+                      ? 'Tickets have been booked for months. Bags are packed. Finally, the big day is here. It\'s time for your vacation.' 
+                      : 'تم حجز التذاكر منذ أشهر. الحقائب جاهزة. أخيرًا، اليوم الكبير هنا. حان وقت عطلتك.'}
+                  </p>
+                  <p className="text-gray-700 mb-4">
+                    {locale === 'en' 
+                      ? 'But when you arrive after a long, exhausting flight, things aren\'t as you expected.' 
+                      : 'ولكن عندما تصل بعد رحلة طويلة ومرهقة، الأمور ليست كما توقعت.'}
+                  </p>
+                  <p className="text-gray-700 mb-4">
+                    {locale === 'en' 
+                      ? 'Whether it\'s subpar accommodation, transportation hiccups, or a guide who can\'t answer your questions or you can\'t communicate with.' 
+                      : 'سواء كان ذلك إقامة دون المستوى، أو مشاكل في النقل، أو مرشد لا يمكنه الإجابة على أسئلتك أو لا يمكنك التواصل معه.'}
+                  </p>
+                  <p className="text-gray-700 font-medium">
+                    {locale === 'en' 
+                      ? 'We know there\'s nothing worse than arriving at your long-awaited (and expensive) trip and finding yourself in this situation. And that\'s exactly why we\'re here.' 
+                      : 'نحن نعلم أنه لا يوجد شيء أسوأ من الوصول إلى رحلتك التي طال انتظارها (والمكلفة) ووجدت نفسك في هذا الموقف. وهذا بالضبط هو سبب وجودنا.'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-primary-50 p-6 rounded-lg mt-8">
+                <h3 className="text-xl font-semibold mb-4 text-center">
+                  {locale === 'en' 
+                    ? 'The only travel agency in the Holy Land that matches you with a perfect fit guide' 
+                    : 'وكالة السفر الوحيدة في الأرض المقدسة التي تطابقك مع مرشد مناسب تمامًا'}
+                </h3>
+                <p className="text-gray-700 text-center">
+                  {locale === 'en' 
+                    ? 'You\'ll tell us exactly what you\'re looking for and get a personalized recommendation for private tours fitting your specific needs. Plus, you\'ll pay significantly less because we match you directly with locals and don\'t charge a premium. Whether your tour is 1 day or 15, you can expect interesting cultural insights and unforgettable adventures at every turn.' 
+                    : 'ستخبرنا بالضبط عما تبحث عنه وستحصل على توصية شخصية للجولات الخاصة التي تناسب احتياجاتك المحددة. بالإضافة إلى ذلك، ستدفع أقل بكثير لأننا نطابقك مباشرة مع السكان المحليين ولا نفرض رسومًا إضافية. سواء كانت جولتك يومًا واحدًا أو 15 يومًا، يمكنك توقع رؤى ثقافية مثيرة للاهتمام ومغامرات لا تُنسى في كل منعطف.'}
+                </p>
+                <div className="text-center mt-6">
+                  <Button 
+                    href={`/${locale}/quiz`}
+                    variant="primary"
+                    className="text-black"
                   >
-                    <ArrowRight className="w-4 h-4 mr-2 text-primary-600" />
-                    <span>{type.name}</span>
-                  </Link>
-                ))}
+                    {locale === 'en' ? 'I\'m ready to find my perfect tour' : 'أنا مستعد للعثور على جولتي المثالية'}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
       
-      {/* Comparison Table Section */}
-      <div className="bg-secondary-50 py-16">
+      {/* Our Story Section */}
+      <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-secondary-900">
-              {locale === 'en' ? 'What makes Tourminded better?' : 'ما الذي يجعل توورمايندد أفضل؟'}
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              {locale === 'en' ? 'Our Story' : 'قصتنا'}
             </h2>
             
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-secondary-100">
-                    <th className="py-4 px-6 text-left text-secondary-900">{locale === 'en' ? 'Feature' : 'الميزة'}</th>
-                    <th className="py-4 px-6 text-center text-secondary-900">Tourminded</th>
-                    <th className="py-4 px-6 text-center text-secondary-900">{locale === 'en' ? 'Other travel agencies' : 'وكالات السفر الأخرى'}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {comparisonFeatures.map((feature, index) => (
-                    <tr key={feature.id} className={index % 2 === 0 ? 'bg-white' : 'bg-secondary-50'}>
-                      <td className="py-4 px-6 text-secondary-800">{feature.name}</td>
-                      <td className="py-4 px-6 text-center">
-                        {feature.id === 'price' ? (
-                          <span className="text-primary-600 font-bold">{feature.tourminded}</span>
-                        ) : (
-                          <Check className="w-5 h-5 text-primary-600 mx-auto" />
-                        )}
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        {feature.id === 'price' ? (
-                          <span className="text-secondary-600">{feature.others}</span>
-                        ) : (
-                          <span className="text-secondary-400">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="flex flex-col md:flex-row gap-10 items-center mb-12">
+              <div className="md:w-1/2">
+                <div className="relative h-80 w-full rounded-xl overflow-hidden shadow-lg">
+                  <Image 
+                    src="/tour-image-2.jpg" 
+                    alt="Tourminded founders"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+              
+              <div className="md:w-1/2">
+                <p className="text-gray-700 mb-4">
+                  {locale === 'en' 
+                    ? 'Tourminded was born from a simple observation: the Holy Land is filled with incredible stories, but travelers often miss the authentic experiences that make this region so special.' 
+                    : 'ولدت Tourminded من ملاحظة بسيطة: الأرض المقدسة مليئة بالقصص المذهلة، لكن المسافرين غالبًا ما يفوتون التجارب الأصيلة التي تجعل هذه المنطقة مميزة للغاية.'}
+                </p>
+                <p className="text-gray-700 mb-4">
+                  {locale === 'en' 
+                    ? 'Founded in 2023, our platform connects travelers directly with licensed local guides who can provide personalized, authentic experiences that go beyond the typical tourist routes.' 
+                    : 'تأسست في عام 2023، تربط منصتنا المسافرين مباشرة بالمرشدين المحليين المرخصين الذين يمكنهم تقديم تجارب شخصية وأصيلة تتجاوز مسارات السياح النموذجية.'}
+                </p>
+                <p className="text-gray-700">
+                  {locale === 'en' 
+                    ? 'We believe that meaningful travel experiences come from genuine human connections and local expertise.' 
+                    : 'نحن نؤمن بأن تجارب السفر الهادفة تأتي من الروابط الإنسانية الحقيقية والخبرة المحلية.'}
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
       
-      {/* Call to Action Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-secondary-900">
-            {locale === 'en' ? 'The trip of your dreams is waiting for you' : 'رحلة أحلامك تنتظرك'}
-          </h2>
-          <p className="text-xl text-secondary-700 mb-8">
-            {locale === 'en'
-              ? 'Explore our vast selection of Holy Land tours for every traveler and style. Or take our short quiz and get a personalized recommendation sent to your inbox.'
-              : 'استكشف مجموعتنا الواسعة من جولات الأرض المقدسة لكل مسافر وأسلوب. أو خذ اختبارنا القصير واحصل على توصية شخصية مرسلة إلى بريدك الإلكتروني.'}
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button 
-              href={`/${locale}/tours`}
-              variant="primary"
-              size="lg"
-            >
-              {locale === 'en' ? 'Explore tours' : 'استكشف الجولات'}
-            </Button>
-            <Button 
-              href={`/${locale}/quiz`}
-              variant="secondary"
-              size="lg"
-            >
-              {locale === 'en' ? 'Start quiz' : 'ابدأ الاختبار'}
-            </Button>
+      {/* Tour Types Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-6 text-center">
+              {locale === 'en' ? 'See the world through the eyes of a local' : 'شاهد العالم من خلال عيون محلية'}
+            </h2>
+            <p className="text-lg text-gray-600 text-center mb-10">
+              {locale === 'en' 
+                ? 'Choose from hundreds of guided tours that will bring this rich land\'s fascinating heritage to life.' 
+                : 'اختر من بين مئات الجولات المصحوبة بمرشدين التي ستحيي التراث الرائع لهذه الأرض الغنية.'}
+            </p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {tourTypes.map((type) => (
+                <Link 
+                  key={type.id}
+                  href={`/${locale}/tours?type=${type.id}`}
+                  className="bg-white rounded-lg shadow-sm p-4 text-center hover:shadow-md transition-shadow"
+                >
+                  <span className="text-gray-800 font-medium">{type.name}</span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+      
+      {/* Comparison Table Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+           
+            <ComparisonTable locale={locale} />
+          </div>
+        </div>
+      </section>
+      
+      {/* Our Mission Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              {locale === 'en' ? 'Our Mission' : 'مهمتنا'}
+            </h2>
+            
+            <div className="bg-white rounded-xl shadow-md p-8 mb-12">
+              <p className="text-xl text-center text-gray-700 italic mb-6">
+                {locale === 'en' 
+                  ? '"To transform tourism in the Holy Land by connecting travelers with authentic local experiences, empowering guides, and fostering cultural understanding."' 
+                  : '"تحويل السياحة في الأرض المقدسة من خلال ربط المسافرين بتجارب محلية أصيلة، وتمكين المرشدين، وتعزيز التفاهم الثقافي."'}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+                <div className="bg-primary-50 rounded-lg p-6 text-center">
+                  <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">🌍</span>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    {locale === 'en' ? 'Authentic Experiences' : 'تجارب أصيلة'}
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    {locale === 'en' 
+                      ? 'Creating meaningful connections between travelers and local culture' 
+                      : 'خلق روابط ذات معنى بين المسافرين والثقافة المحلية'}
+                  </p>
+                </div>
+                
+                <div className="bg-primary-50 rounded-lg p-6 text-center">
+                  <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">👨‍🏫</span>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    {locale === 'en' ? 'Guide Empowerment' : 'تمكين المرشدين'}
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    {locale === 'en' 
+                      ? 'Supporting local guides to share their expertise and build sustainable careers' 
+                      : 'دعم المرشدين المحليين لمشاركة خبراتهم وبناء مهن مستدامة'}
+                  </p>
+                </div>
+                
+                <div className="bg-primary-50 rounded-lg p-6 text-center">
+                  <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">🤝</span>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    {locale === 'en' ? 'Cultural Bridge' : 'جسر ثقافي'}
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    {locale === 'en' 
+                      ? 'Fostering understanding and appreciation across diverse cultures' 
+                      : 'تعزيز التفاهم والتقدير عبر الثقافات المتنوعة'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Why Tourminded is the Best Choice Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-10 text-center">
+              {locale === 'en' ? 'Why Tourminded is the best choice for your trip to the Holy Land' : 'لماذا Tourminded هو الخيار الأفضل لرحلتك إلى الأرض المقدسة'}
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">💰</span>
+                  </span>
+                  {locale === 'en' ? 'No extra fees' : 'لا رسوم إضافية'}
+                </h3>
+                <p className="text-gray-600">
+                  {locale === 'en' 
+                    ? 'You will pay the lowest possible price. Guaranteed.' 
+                    : 'ستدفع أقل سعر ممكن. مضمون.'}
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">✏️</span>
+                  </span>
+                  {locale === 'en' ? 'Completely customizable' : 'قابل للتخصيص بالكامل'}
+                </h3>
+                <p className="text-gray-600">
+                  {locale === 'en' 
+                    ? 'Down to the finest detail. Even the car you will be picked up in.' 
+                    : 'حتى أدق التفاصيل. حتى السيارة التي سيتم اصطحابك فيها.'}
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">🎭</span>
+                  </span>
+                  {locale === 'en' ? 'An unforgettable adventure' : 'مغامرة لا تنسى'}
+                </h3>
+                <p className="text-gray-600">
+                  {locale === 'en' 
+                    ? 'Each tour is personally vetted and designed for maximum fun!' 
+                    : 'يتم فحص كل جولة شخصيًا وتصميمها لتحقيق أقصى قدر من المرح!'}
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">🎓</span>
+                  </span>
+                  {locale === 'en' ? 'Engaging, licensed guides' : 'مرشدون مرخصون وجذابون'}
+                </h3>
+                <p className="text-gray-600">
+                  {locale === 'en' 
+                      ? 'From religion to history, politics or bird watching, you will connect with a topic expert.' 
+                    : 'من الدين إلى التاريخ، السياسة أو مراقبة الطيور، ستتواصل مع خبير في الموضوع.'}
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">🗣️</span>
+                  </span>
+                  {locale === 'en' ? 'Verified language proficiency' : 'إتقان لغوي موثق'}
+                </h3>
+                <p className="text-gray-600">
+                  {locale === 'en' 
+                    ? 'Check the language ratings and choose a guide you can communicate well with.' 
+                    : 'تحقق من تقييمات اللغة واختر مرشدًا يمكنك التواصل معه بشكل جيد.'}
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">💬</span>
+                  </span>
+                  {locale === 'en' ? 'Chat and support' : 'الدردشة والدعم'}
+                </h3>
+                <p className="text-gray-600">
+                  {locale === 'en' 
+                      ? 'Got a question? You can message a guide directly or reach us via chat anytime.' 
+                    : 'هل لديك سؤال؟ يمكنك مراسلة مرشد مباشرة أو الوصول إلينا عبر الدردشة في أي وقت.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Values Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              {locale === 'en' ? 'Our Values' : 'قيمنا'}
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">✨</span>
+                  </span>
+                  {locale === 'en' ? 'Authenticity' : 'الأصالة'}
+                </h3>
+                <p className="text-gray-600">
+                  {locale === 'en' 
+                    ? 'We believe in real experiences that showcase the true essence of a place and its people.' 
+                    : 'نؤمن بالتجارب الحقيقية التي تعرض الجوهر الحقيقي للمكان وشعبه.'}
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">🔍</span>
+                  </span>
+                  {locale === 'en' ? 'Transparency' : 'الشفافية'}
+                </h3>
+                <p className="text-gray-600">
+                  {locale === 'en' 
+                    ? 'We maintain clear communication and honest practices in all our operations.' 
+                    : 'نحافظ على التواصل الواضح والممارسات الصادقة في جميع عملياتنا.'}
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">🌱</span>
+                  </span>
+                  {locale === 'en' ? 'Sustainability' : 'الاستدامة'}
+                </h3>
+                <p className="text-gray-600">
+                  {locale === 'en' 
+                    ? 'We promote responsible tourism that respects local communities and environments.' 
+                    : 'نحن نشجع السياحة المسؤولة التي تحترم المجتمعات المحلية والبيئات.'}
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  <span className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">💡</span>
+                  </span>
+                  {locale === 'en' ? 'Innovation' : 'الابتكار'}
+                </h3>
+                <p className="text-gray-600">
+                  {locale === 'en' 
+                    ? 'We continuously seek better ways to connect travelers with meaningful experiences.' 
+                    : 'نحن نسعى باستمرار إلى طرق أفضل لربط المسافرين بتجارب ذات مغزى.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Testimonials Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-10 text-center">
+              {locale === 'en' ? 'What Our Travelers Say' : 'ماذا يقول مسافرونا'}
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-lg shadow-md p-6">
+                  <div className="flex items-center text-yellow-400 mb-4">
+                    {[...Array(5)].map((_, j) => (
+                      <Star key={j} className="w-5 h-5 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-gray-700 italic mb-6">
+                    "Ariel was an absolute joy on our tour and made the experience so smooth and wonderful."
+                  </p>
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 bg-gray-200 rounded-full mr-3"></div>
+                    <div>
+                      <p className="font-medium">Sarah M.</p>
+                      <p className="text-sm text-gray-500">United States</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Team Link Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-6">
+              {locale === 'en' ? 'Meet Our Team' : 'تعرف على فريقنا'}
+            </h2>
+            <p className="text-gray-600 mb-8">
+              {locale === 'en' 
+                ? 'Get to know the passionate people behind Tourminded who are dedicated to transforming tourism in the Holy Land.' 
+                : 'تعرف على الأشخاص المتحمسين وراء Tourminded المكرسين لتحويل السياحة في الأرض المقدسة.'}
+            </p>
+            <Link 
+              href={`/${locale}/team`}
+              className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+            >
+              {locale === 'en' ? 'View Our Team' : 'عرض فريقنا'}
+            </Link>
+          </div>
+        </div>
+      </section>
+      
+      {/* Call to Action */}
+      <CallToAction locale={locale} />
     </MainLayout>
   );
-} 
+}

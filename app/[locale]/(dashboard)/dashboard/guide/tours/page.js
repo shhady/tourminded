@@ -7,6 +7,7 @@ import User from '@/models/User';
 import Tour from '@/models/Tour';
 import { Edit, Eye, Clock, Users, MapPin, Globe } from 'lucide-react';
 import DeleteTourButton from '@/components/dashboard/DeleteTourButton';
+import Guide from '@/models/Guide';
 
 export const metadata = {
   title: 'My Tours | Tourminded',
@@ -56,7 +57,8 @@ export default async function GuideToursPage({ params }) {
   
   // Find user in our database
   const user = await User.findOne({ clerkId: clerkUser.id });
-  
+  const guide = await Guide.findOne({ user: user._id });
+
   if (!user) {
     redirect(`/${locale}/sign-in`);
     return;
@@ -69,7 +71,7 @@ export default async function GuideToursPage({ params }) {
   }
   
   // Get user's tours directly
-  const tours = await getUserTours(user._id);
+  const tours = await getUserTours(guide._id);
   
   return (
     <div>

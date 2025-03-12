@@ -161,7 +161,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function GuideProfilePage({ params }) {
-  const { id, locale } = params;
+  const { id, locale } = await params;
   
   try {
     await connectDB();
@@ -222,9 +222,9 @@ export default async function GuideProfilePage({ params }) {
           </div>
           
           {/* Guide name overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-10">
+          <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-10 bg-gradient-to-b from-black/10 via-black/20 to-black/60 shadow-lg">
             <div className="container mx-auto px-4">
-              <div className="flex items-center">
+              <div className="flex items-center  gap-2">
                 <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg mr-6">
                   <Image 
                     src={profileImage}
@@ -236,7 +236,7 @@ export default async function GuideProfilePage({ params }) {
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold mb-2 drop-shadow-md">{name}</h1>
                   <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">
-                    <div className="flex items-center">
+                    <div className="flex-col items-center">
                       <div className="flex items-center text-yellow-400 mr-2">
                         {[...Array(5)].map((_, i) => (
                           <Star 

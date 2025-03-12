@@ -129,7 +129,7 @@ export async function POST(request) {
     // Create tour with user ID as guide
     const tour = await Tour.create({
       ...tourData,
-      guide: user._id, // Use user ID directly
+      // guide: user._id, // Use user ID directly
       rating: 5, // Default rating
       reviewCount: 0
     });

@@ -154,6 +154,7 @@ export default function NewTourPage({ params }) {
           ar: data.descriptionAr || data.descriptionEn // Fallback to English if Arabic not provided
         },
         // Convert numeric fields
+        guide: guide._id,
         price: parseFloat(data.price),
         duration: parseFloat(data.duration),
         maxGroupSize: parseInt(data.maxGroupSize),

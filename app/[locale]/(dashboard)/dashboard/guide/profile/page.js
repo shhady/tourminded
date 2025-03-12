@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Button from '@/components/ui/Button';
 import { Loader } from 'lucide-react';
 
+
 export default function GuideProfilePage({ params }) {
   const localeParams = React.use(params);
   const locale = localeParams?.locale || 'en';
@@ -17,6 +18,7 @@ export default function GuideProfilePage({ params }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
+ 
   useEffect(() => {
     const fetchGuideProfile = async () => {
       if (!isClerkLoaded || !user) {
@@ -356,7 +358,7 @@ export default function GuideProfilePage({ params }) {
               )}
               
               {/* Statistics */}
-              <div className="mt-6">
+              {/* <div className="mt-6">
                 <h3 className="text-lg font-semibold mb-3 text-secondary-900">
                   {locale === 'en' ? 'Statistics' : 'الإحصائيات'}
                 </h3>
@@ -385,7 +387,7 @@ export default function GuideProfilePage({ params }) {
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

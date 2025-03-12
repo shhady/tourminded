@@ -18,10 +18,10 @@ const CallToAction = ({ locale }) => {
               : 'ابدأ في التخطيط لرحلتك المثالية اليوم. تصفح جولاتنا أو خذ اختبارنا الشخصي للعثور على التطابق المثالي لاهتماماتك.'}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button href="/tours" size="lg" className="text-lg px-8 py-4">
+            <Button href={`/${locale}/tours`} size="lg" className="text-lg px-8 py-4">
               {locale === 'en' ? 'Browse Tours' : 'تصفح الجولات'}
             </Button>
-            <Button href="/quiz" variant="outline" size="lg" className="text-lg px-8 py-4 bg-transparent border-white text-black hover:bg-white hover:text-primary-900">
+            <Button href={`/${locale}/quiz`} variant="outline" size="lg" className="text-lg px-8 py-4 bg-transparent border-white text-black hover:bg-white hover:text-primary-900">
               {locale === 'en' ? 'Take the Quiz' : 'خذ الاختبار'}
             </Button>
           </div>
