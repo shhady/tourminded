@@ -17,7 +17,7 @@ const Footer = ({ locale }) => {
     company: [
       { name: locale === 'en' ? 'About Us' : 'عن الشركة', href: '/about' },
       { name: locale === 'en' ? 'Our Team' : 'فريقنا', href: '/team' },
-      { name: locale === 'en' ? 'Careers' : 'وظائف', href: '/careers' },
+      // { name: locale === 'en' ? 'Careers' : 'وظائف', href: '/careers' },
       { name: locale === 'en' ? 'Contact' : 'اتصل بنا', href: '/contact' },
     ],
     tours: [
@@ -31,7 +31,7 @@ const Footer = ({ locale }) => {
       { name: locale === 'en' ? 'Help Center' : 'مركز المساعدة', href: '/help' },
       { name: locale === 'en' ? 'Safety' : 'الأمان', href: '/safety' },
       { name: locale === 'en' ? 'Cancellation Options' : 'خيارات الإلغاء', href: '/cancellation' },
-      { name: locale === 'en' ? 'COVID-19' : 'كوفيد-19', href: '/covid' },
+      // { name: locale === 'en' ? 'COVID-19' : 'كوفيد-19', href: '/covid' },
     ],
     legal: [
       { name: locale === 'en' ? 'Terms of Service' : 'شروط الخدمة', href: '/terms' },

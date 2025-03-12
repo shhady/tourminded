@@ -104,8 +104,8 @@ const Header = ({ locale }) => {
     { name: locale === 'en' ? 'Home' : 'الرئيسية', href: '/' },
     { name: locale === 'en' ? 'Tours' : 'الجولات', href: '/tours' },
     { name: locale === 'en' ? 'Guides' : 'المرشدين', href: '/guides' },
-    { name: locale === 'en' ? 'Locations' : 'المواقع', href: '/locations' },
-    { name: locale === 'en' ? 'Quiz' : 'الاختبار', href: '/quiz' },
+    // { name: locale === 'en' ? 'Locations' : 'المواقع', href: '/locations' },
+    // { name: locale === 'en' ? 'Quiz' : 'الاختبار', href: '/quiz' },
     { name: locale === 'en' ? 'About' : 'عن الموقع', href: '/about' },
   ];
 
