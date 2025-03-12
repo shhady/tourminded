@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star, Languages, MapPin } from 'lucide-react';
+import Button from '../ui/Button';
 
 const FeaturedGuides = ({ locale }) => {
   // Mock data for featured guides
@@ -165,7 +166,7 @@ const FeaturedGuides = ({ locale }) => {
             href="/guides"
             className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-primary-600 hover:bg-primary-700 transition-colors"
           >
-            {locale === 'en' ? 'View All Guides' : 'عرض جميع المرشدين'}
+           <Button> {locale === 'en' ? 'View All Guides' : 'عرض جميع المرشدين'}</Button>
           </Link>
         </div>
       </div>

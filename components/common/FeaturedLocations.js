@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import Button from '../ui/Button';
 
 const FeaturedLocations = ({ locale }) => {
   const locations = [
@@ -107,7 +108,7 @@ const FeaturedLocations = ({ locale }) => {
               href={`/${locale}/tours`}
             className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-primary-600 hover:bg-primary-700 transition-colors"
           >
-            {locale === 'en' ? 'View All Locations' : 'عرض جميع المواقع'}
+            <Button> {locale === 'en' ? 'View All Locations' : 'عرض جميع المواقع'}</Button>
           </Link>
         </div>
       </div>

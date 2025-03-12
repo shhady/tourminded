@@ -1,16 +1,16 @@
-import { useLocale } from 'next-intl';
 import MainLayout from '@/components/layout/MainLayout';
 import connectDB from '@/lib/mongodb';
 import mongoose from 'mongoose';
 import Tour from '@/models/Tour';
-import Guide from '@/models/Guide';
-import Location from '@/models/Location';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star, MapPin, Clock, Users, Calendar, X } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { currentUser } from '@clerk/nextjs/server';
 import PriceRangeFilter from '@/components/tours/PriceRangeFilter';
+
+// Import the new component
+import TourFilters from '@/components/tours/TourFilters';
 
 export const metadata = {
   title: 'Tours | Tourminded',
@@ -29,6 +29,7 @@ async function getTours(searchParams) {
     
     // Ensure searchParams is awaited
     const params = await searchParams;
+    console.log('Search params received:', params); // Debug log
     
     // Build filter object from search params
     const filter = {};
@@ -37,10 +38,15 @@ async function getTours(searchParams) {
       // Use $in operator to check if the location is in the locationNames array
       filter.locationNames = { $in: [params.location] };
     }
-    
+    if (params.expertise) {
+      // Make the filter case-insensitive using a regex
+      filter.expertise = new RegExp(params.expertise, 'i');
+      console.log('Filtering by expertise (case-insensitive):', params.expertise);
+    }
     if (params.duration) {
       filter.duration = parseInt(params.duration);
     }
+  
     
     if (params.minPrice && params.maxPrice) {
       filter.price = { 
@@ -51,6 +57,18 @@ async function getTours(searchParams) {
       filter.price = { $gte: parseInt(params.minPrice) };
     } else if (params.maxPrice) {
       filter.price = { $lte: parseInt(params.maxPrice) };
+    }
+    
+    // Handle language filter from HeroSection
+    if (params.language) {
+      filter.languages = { $in: [params.language] }; // Assuming your Tour model has a languages array
+      console.log('Filtering by language:', params.language);
+    }
+    
+    // Handle travelers/group size filter from HeroSection
+    if (params.travelers) {
+      filter.maxGroupSize = { $gte: parseInt(params.travelers) };
+      console.log('Filtering by travelers:', params.travelers);
     }
     
     if (params.date) {
@@ -64,6 +82,8 @@ async function getTours(searchParams) {
         }
       };
     }
+    
+    console.log('Final filter:', JSON.stringify(filter, null, 2)); // Debug log
     
     // Get page and limit from search params or use defaults
     const page = params.page ? parseInt(params.page) : 1;
@@ -174,7 +194,16 @@ export default async function ToursPage({ searchParams, params }) {
   // Await searchParams before passing to getTours
   const awaitedSearchParams = await searchParams;
   const { tours, pagination } = await getTours(awaitedSearchParams);
-  
+  const initialFilters = {
+    location: awaitedSearchParams.location || '',
+    duration: awaitedSearchParams.duration || '',
+    expertise: awaitedSearchParams.expertise || '', // Changed from type to expertise
+    language: awaitedSearchParams.language || '',
+    travelers: awaitedSearchParams.travelers || '',
+    minPrice: awaitedSearchParams.minPrice || '',
+    maxPrice: awaitedSearchParams.maxPrice || '',
+    priceRange: awaitedSearchParams.priceRange || '',
+  };
   // Get current user
   let user = null;
   try {
@@ -222,106 +251,8 @@ export default async function ToursPage({ searchParams, params }) {
           {locale === 'en' ? 'Explore Our Tours' : 'استكشف جولاتنا'}
         </h1>
         
-        {/* Responsive Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-secondary-900">
-              {locale === 'en' ? 'Filter Tours' : 'تصفية الجولات'}
-            </h2>
-            
-            {/* Clear Filters Button - Only show if filters are active */}
-            {filtersActive && (
-              <Link
-                href={`/${locale}/tours`}
-                className="text-sm text-primary-600 hover:text-primary-800 flex items-center"
-              >
-                <X size={16} className="mr-1" />
-                {locale === 'en' ? 'Clear Filters' : 'مسح الفلاتر'}
-              </Link>
-            )}
-          </div>
-          
-          <form action="" method="get" className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Location Filter */}
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium text-secondary-700 mb-1">
-                {locale === 'en' ? 'Location' : 'الموقع'}
-              </label>
-              <select
-                id="location"
-                name="location"
-                defaultValue={awaitedSearchParams.location || ''}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                {locationOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Duration Filter */}
-            <div>
-              <label htmlFor="duration" className="block text-sm font-medium text-secondary-700 mb-1">
-                {locale === 'en' ? 'Duration' : 'المدة'}
-              </label>
-              <select
-                id="duration"
-                name="duration"
-                defaultValue={awaitedSearchParams.duration || ''}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                {durationOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Price Range Filter */}
-            <PriceRangeFilter
-              locale={locale}
-              options={priceRangeOptions}
-              defaultValue={awaitedSearchParams.priceRange || ''}
-              minPriceValue={awaitedSearchParams.minPrice || ''}
-              maxPriceValue={awaitedSearchParams.maxPrice || ''}
-            />
-            
-            {/* Date Filter */}
-            <div>
-              <label htmlFor="date" className="block text-sm font-medium text-secondary-700 mb-1">
-                {locale === 'en' ? 'Date' : 'التاريخ'}
-              </label>
-              <input
-                type="date"
-                id="date"
-                name="date"
-                defaultValue={awaitedSearchParams.date || ''}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
-            
-            {/* Submit Button */}
-            <div className="md:col-span-3 mt-2 flex space-x-2">
-              <Button type="submit" className="flex-1 md:flex-none md:w-auto">
-                {locale === 'en' ? 'Apply Filters' : 'تطبيق الفلاتر'}
-              </Button>
-              
-              {/* Clear button - Only show if filters are active */}
-              {filtersActive && (
-                <Link
-                  href={`/${locale}/tours`}
-                  className="flex-1 md:flex-none md:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors text-center"
-                >
-                  {locale === 'en' ? 'Clear' : 'مسح'}
-                </Link>
-              )}
-            </div>
-          </form>
-        </div>
-        
+        <TourFilters locale={locale} initialFilters={initialFilters} />
+
         {/* Tours Grid */}
         {tours.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">

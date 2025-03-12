@@ -3,17 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '../ui/Button';
 import Image from 'next/image';
-import { Search, Calendar, Users, GraduationCap, Languages } from 'lucide-react';
+import { Search, Users, GraduationCap, Languages, ChevronDown } from 'lucide-react';
 
 const HeroSection = ({ locale }) => {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
-  const [startDate, setStartDate] = useState('');
   const [travelers, setTravelers] = useState(2);
   const [expertise, setExpertise] = useState('');
   const [language, setLanguage] = useState('');
   const [currentBg, setCurrentBg] = useState(0);
   const [isFormExpanded, setIsFormExpanded] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Background images for carousel
   const bgImages = [
@@ -22,29 +22,57 @@ const HeroSection = ({ locale }) => {
     '/hero-bg-3.jpg',
   ];
 
-  // Set initial date only on client-side to avoid hydration mismatch
+  // Set initial client-side state and handle scroll effects
   useEffect(() => {
     setIsClient(true);
-    setStartDate(new Date().toISOString().split('T')[0]);
 
     // Background image carousel
     const interval = setInterval(() => {
       setCurrentBg((prev) => (prev + 1) % bgImages.length);
-    }, 5000);
+    }, 6000);
 
-    return () => clearInterval(interval);
+    // Add scroll listener for subtle parallax effect
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, [bgImages.length]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     
+    // Create a URLSearchParams object to build the query string
     const searchParams = new URLSearchParams();
-    if (startDate) searchParams.append('date', startDate);
-    if (travelers) searchParams.append('travelers', travelers);
-    if (expertise) searchParams.append('expertise', expertise);
-    if (language) searchParams.append('language', language);
     
-    router.push(`/${locale}/tours?${searchParams.toString()}`);
+    // Use the same parameter names as in the TourFilters component
+    if (travelers && travelers !== 2) {
+      searchParams.append('travelers', travelers);
+      console.log('Adding travelers:', travelers);
+    }
+    
+    if (expertise) {
+      searchParams.append('expertise', expertise);
+      console.log('Adding expertise:', expertise);
+    }
+    
+    if (language) {
+      searchParams.append('language', language);
+      console.log('Adding language:', language);
+    }
+    
+    // Navigate to the tours page with the search parameters
+    const queryString = searchParams.toString();
+    const url = `/${locale}/tours${queryString ? `?${queryString}` : ''}`;
+    
+    console.log('Navigating to:', url);
+    router.push(url);
   };
 
   const toggleFormExpansion = () => {
@@ -53,14 +81,14 @@ const HeroSection = ({ locale }) => {
 
   const expertiseOptions = [
     { value: '', label: locale === 'en' ? 'All Expertise' : 'جميع الخبرات' },
-    { value: 'Christian', label: locale === 'en' ? 'Christian' : 'مسيحي' },
-    { value: 'Jewish', label: locale === 'en' ? 'Jewish' : 'يهودي' },
-    { value: 'Muslim', label: locale === 'en' ? 'Muslim' : 'إسلامي' },
-    { value: 'Political', label: locale === 'en' ? 'Political' : 'سياسي' },
-    { value: 'Historical', label: locale === 'en' ? 'Historical' : 'تاريخي' },
-    { value: 'Cultural', label: locale === 'en' ? 'Cultural' : 'ثقافي' },
-    { value: 'Food', label: locale === 'en' ? 'Food' : 'طعام' },
-    { value: 'All-inclusive', label: locale === 'en' ? 'All-inclusive' : 'شامل' },
+    { value: 'christian', label: locale === 'en' ? 'Christian' : 'مسيحي' },
+    { value: 'jewish', label: locale === 'en' ? 'Jewish' : 'يهودي' },
+    { value: 'muslim', label: locale === 'en' ? 'Muslim' : 'إسلامي' },
+    { value: 'political', label: locale === 'en' ? 'Political' : 'سياسي' },
+    { value: 'historical', label: locale === 'en' ? 'Historical' : 'تاريخي' },
+    { value: 'cultural', label: locale === 'en' ? 'Cultural' : 'ثقافي' },
+    { value: 'food', label: locale === 'en' ? 'Food' : 'طعام' },
+    { value: 'all-inclusive', label: locale === 'en' ? 'All-inclusive' : 'شامل' },
   ];
 
   const languageOptions = [
@@ -76,95 +104,79 @@ const HeroSection = ({ locale }) => {
   ];
 
   return (
-    <div className="relative min-h-[500px] sm:min-h-[600px] md:h-[85vh] overflow-hidden bg-gray-100">
-      {/* Background Image Carousel */}
+    <div className="relative min-h-[550px] sm:min-h-[650px] md:min-h-[80vh] overflow-hidden">
+      {/* Background Image Carousel with subtle parallax */}
       <div className="absolute inset-0 w-full h-full">
         {bgImages.map((img, index) => (
           <div
             key={index}
-            className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
+            className={`absolute inset-0 w-full h-full transition-opacity duration-2000 ${
               index === currentBg ? 'opacity-100' : 'opacity-0'
             }`}
+            style={{ 
+              transform: isScrolled ? 'scale(1.03) translateY(-1%)' : 'scale(1)',
+              transition: 'transform 0.8s ease-out'
+            }}
           >
-            {/* Placeholder div until we have actual images */}
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-gray-100" />
             <Image 
               src={img} 
-              alt="Hero background" 
+              alt="Holy Land scenery" 
               fill 
               priority
               className="object-cover" 
+              quality={90}
             />
-            <div className="absolute inset-0 bg-black opacity-30 md:opacity-20" />
+            {/* Softer gradient overlay for better text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/15 to-black/40" />
           </div>
         ))}
       </div>
       
       {/* Hero Content */}
       <div className="container mx-auto px-4 py-8 md:py-0 h-full flex flex-col justify-center relative z-20">
-        <div className="max-w-3xl mx-auto text-center mb-6 md:mb-12 animate-slide-up">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-white md:text-secondary-900 leading-tight drop-shadow-md md:drop-shadow-none">
+        <div className="max-w-3xl mx-auto text-center mb-8 md:mb-10 animate-fade-in">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-white leading-tight">
             {locale === 'en' 
-              ? 'Make your visit to the Holy Land the trip of a lifetime' 
-              : 'اجعل زيارتك للأرض المقدسة رحلة العمر'}
+              ? 'Discover the Holy Land with Expert Guides' 
+              : 'اكتشف الأرض المقدسة مع مرشدين خبراء'}
           </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-white md:text-secondary-700 opacity-90 mb-6 md:mb-8 drop-shadow-md md:drop-shadow-none">
+          <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
             {locale === 'en'
-              ? 'Tourminded matches you directly to expert local guides based on your interests and language'
-              : 'تربطك توورمايندد مباشرة بمرشدين محليين خبراء بناءً على اهتماماتك ولغتك'}
+              ? 'Personalized tours with guides who share your interests and speak your language'
+              : 'جولات مخصصة مع مرشدين يشاركونك اهتماماتك ويتحدثون لغتك'}
           </p>
-         
         </div>
 
         {/* Search Form - Mobile Collapsed Version */}
-        <div className="md:hidden bg-white rounded-xl shadow-lg mb-4 animate-slide-up">
+        <div className="md:hidden bg-white/90 backdrop-blur-sm rounded-xl shadow-lg mb-4 animate-fade-in overflow-hidden">
           <div 
             className="p-4 flex justify-between items-center cursor-pointer"
             onClick={toggleFormExpansion}
           >
             <div className="flex items-center">
-              <Search className="text-primary-600 mr-2" size={20} />
+              <Search className="text-primary-600 mr-3" size={20} />
               <span className="font-medium text-secondary-900">
-                {locale === 'en' ? 'Find Your Perfect Tour' : 'ابحث عن جولتك المثالية'}
+                {locale === 'en' ? 'Find Your Tour' : 'ابحث عن جولتك'}
               </span>
             </div>
-            <div className={`transition-transform duration-300 ${isFormExpanded ? 'rotate-180' : ''}`}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
-            </div>
+            <ChevronDown 
+              className={`text-secondary-600 transition-transform duration-300 ${isFormExpanded ? 'rotate-180' : ''}`} 
+              size={20} 
+            />
           </div>
           
           {isFormExpanded && (
-            <div className="px-4 pb-4 pt-2 border-t border-gray-100">
+            <div className="p-4 pt-0 border-t border-gray-100">
               <form onSubmit={handleSearch} className="space-y-4">
-                {/* Date Input */}
-                <div>
-                  <label className="text-secondary-900 text-sm font-medium mb-1 flex gap-2 items-center">
-                    <Calendar className="mr-2 text-primary-500" size={16} />
-                    {locale === 'en' ? 'Travel Date' : 'تاريخ السفر'}
-                  </label>
-                  {isClient && (
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  )}
-                </div>
-
                 {/* Travelers */}
                 <div>
-                  <label className="text-secondary-900 text-sm font-medium mb-1 flex gap-2 items-center">
-                    <Users className="mr-2 text-primary-500" size={16} />
-                    {locale === 'en' ? '# Of Travelers' : 'عدد المسافرين'}
+                  <label className="text-secondary-800 text-sm font-medium mb-1 block">
+                    {locale === 'en' ? 'Number of Travelers' : 'عدد المسافرين'}
                   </label>
                   <select
                     value={travelers}
                     onChange={(e) => setTravelers(e.target.value)}
-                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
+                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 border border-gray-200 rounded-lg text-secondary-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                     style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
@@ -178,14 +190,13 @@ const HeroSection = ({ locale }) => {
 
                 {/* Expertise */}
                 <div>
-                  <label className="text-secondary-900 text-sm font-medium mb-1 flex gap-2 items-center">
-                    <GraduationCap className="mr-2 text-primary-500" size={16} />
-                    {locale === 'en' ? 'Guide Expertise' : 'خبرة المرشد'}
+                  <label className="text-secondary-800 text-sm font-medium mb-1 block">
+                    {locale === 'en' ? 'Tour Type' : 'نوع الجولة'}
                   </label>
                   <select
                     value={expertise}
                     onChange={(e) => setExpertise(e.target.value)}
-                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
+                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 border border-gray-200 rounded-lg text-secondary-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                     style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
                   >
                     {expertiseOptions.map((option) => (
@@ -198,14 +209,13 @@ const HeroSection = ({ locale }) => {
 
                 {/* Languages */}
                 <div>
-                  <label className=" text-secondary-900 text-sm font-medium mb-1 flex gap-2 items-center">
-                    <Languages className="mr-2 text-primary-500" size={16} />
+                  <label className="text-secondary-800 text-sm font-medium mb-1 block">
                     {locale === 'en' ? 'Languages' : 'اللغات'}
                   </label>
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 text-sm border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
+                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 border border-gray-200 rounded-lg text-secondary-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                     style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
                   >
                     {languageOptions.map((option) => (
@@ -219,11 +229,12 @@ const HeroSection = ({ locale }) => {
                 {/* Search Button */}
                 <Button 
                   type="submit" 
-                  className="w-full py-2 text-base font-semibold"
-                  variant="primary"
-                  icon={<Search size={18} />}
+                  className="w-full py-2.5 px-4 text-base font-medium bg-primary-600 hover:bg-primary-700 text-black rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                 >
-                  {locale === 'en' ? 'Search Tours' : 'البحث عن الجولات'}
+                  <div className="flex items-center gap-2">
+                    <Search size={18} />
+                    <span>{locale === 'en' ? 'Search Tours' : 'البحث عن الجولات'}</span>
+                  </div>
                 </Button>
               </form>
             </div>
@@ -231,35 +242,18 @@ const HeroSection = ({ locale }) => {
         </div>
 
         {/* Search Form - Desktop Version */}
-        <div className="hidden md:block bg-white rounded-2xl shadow-xl p-6 max-w-4xl mx-auto animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Date Input */}
-            <div>
-              <label className="text-secondary-900 text-sm font-medium mb-2 flex gap-2 items-center">
-                <Calendar className="mr-2 text-primary-500" size={16} />
-                {locale === 'en' ? 'Travel Date' : 'تاريخ السفر'}
-              </label>
-              {isClient && (
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
-              )}
-            </div>
-
+        <div className="hidden md:block bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 max-w-4xl mx-auto animate-fade-in">
+          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {/* Travelers */}
             <div>
-              <label className=" text-secondary-900 text-sm font-medium mb-2 flex gap-2 items-center">
-                <Users className="mr-2 text-primary-500" size={16} />
-                {locale === 'en' ? '# Of Travelers' : 'عدد المسافرين'}
+              <label className="text-secondary-800 text-sm font-medium mb-2 flex items-center">
+                <Users className="text-primary-600 mr-2" size={16} />
+                <span>{locale === 'en' ? 'Number of Travelers' : 'عدد المسافرين'}</span>
               </label>
               <select
                 value={travelers}
                 onChange={(e) => setTravelers(e.target.value)}
-                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
+                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-gray-200 rounded-lg text-secondary-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white hover:border-primary-300 transition-colors`}
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
@@ -273,14 +267,14 @@ const HeroSection = ({ locale }) => {
 
             {/* Expertise */}
             <div>
-              <label className=" text-secondary-900 text-sm font-medium mb-2 flex gap-2 items-center">
-                <GraduationCap className="mr-2 text-primary-500" size={16} />
-                {locale === 'en' ? 'Guide Expertise' : 'خبرة المرشد'}
+              <label className="text-secondary-800 text-sm font-medium mb-2 flex items-center">
+                <GraduationCap className="text-primary-600 mr-2" size={16} />
+                <span>{locale === 'en' ? 'Tour Type' : 'نوع الجولة'}</span>
               </label>
               <select
                 value={expertise}
                 onChange={(e) => setExpertise(e.target.value)}
-                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
+                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-gray-200 rounded-lg text-secondary-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white hover:border-primary-300 transition-colors`}
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
               >
                 {expertiseOptions.map((option) => (
@@ -293,14 +287,14 @@ const HeroSection = ({ locale }) => {
 
             {/* Languages */}
             <div>
-              <label className=" text-secondary-900 text-sm font-medium mb-2 flex gap-2 items-center">
-                <Languages className="mr-2 text-primary-500" size={16} />
-                {locale === 'en' ? 'Languages' : 'اللغات'}
+              <label className="text-secondary-800 text-sm font-medium mb-2 flex items-center">
+                <Languages className="text-primary-600 mr-2" size={16} />
+                <span>{locale === 'en' ? 'Languages' : 'اللغات'}</span>
               </label>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-secondary-300 rounded-lg text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
+                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-gray-200 rounded-lg text-secondary-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white hover:border-primary-300 transition-colors`}
                 style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
               >
                 {languageOptions.map((option) => (
@@ -312,33 +306,40 @@ const HeroSection = ({ locale }) => {
             </div>
 
             {/* Search Button */}
-            <div className="md:col-span-2 lg:col-span-4 mt-2">
+            <div className="md:col-span-3 mt-1">
               <Button 
                 type="submit" 
-                className="w-full py-3 text-lg font-semibold"
-                variant="primary"
-                icon={<Search />}
+                className="w-full py-3 px-6 text-base font-medium bg-primary-600 hover:bg-primary-700 text-black rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
               >
-                {locale === 'en' ? 'Search Tours' : 'البحث عن الجولات'}
+                <div className="flex items-center gap-2">
+                  <Search size={18} />
+                  <span>{locale === 'en' ? 'Find Your Perfect Tour' : 'ابحث عن جولتك المثالية'}</span>
+                </div>
               </Button>
             </div>
           </form>
         </div>
-        
-        {/* Mobile Quiz Button */}
-        {/* <div className="md:hidden text-center mt-4">
-          <Button 
-            href={`/${locale}/guides`} 
-            size="lg" 
-            variant="secondary"
-            className="font-bold bg-white text-black shadow-lg"
-          >
-            {locale === 'en' ? 'Our Guides' : 'المرشدين'}
-          </Button>
-        </div> */}
       </div>
+      
+      {/* Add subtle animations */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };
 
-export default HeroSection; 
+export default HeroSection;
