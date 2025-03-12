@@ -24,6 +24,7 @@ import {
 import connectDB from '@/lib/mongodb';
 import Tour from '@/models/Tour';
 import User from '@/models/User';
+import Guide from '@/models/Guide';
 
 export async function generateMetadata({ params }) {
   const paramsData = await params;
@@ -70,48 +71,34 @@ async function getTourData(id) {
       return null;
     }
     
-    // Fetch guide data if guide ID exists
+    // Initialize guideData
     let guideData = null;
+    
+    // Fetch guide data if guide ID exists
     if (tour.guide) {
       try {
-        // First find the user by ID
-        const user = await User.findById(tour.guide);
-        if (!user) {
-          console.log('No user found for guide');
+        // Find the guide and populate the user data in one query
+        const guide = await Guide.findById(tour.guide).populate('user');
+        
+        if (!guide) {
+          console.log('No guide found for this tour');
         } else {
-          // Then find the guide document using the user's ID
-          const Guide = (await import('@/models/Guide')).default;
-          const guide = await Guide.findOne({ user: user._id });
-          
-          if (!guide) {
-            console.log('No guide profile found for user');
-            // Even if no guide profile, we can still show basic user info
-            guideData = {
-              _id: user._id.toString(),
-              name: user.name,
-              email: user.email || null,
-              phone: user.phone || null,
-            };
-          } else {
-            // Combine user and guide data
-            guideData = {
-              _id: user._id.toString(),
-              name: user.name,
-              profileImage: guide?.profileImage?.url || null,
-              email: user.email || null,
-              phone: user.phone || null,
-              rating: guide.rating || 4.5,
-              reviewCount: guide.reviewCount || 0,
-              // Additional guide-specific fields
-              about: guide.about || null,
-              languages: guide.languages || [],
-              expertise: guide.expertise || [],
-              certifications: guide.certifications || [],
-              experience: guide.experience || null
-            };
-          }
-          
-          console.log('Guide data:', guideData);
+          // Combine user and guide data
+          guideData = {
+            _id: guide._id.toString(),
+            name: guide.user?.name || 'Tour Guide',
+            profileImage: guide.profileImage?.url || null,
+            email: guide.user?.email || null,
+            phone: guide.user?.phone || null,
+            rating: guide.rating || 4.5,
+            reviewCount: guide.reviewCount || 0,
+            // Additional guide-specific fields
+            about: guide.about || null,
+            languages: guide.languages || [],
+            expertise: guide.expertise || [],
+            certifications: guide.certifications || [],
+            experience: guide.experience || null
+          };
         }
       } catch (error) {
         console.error('Error fetching guide data:', error);
@@ -430,7 +417,7 @@ export default async function TourPage({ params }) {
                     </div>
                     
                     {/* Guide Contact Information */}
-                    {(tourData.guide.email || tourData.guide.phone) && (
+                    {/* {(tourData.guide.email || tourData.guide.phone) && (
                       <div className="mb-4 bg-secondary-50 p-3 rounded-lg">
                         <h4 className="font-medium text-secondary-900 mb-2">
                           {locale === 'en' ? 'Contact Information' : 'معلومات الاتصال'}
@@ -456,7 +443,7 @@ export default async function TourPage({ params }) {
                           </div>
                         )}
                       </div>
-                    )}
+                    )} */}
                     
                     <hr className="my-4 border-secondary-200" />
                   </>
