@@ -28,7 +28,7 @@ const Footer = ({ locale }) => {
       { name: locale === 'en' ? 'Cultural Tours' : 'جولات ثقافية', href: '/tours?expertise=Cultural' },
     ],
     support: [
-      { name: locale === 'en' ? 'Help Center' : 'مركز المساعدة', href: '/help' },
+      { name: locale === 'en' ? 'Help Center' : 'مركز المساعدة', href: `/${locale}/help` },
       { name: locale === 'en' ? 'Safety' : 'الأمان', href: '/safety' },
       { name: locale === 'en' ? 'Cancellation Options' : 'خيارات الإلغاء', href: '/cancellation' },
       // { name: locale === 'en' ? 'COVID-19' : 'كوفيد-19', href: '/covid' },

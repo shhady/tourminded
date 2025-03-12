@@ -74,7 +74,7 @@ export default async function AboutPage({ params }) {
                 <div className="md:w-1/2">
                   <div className="relative h-64 w-full rounded-xl overflow-hidden shadow-lg">
                     <Image 
-                      src="/tour-image-1.jpg" 
+                      src="https://res.cloudinary.com/shhady/image/upload/v1741739969/tours/gallery/rcjvzwei0y7xvfl0uvkq.jpg" 
                       alt="Vacation stress"
                       fill
                       className="object-cover"
@@ -144,7 +144,7 @@ export default async function AboutPage({ params }) {
               <div className="md:w-1/2">
                 <div className="relative h-80 w-full rounded-xl overflow-hidden shadow-lg">
                   <Image 
-                    src="/tour-image-2.jpg" 
+                    src="https://res.cloudinary.com/shhady/image/upload/v1741752805/tour-image-2_g7gvby.jpg" 
                     alt="Tourminded founders"
                     fill
                     className="object-cover"
