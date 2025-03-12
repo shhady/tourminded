@@ -224,7 +224,7 @@ const Header = ({ locale }) => {
             <div className="relative">
               <button
                 onClick={toggleLanguageMenu}
-                className={`flex items-center rounded-md px-3 py-2 transition-colors ${
+                className={`cursor-pointer flex gap-1 items-center rounded-md px-3 py-2 transition-colors ${
                   useDarkText
                     ? 'text-secondary-900 hover:text-primary-600 hover:bg-primary-50'
                     : 'text-black hover:text-black hover:bg-white/20'
@@ -239,13 +239,13 @@ const Header = ({ locale }) => {
                 <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-medium z-10 animate-fade-in overflow-hidden">
                   <button
                     onClick={() => changeLanguage('en')}
-                    className="block w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                    className="cursor-pointer block w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                   >
                     English
                   </button>
                   <button
                     onClick={() => changeLanguage('ar')}
-                    className="block w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                    className="cursor-pointer block w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                   >
                     العربية
                   </button>
@@ -258,13 +258,13 @@ const Header = ({ locale }) => {
               <div className="relative">
                 <button
                   onClick={toggleUserMenu}
-                  className={`flex items-center rounded-md px-3 py-2 transition-colors ${
+                  className={`cursor-pointer flex gap-1 items-center rounded-md px-3 py-2 transition-colors ${
                     useDarkText
                       ? 'text-secondary-900 hover:text-primary-600 hover:bg-primary-50'
                       : 'text-black hover:text-black hover:bg-white/20'
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
+                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
                     <User className="text-primary-600 h-4 w-4" />
                    
                   </div>
@@ -300,7 +300,7 @@ const Header = ({ locale }) => {
                     )}
                     
                     {/* Logout Button */}
-                    <div className=' cursor-pointer flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors border-t border-secondary-100'>
+                    <div className='cursor-pointer flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors border-t border-secondary-100'>
                     <LogOut className="mr-2 h-4 w-4" /> 
                     <SignOutButton />
                     </div>
@@ -385,7 +385,7 @@ const Header = ({ locale }) => {
                  
                   <div
                   
-                    className="flex items-center w-full text-left px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                    className="cursor-pointer flex items-center w-full text-left px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     <SignOutButton />
