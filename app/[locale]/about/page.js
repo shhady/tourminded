@@ -450,7 +450,7 @@ export default async function AboutPage({ params }) {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
+              {[1].map((i) => (
                 <div key={i} className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex items-center text-yellow-400 mb-4">
                     {[...Array(5)].map((_, j) => (
@@ -463,7 +463,7 @@ export default async function AboutPage({ params }) {
                   <div className="flex items-center">
                     <div className="w-10 h-10 bg-gray-200 rounded-full mr-3"></div>
                     <div>
-                        <p className="font-medium">Boulos Sh.</p>
+                        <p className="font-medium">Sarah M.</p>
                       <p className="text-sm text-gray-500">United States</p>
                     </div>
                   </div>
