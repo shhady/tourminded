@@ -15,16 +15,21 @@ import {
   Accessibility, 
   Baby, 
   Heart,
-  Share,
   MessageCircle,
   ChevronRight,
   Check,
-  X
+  X,
+  Share
 } from 'lucide-react';
 import connectDB from '@/lib/mongodb';
 import Tour from '@/models/Tour';
 import User from '@/models/User';
 import Guide from '@/models/Guide';
+import dynamic from 'next/dynamic';
+import GalleryLightbox from './GalleryLightbox';
+
+// Dynamically import the ShareTourButton component with no SSR
+const ShareTourButton = dynamic(() => import('./ShareTourButton'));
 
 export async function generateMetadata({ params }) {
   const paramsData = await params;
@@ -83,10 +88,15 @@ async function getTourData(id) {
         if (!guide) {
           console.log('No guide found for this tour');
         } else {
+          // Extract first name only
+          let guideName = guide.user?.name || 'Tour Guide';
+          // Split the name and take only the first part
+          guideName = guideName.split(' ')[0];
+          
           // Combine user and guide data
           guideData = {
             _id: guide._id.toString(),
-            name: guide.user?.name || 'Tour Guide',
+            name: guideName,
             profileImage: guide.profileImage?.url || null,
             email: guide.user?.email || null,
             phone: guide.user?.phone || null,
@@ -330,24 +340,13 @@ export default async function TourPage({ params }) {
               
               {/* Gallery */}
               {tourData.images?.gallery && tourData.images.gallery.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="text-xl font-semibold mb-4 text-secondary-900">
-                    {locale === 'en' ? 'Tour Gallery' : 'معرض الصور'}
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {tourData.images.gallery.map((image, index) => (
-                      <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                        <Image
-                          src={image.url}
-                          alt={`Tour image ${index + 1}`}
-                          fill
-                          className="object-cover hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+  <div className="mb-8">
+    <h3 className="text-xl font-semibold mb-4 text-secondary-900">
+      {locale === 'en' ? 'Tour Gallery' : 'معرض الصور'}
+    </h3>
+    <GalleryLightbox images={tourData.images.gallery} locale={locale} />
+  </div>
+)}
             </div>
             
             {/* Sidebar */}
@@ -368,13 +367,13 @@ export default async function TourPage({ params }) {
                     <Heart className="w-5 h-5 mr-1" />
                     <span>{locale === 'en' ? 'Save' : 'حفظ'}</span>
                   </button>
-                  <button className="flex items-center text-secondary-700 hover:text-primary-600">
-                    <Share className="w-5 h-5 mr-1" />
-                    <span>{locale === 'en' ? 'Share' : 'مشاركة'}</span>
-                  </button>
+                  <ShareTourButton 
+                    locale={locale} 
+                    tourTitle={tourData.title[locale] || tourData.title.en}
+                  />
                   <button className="flex items-center text-secondary-700 hover:text-primary-600">
                     <MessageCircle className="w-5 h-5 mr-1" />
-                    <span>{locale === 'en' ? 'Ask' : 'اسأل'}</span>
+                    <span>{locale === 'en' ? 'Message' : 'رسالة'}</span>
                   </button>
                 </div>
                 
@@ -416,35 +415,7 @@ export default async function TourPage({ params }) {
                       </div>
                     </div>
                     
-                    {/* Guide Contact Information */}
-                    {/* {(tourData.guide.email || tourData.guide.phone) && (
-                      <div className="mb-4 bg-secondary-50 p-3 rounded-lg">
-                        <h4 className="font-medium text-secondary-900 mb-2">
-                          {locale === 'en' ? 'Contact Information' : 'معلومات الاتصال'}
-                        </h4>
-                        {tourData.guide.email && (
-                          <div className="flex items-center mb-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-secondary-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            <a href={`mailto:${tourData.guide.email}`} className="text-primary-600 hover:underline">
-                              {tourData.guide.email}
-                            </a>
-                          </div>
-                        )}
-                        {tourData.guide.phone && (
-                          <div className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-secondary-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            <a href={`tel:${tourData.guide.phone}`} className="text-primary-600 hover:underline">
-                              {tourData.guide.phone}
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    )} */}
-                    
+                 
                     <hr className="my-4 border-secondary-200" />
                   </>
                 ) : (

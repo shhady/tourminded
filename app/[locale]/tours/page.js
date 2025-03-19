@@ -156,16 +156,30 @@ const getGuideName = (guide, locale) => {
   const languageToFind = languageMap[locale] || 'English';
   
   // Find name in current locale
-  const nameObj = guide.names.find(n => n.language === languageToFind);
-  if (nameObj && nameObj.value) return nameObj.value;
+  const nameObj = guide.names?.find(n => n.language === languageToFind);
+  if (nameObj && nameObj.value) {
+    // Extract first name only
+    return nameObj.value.split(' ')[0];
+  }
   
   // Fallback to English name
-  const enNameObj = guide.names.find(n => n.language === 'English');
-  if (enNameObj && enNameObj.value) return enNameObj.value;
+  const enNameObj = guide.names?.find(n => n.language === 'English');
+  if (enNameObj && enNameObj.value) {
+    // Extract first name only
+    return enNameObj.value.split(' ')[0];
+  }
   
   // Fallback to first available name
-  if (guide.names.length > 0 && guide.names[0].value) {
-    return guide.names[0].value;
+  if (guide.names && guide.names.length > 0 && guide.names[0].value) {
+    // Extract first name only
+    return guide.names[0].value.split(' ')[0];
+  }
+  
+  // Last fallback to nickname or first part of user name
+  if (guide.nickname) return guide.nickname;
+  
+  if (guide.user && guide.user.firstName) {
+    return guide.user.firstName;
   }
   
   return 'Guide';

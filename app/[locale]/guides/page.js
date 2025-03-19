@@ -76,19 +76,33 @@ const getGuideName = (guide, locale) => {
   const languageToFind = languageMap[locale] || 'English';
   
   // Find name in current locale
-  const nameObj = guide.names.find(n => n.language === languageToFind);
-  if (nameObj && nameObj.value) return nameObj.value;
-  
-  // Fallback to English name
-  const enNameObj = guide.names.find(n => n.language === 'English');
-  if (enNameObj && enNameObj.value) return enNameObj.value;
-  
-  // Fallback to first available name
-  if (guide.names.length > 0 && guide.names[0].value) {
-    return guide.names[0].value;
+  const nameObj = guide.names?.find(n => n.language === languageToFind);
+  if (nameObj && nameObj.value) {
+    // Extract first name only
+    return nameObj.value.split(' ')[0];
   }
   
-  return guide.nickname || 'Guide';
+  // Fallback to English name
+  const enNameObj = guide.names?.find(n => n.language === 'English');
+  if (enNameObj && enNameObj.value) {
+    // Extract first name only
+    return enNameObj.value.split(' ')[0];
+  }
+  
+  // Fallback to first available name
+  if (guide.names && guide.names.length > 0 && guide.names[0].value) {
+    // Extract first name only
+    return guide.names[0].value.split(' ')[0];
+  }
+  
+  // Last fallback to nickname or first part of user name
+  if (guide.nickname) return guide.nickname;
+  
+  if (guide.user && guide.user.firstName) {
+    return guide.user.firstName;
+  }
+  
+  return 'Guide';
 };
 
 // Helper function to get language name from code
@@ -172,7 +186,12 @@ export default async function GuidesPage({ searchParams, params }) {
     { value: 'Historical', label: locale === 'en' ? 'Historical' : 'تاريخي' },
     { value: 'Cultural', label: locale === 'en' ? 'Cultural' : 'ثقافي' },
     { value: 'Food', label: locale === 'en' ? 'Food' : 'طعام' },
+    { value: 'Adventure', label: locale === 'en' ? 'Adventure' : 'مغامرة' },
+    { value: 'Nature', label: locale === 'en' ? 'Nature' : 'طبيعة' },
+    { value: 'Photography', label: locale === 'en' ? 'Photography' : 'تصوير' },
+    { value: 'Culinary', label: locale === 'en' ? 'Culinary' : 'طهي' },
     { value: 'All-inclusive', label: locale === 'en' ? 'All-inclusive' : 'شامل' },
+
   ];
   
   // Get language options for filter

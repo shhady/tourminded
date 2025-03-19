@@ -694,6 +694,10 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
                   <option value="Historical">{locale === 'en' ? 'Historical' : 'تاريخي'}</option>
                   <option value="Cultural">{locale === 'en' ? 'Cultural' : 'ثقافي'}</option>
                   <option value="Food">{locale === 'en' ? 'Food' : 'طعام'}</option>
+                  <option value="Adventure">{locale === 'en' ? 'Adventure' : 'مغامرة'}</option>
+                  <option value="Nature">{locale === 'en' ? 'Nature' : 'طبيعة'}</option>
+                  <option value="Photography">{locale === 'en' ? 'Photography' : 'تصوير'}</option>
+                  <option value="Culinary">{locale === 'en' ? 'Culinary' : 'طهي'}</option>
                   <option value="All-inclusive">{locale === 'en' ? 'All-inclusive' : 'شامل'}</option>
                 </select>
               </div>

@@ -35,9 +35,13 @@ export default async function AboutPage({ params }) {
     { id: 'historical', name: locale === 'en' ? 'Historical Tours' : 'جولات تاريخية' },
     { id: 'cultural', name: locale === 'en' ? 'Cultural Tours' : 'جولات ثقافية' },
     { id: 'food', name: locale === 'en' ? 'Food Tours' : 'جولات طعام' },
+    { id: 'adventure', name: locale === 'en' ? 'Adventure Tours' : 'جولات مغامرة' },
+    { id: 'nature', name: locale === 'en' ? 'Nature Tours' : 'جولات طبيعة' },
+    { id: 'photography', name: locale === 'en' ? 'Photography Tours' : 'جولات تصوير' },
+    { id: 'culinary', name: locale === 'en' ? 'Culinary Tours' : 'جولات طهي' },
     { id: 'all-inclusive', name: locale === 'en' ? 'All-Inclusive Tour' : 'جولة شاملة' },
   ];
-  
+
   return (
     <MainLayout locale={locale} user={user}>
       {/* Hero Section */}

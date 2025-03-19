@@ -8,6 +8,7 @@ import ImageUploader from '@/components/ui/ImageUploader';
 import Button from '@/components/ui/Button';
 import { Loader, Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
+import LanguageSelector from './LanguageSelector';
 
 export default function GuideRegistrationPage({ params }) {
   const unwrappedParams = React.use(params);
@@ -413,13 +414,10 @@ export default function GuideRegistrationPage({ params }) {
                             <label htmlFor={`language-${index}`} className="block text-sm font-medium text-secondary-700 mb-1">
                               {locale === 'en' ? 'Language' : 'اللغة'}*
                             </label>
-                            <input
-                              id={`language-${index}`}
-                              type="text"
+                            <LanguageSelector 
                               value={lang.language}
-                              onChange={(e) => updateLanguage(index, 'language', e.target.value)}
-                              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                              placeholder={locale === 'en' ? 'e.g. English, Arabic, etc.' : 'مثل: الإنجليزية، العربية، إلخ.'}
+                              onChange={(value) => updateLanguage(index, 'language', value)}
+                              locale={locale}
                             />
                           </div>
                           
@@ -657,8 +655,13 @@ export default function GuideRegistrationPage({ params }) {
                                 <option value="Historical">{locale === 'en' ? 'Historical' : 'تاريخي'}</option>
                                 <option value="Cultural">{locale === 'en' ? 'Cultural' : 'ثقافي'}</option>
                                 <option value="Food">{locale === 'en' ? 'Food' : 'طعام'}</option>
+                                <option value="Adventure">{locale === 'en' ? 'Adventure' : 'مغامرة'}</option>
+                                <option value="Nature">{locale === 'en' ? 'Nature' : 'طبيعة'}</option>
+                                <option value="Photography">{locale === 'en' ? 'Photography' : 'تصوير'}</option>
+                                <option value="Culinary">{locale === 'en' ? 'Culinary' : 'طهي'}</option>
                                 <option value="All-inclusive">{locale === 'en' ? 'All-inclusive' : 'شامل'}</option>
                               </select>
+              
                               {errors[`expertise_${index}_area`] && (
                                 <p className="mt-1 text-sm text-red-600">{errors[`expertise_${index}_area`].message}</p>
                               )}

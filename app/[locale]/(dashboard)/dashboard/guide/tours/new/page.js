@@ -387,13 +387,17 @@ export default function NewTourPage({ params }) {
                 className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">{locale === 'en' ? 'Select expertise' : 'اختر الخبرة'}</option>
-                <option value="Christian">{locale === 'en' ? 'Christian' : 'مسيحي'}</option>
-                <option value="Jewish">{locale === 'en' ? 'Jewish' : 'يهودي'}</option>
-                <option value="Muslim">{locale === 'en' ? 'Muslim' : 'إسلامي'}</option>
-                <option value="Historical">{locale === 'en' ? 'Historical' : 'تاريخي'}</option>
-                <option value="Cultural">{locale === 'en' ? 'Cultural' : 'ثقافي'}</option>
-                <option value="Political">{locale === 'en' ? 'Political' : 'سياسي'}</option>
-                <option value="Food">{locale === 'en' ? 'Food' : 'طعام'}</option>
+                <option value="Historical">{locale === 'en' ? 'Historical' : 'تاريخية'}</option>
+                <option value="Religious">{locale === 'en' ? 'Religious' : 'دينية'}</option>
+                <option value="Cultural">{locale === 'en' ? 'Cultural' : 'ثقافية'}</option>
+                <option value="Adventure">{locale === 'en' ? 'Adventure' : 'مغامرة'}</option>
+                <option value="Culinary">{locale === 'en' ? 'Culinary' : 'طهي'}</option>
+                <option value="Nature">{locale === 'en' ? 'Nature' : 'طبيعة'}</option>
+                <option value="Photography">{locale === 'en' ? 'Photography' : 'تصوير'}</option>
+                <option value="Jewish">{locale === 'en' ? 'Jewish' : 'يهودية'}</option>
+                <option value="Christian">{locale === 'en' ? 'Christian' : 'مسيحية'}</option>
+                <option value="Muslim">{locale === 'en' ? 'Muslim' : 'إسلامية'}</option>
+                <option value="Political">{locale === 'en' ? 'Political' : 'سياسية'}</option>
               </select>
               {errors.expertise && (
                 <p className="mt-1 text-sm text-red-600">{errors.expertise.message}</p>

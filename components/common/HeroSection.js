@@ -88,6 +88,10 @@ const HeroSection = ({ locale }) => {
     { value: 'historical', label: locale === 'en' ? 'Historical' : 'تاريخي' },
     { value: 'cultural', label: locale === 'en' ? 'Cultural' : 'ثقافي' },
     { value: 'food', label: locale === 'en' ? 'Food' : 'طعام' },
+    { value: 'adventure', label: locale === 'en' ? 'Adventure' : 'مغامرة' },
+    { value: 'nature', label: locale === 'en' ? 'Nature' : 'طبيعة' },
+    { value: 'photography', label: locale === 'en' ? 'Photography' : 'تصوير' },
+    { value: 'culinary', label: locale === 'en' ? 'Culinary' : 'طهي' },
     { value: 'all-inclusive', label: locale === 'en' ? 'All-inclusive' : 'شامل' },
   ];
 

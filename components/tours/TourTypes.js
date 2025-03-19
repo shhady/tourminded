@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Cross, Star, Building, Landmark, BookOpen, Theater, Utensils, Globe, ArrowRight } from 'lucide-react';
+import { Cross, Star, Building, Landmark, BookOpen, Theater, Utensils, Globe, ArrowRight, Mountain, TreePine, Camera     } from 'lucide-react';
 
 const TourTypes = ({ locale }) => {
   // Fix links to include locale
@@ -82,6 +82,46 @@ const TourTypes = ({ locale }) => {
       href: '/tours?expertise=Food',
       color: 'bg-orange-50',
     },
+    {
+      id: 'adventure',
+      name: locale === 'en' ? 'Adventure' : 'مغامرة',
+      icon: <Mountain className="text-4xl mb-4 text-primary-500" size={36} />,
+      description: locale === 'en' 
+        ? 'Experience thrilling adventures and unique activities' 
+        : 'تجربة المغامرات المثيرة والأنشطة الفريدة',
+      href: '/tours?expertise=Adventure',
+      color: 'bg-yellow-50',
+    },
+    {
+      id: 'nature',
+      name: locale === 'en' ? 'Nature' : 'طبيعة',
+        icon: <TreePine className="text-4xl mb-4 text-primary-500" size={36} />,
+      description: locale === 'en' 
+        ? 'Explore the natural beauty of the Holy Land' 
+        : 'استكشف الجمال الطبيعي للأرض المقدسة',
+      href: '/tours?expertise=Nature',
+      color: 'bg-green-50',
+    },  
+    {
+      id: 'photography',
+      name: locale === 'en' ? 'Photography' : 'تصوير',
+      icon: <Camera className="text-4xl mb-4 text-primary-500" size={36} />,
+      description: locale === 'en' 
+        ? 'Capture the beauty of the Holy Land through your lens' 
+        : 'التقاط الجمال الطبيعي للأرض المقدسة عبر عينك',
+      href: '/tours?expertise=Photography',
+      color: 'bg-blue-50',
+    }, 
+    {
+      id: 'culinary',
+      name: locale === 'en' ? 'Culinary' : 'طهي',
+      icon: <Utensils className="text-4xl mb-4 text-primary-500" size={36} />,
+      description: locale === 'en' 
+        ? 'Experience the rich culinary traditions of the Holy Land' 
+        : 'تجربة التقاليد الطعامية الغنية للأرض المقدسة',
+      href: '/tours?expertise=Culinary',
+      color: 'bg-orange-50',
+    },  
     {
       id: 'all-inclusive',
       name: locale === 'en' ? 'All-inclusive' : 'شامل',

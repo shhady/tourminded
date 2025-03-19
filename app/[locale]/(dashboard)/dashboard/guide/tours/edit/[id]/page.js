@@ -576,6 +576,7 @@ export default function EditTourPage({ params }) {
                 <option value="Jewish">{locale === 'en' ? 'Jewish' : 'يهودية'}</option>
                 <option value="Christian">{locale === 'en' ? 'Christian' : 'مسيحية'}</option>
                 <option value="Muslim">{locale === 'en' ? 'Muslim' : 'إسلامية'}</option>
+                <option value="Political">{locale === 'en' ? 'Political' : 'سياسية'}</option>
               </select>
             </div>
             

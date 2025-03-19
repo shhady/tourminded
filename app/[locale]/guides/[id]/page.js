@@ -30,19 +30,27 @@ const getGuideName = (guide, locale) => {
   
   // Find name in current locale
   const nameObj = guide.names?.find(n => n.language === languageToFind);
-  if (nameObj && nameObj.value) return nameObj.value;
+  if (nameObj && nameObj.value) {
+    // Extract first name only
+    return nameObj.value.split(' ')[0];
+  }
   
   // Fallback to English name
   const enNameObj = guide.names?.find(n => n.language === 'English');
-  if (enNameObj && enNameObj.value) return enNameObj.value;
-  
-  // Fallback to first available name
-  if (guide.names && guide.names.length > 0 && guide.names[0].value) {
-    return guide.names[0].value;
+  if (enNameObj && enNameObj.value) {
+    // Extract first name only
+    return enNameObj.value.split(' ')[0];
   }
   
-  // Last fallback to nickname
-  return guide.nickname || 'Guide';
+  // Fallback to nickname or first part of name field
+  if (guide.nickname) return guide.nickname;
+  
+  // If there's a name field, extract first name
+  if (guide.name) {
+    return guide.name.split(' ')[0];
+  }
+  
+  return 'Guide';
 };
 
 // Helper function to get guide bio in current locale
@@ -126,6 +134,10 @@ const getArabicExpertiseArea = (area) => {
     'Historical': 'التاريخية',
     'Cultural': 'الثقافية',
     'Food': 'الطعام',
+    'Adventure': 'المغامرة',
+    'Nature': 'الطبيعة',
+    'Photography': 'التصوير',
+    'Culinary': 'الطهي',
     'All-inclusive': 'الشاملة'
   };
   

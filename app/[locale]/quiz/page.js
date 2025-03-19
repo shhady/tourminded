@@ -38,7 +38,11 @@ export default async function QuizPage({ params }) {
         { value: 'Historical', label: locale === 'en' ? 'Historical sites' : 'المواقع التاريخية' },
         { value: 'Cultural', label: locale === 'en' ? 'Local culture' : 'الثقافة المحلية' },
         { value: 'Food', label: locale === 'en' ? 'Food and cuisine' : 'الطعام والمطبخ' },
-        { value: 'Political', label: locale === 'en' ? 'Political history' : 'التاريخ السياسي' },
+        { value: 'Adventure', label: locale === 'en' ? 'Adventure' : 'مغامرة' },
+        { value: 'Nature', label: locale === 'en' ? 'Nature' : 'طبيعة' },
+        { value: 'Photography', label: locale === 'en' ? 'Photography' : 'تصوير' },
+        { value: 'Culinary', label: locale === 'en' ? 'Culinary' : 'طهي' },
+        { value: 'All-inclusive', label: locale === 'en' ? 'All-inclusive' : 'شامل' },
       ],
     },
     {
