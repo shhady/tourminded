@@ -4,6 +4,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Star, MapPin, Languages, Award, ChevronRight, User } from 'lucide-react';
 
+// If you have a GuideCard component, add this function at the top
+const calculateYearsOfExperience = (licenseDate) => {
+  if (!licenseDate) return 0;
+  
+  const licenseYear = new Date(licenseDate).getFullYear();
+  const currentYear = new Date().getFullYear();
+  return Math.max(0, currentYear - licenseYear);
+};
+
 export default function GuideCard({ guide, locale }) {
   const [isHovered, setIsHovered] = useState(false);
   
@@ -82,18 +91,31 @@ export default function GuideCard({ guide, locale }) {
           )}
         </div>
         
+        {/* Add years of experience */}
+        {guide.expertise && guide.expertise.length > 0 && guide.expertise[0].licenseIssueDate && (
+          <div className="text-sm text-gray-600 mb-2">
+            <span className="font-medium">
+              {calculateYearsOfExperience(guide.expertise[0].licenseIssueDate)}
+            </span>
+            <span className="ml-1">
+              {locale === 'en' 
+                ? 'years of experience' 
+                : 'سنوات من الخبرة'}
+            </span>
+          </div>
+        )}
+        
         {/* View profile button */}
         <Link 
           href={`/${locale}/guides/${guide._id}`}
-          className="inline-flex items-center justify-center w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-300 group-hover:bg-primary-600 shadow-md border border-white/10 group-hover:border-primary-500"
+          className="cursor-pointer inline-block px-6 py-3 bg-white text-gray-900 font-medium rounded-full shadow-md hover:bg-gray-100 transition-colors duration-300"
         >
-          <span className="mr-1">{locale === 'en' ? 'View Profile' : 'عرض الملف الشخصي'}</span>
-          <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${isHovered ? 'translate-x-1' : ''}`} />
+          {locale === 'en' 
+            ? 'View Profile' 
+            : 'عرض الملف الشخصي'}
+          <ChevronRight className="w-4 h-4 ml-2" />
         </Link>
       </div>
-      
-      {/* Subtle shine effect on hover */}
-      <div className={`absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-0 transition-opacity duration-700 z-10 ${isHovered ? 'opacity-100' : ''}`}></div>
     </div>
   );
-} 
+}

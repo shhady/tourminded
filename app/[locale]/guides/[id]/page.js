@@ -82,28 +82,13 @@ const getGuideBio = (guide, locale) => {
   return '';
 };
 
-// Calculate years of experience
-const calculateYearsOfExperience = (guide) => {
-  if (!guide || !guide.expertise || guide.expertise.length === 0 || !guide.expertise[0].licenseIssueDate) {
-    return 0;
-  }
+// Helper function to calculate years of experience
+const calculateYearsOfExperience = (licenseDate) => {
+  if (!licenseDate) return 0;
   
-  try {
-    const licenseDate = new Date(guide.expertise[0].licenseIssueDate);
-    const today = new Date();
-    
-    let years = today.getFullYear() - licenseDate.getFullYear();
-    const monthDiff = today.getMonth() - licenseDate.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < licenseDate.getDate())) {
-      years--;
-    }
-    
-    return years;
-  } catch (error) {
-    console.error('Error calculating years of experience:', error);
-    return 0;
-  }
+  const licenseYear = new Date(licenseDate).getFullYear();
+  const currentYear = new Date().getFullYear();
+  return Math.max(0, currentYear - licenseYear);
 };
 
 // Get language name from code
@@ -198,7 +183,7 @@ export default async function GuideProfilePage({ params }) {
     const languages = guide.languages || [];
     const expertise = guide.expertise || [];
     const address = guide.address || 'Israel';
-    const yearsExperience = calculateYearsOfExperience(guide);
+    const yearsExperience = calculateYearsOfExperience(guide.expertise[0]?.licenseIssueDate);
     const vehicle = guide.vehicle || {};
     
     // Generate QR code URL
@@ -558,33 +543,38 @@ export default async function GuideProfilePage({ params }) {
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {expertise.map((exp, index) => (
-                    <div key={index} className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
-                      <div className="flex items-center mb-3">
-                        <div className="w-10 h-10 rounded-full bg-secondary-100 flex items-center justify-center mr-3">
-                          <Award className="w-5 h-5 text-secondary-600" />
+                  {expertise.map((exp, index) => {
+                    // Calculate years of experience based on license date
+                    const yearsExperience = calculateYearsOfExperience(exp.licenseIssueDate);
+                    
+                    return (
+                      <div key={index} className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
+                        <div className="flex items-center mb-3">
+                          <div className="w-10 h-10 rounded-full bg-secondary-100 flex items-center justify-center mr-3">
+                            <Award className="w-5 h-5 text-secondary-600" />
+                          </div>
+                          <h3 className="text-lg font-semibold">
+                            {locale === 'en' ? exp.area : getArabicExpertiseArea(exp.area)}
+                          </h3>
                         </div>
-                        <h3 className="text-lg font-semibold">
-                          {locale === 'en' ? exp.area : getArabicExpertiseArea(exp.area)}
-                        </h3>
+                        
+                        <div className="flex items-center text-gray-600 mb-2">
+                          <span className="font-medium text-secondary-700">{yearsExperience}</span>
+                          <span className="ml-1">
+                            {locale === 'en' 
+                              ? `year${yearsExperience !== 1 ? 's' : ''} of experience` 
+                              : `سنة${yearsExperience !== 1 ? '' : ''} من الخبرة`}
+                          </span>
+                        </div>
+                        
+                        <p className="text-sm text-gray-500">
+                          {locale === 'en'
+                            ? `Specialized knowledge and expertise in ${exp.area} topics and sites.`
+                            : `معرفة وخبرة متخصصة في مواضيع ومواقع ${getArabicExpertiseArea(exp.area)}.`}
+                        </p>
                       </div>
-                      
-                      <div className="flex items-center text-gray-600 mb-2">
-                        <span className="font-medium text-secondary-700">{yearsExperience}</span>
-                        <span className="ml-1">
-                          {locale === 'en' 
-                            ? `year${yearsExperience !== 1 ? 's' : ''} of experience` 
-                            : `سنة${yearsExperience !== 1 ? '' : ''} من الخبرة`}
-                        </span>
-                      </div>
-                      
-                      <p className="text-sm text-gray-500">
-                        {locale === 'en'
-                          ? `Specialized knowledge and expertise in ${exp.area} topics and sites.`
-                          : `معرفة وخبرة متخصصة في مواضيع ومواقع ${getArabicExpertiseArea(exp.area)}.`}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
               

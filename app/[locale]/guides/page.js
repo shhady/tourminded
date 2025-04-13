@@ -157,6 +157,17 @@ const getGuideExcerpt = (guide, locale) => {
   return '';
 };
 
+// Add this helper function
+const calculateYearsOfExperience = (guide) => {
+  if (!guide || !guide.expertise || guide.expertise.length === 0 || !guide.expertise[0].licenseIssueDate) {
+    return 0;
+  }
+  
+  const licenseYear = new Date(guide.expertise[0].licenseIssueDate).getFullYear();
+  const currentYear = new Date().getFullYear();
+  return Math.max(0, currentYear - licenseYear);
+};
+
 export default async function GuidesPage({ searchParams, params }) {
   const localeParams = await params;
   const locale = localeParams?.locale || 'en';
@@ -309,73 +320,87 @@ export default async function GuidesPage({ searchParams, params }) {
         {/* Guides Grid */}
         {guides.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-            {guides.map((guide) => (
-              <Link 
-                key={guide._id} 
-                href={`/${locale}/guides/${guide._id}`}
-                className="block group"
-              >
-                <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  {/* Cover Image */}
-                  <div className="relative h-32 w-full">
-                    <Image 
-                      src={guide.coverImage?.url || '/images/default-cover.jpg'}
-                      alt={`${getGuideName(guide, locale)} cover image`}
-                      fill
-                      className="object-cover"
-                    />
-                    
-                    {/* Profile Image (Circular) */}
-                    <div className="absolute -bottom-10 left-5">
-                      <div className="relative w-20 h-20 rounded-full border-4 border-white overflow-hidden">
-                        <Image 
-                          src={guide.profileImage?.url || '/images/default-avatar.png'}
-                          alt={getGuideName(guide, locale) || 'Guide profile image'}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-5 pt-12">
-                    <h3 className="text-xl font-semibold mb-2 group-hover:text-primary-600 transition-colors">
-                      {getGuideName(guide, locale)}
-                    </h3>
-                    
-                    <div className="flex items-center mb-3">
-                      <div className="flex items-center text-yellow-500">
-                        {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            className={`w-4 h-4 ${i < Math.floor(guide.rating || 5) ? 'fill-current' : ''}`} 
+            {guides.map((guide) => {
+              const yearsExperience = calculateYearsOfExperience(guide);
+              
+              return (
+                <Link 
+                  key={guide._id} 
+                  href={`/${locale}/guides/${guide._id}`}
+                  className="block group"
+                >
+                  <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    {/* Cover Image */}
+                    <div className="relative h-32 w-full">
+                      <Image 
+                        src={guide.coverImage?.url || '/images/default-cover.jpg'}
+                        alt={`${getGuideName(guide, locale)} cover image`}
+                        fill
+                        className="object-cover"
+                      />
+                      
+                      {/* Profile Image (Circular) */}
+                      <div className="absolute -bottom-10 left-5">
+                        <div className="relative w-20 h-20 rounded-full border-4 border-white overflow-hidden">
+                          <Image 
+                            src={guide.profileImage?.url || '/images/default-avatar.png'}
+                            alt={getGuideName(guide, locale) || 'Guide profile image'}
+                            fill
+                            className="object-cover"
                           />
-                        ))}
+                        </div>
                       </div>
-                      <span className="text-gray-500 text-sm ml-2">
-                        ({guide.reviewCount || 0} {locale === 'en' ? 'reviews' : 'تقييمات'})
-                      </span>
                     </div>
                     
-                    <div className="flex items-center text-gray-600 mb-3">
-                      <Languages className="w-4 h-4 mr-1" />
-                      <span className="text-sm">
-                        {guide.languages?.map(l => getLanguageName(l.language)).join(', ')}
-                      </span>
+                    <div className="p-5 pt-12">
+                      <h3 className="text-xl font-semibold mb-2 group-hover:text-primary-600 transition-colors">
+                        {getGuideName(guide, locale)}
+                      </h3>
+                      
+                      <div className="flex items-center mb-3">
+                        <div className="flex items-center text-yellow-500">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={`w-4 h-4 ${i < Math.floor(guide.rating || 5) ? 'fill-current' : ''}`} 
+                            />
+                          ))}
+                        </div>
+                        <span className="text-gray-500 text-sm ml-2">
+                          ({guide.reviewCount || 0} {locale === 'en' ? 'reviews' : 'تقييمات'})
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center text-gray-600 mb-3">
+                        <Languages className="w-4 h-4 mr-1" />
+                        <span className="text-sm">
+                          {guide.languages?.map(l => getLanguageName(l.language)).join(', ')}
+                        </span>
+                      </div>
+                      
+                      {/* About Excerpt */}
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {getGuideExcerpt(guide, locale)}
+                      </p>
+                      
+                      {/* Add years of experience */}
+                      <div className="text-sm text-gray-600 mb-2">
+                        <span className="font-medium">{yearsExperience}</span>
+                        <span className="ml-1">
+                          {locale === 'en' 
+                            ? `year${yearsExperience !== 1 ? 's' : ''} of experience` 
+                            : `سنة${yearsExperience !== 1 ? '' : ''} من الخبرة`}
+                        </span>
+                      </div>
+                      
+                      <button className="cursor-pointer w-full bg-gray-500 hover:bg-primary-700 text-white font-medium py-2 rounded-lg transition-colors">
+                        {locale === 'en' ? 'View Profile' : 'عرض الملف الشخصي'}
+                      </button>
                     </div>
-                    
-                    {/* About Excerpt */}
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                      {getGuideExcerpt(guide, locale)}
-                    </p>
-                    
-                    <button className="w-full bg-gray-500 hover:bg-primary-700 text-white font-medium py-2 rounded-lg transition-colors">
-                      {locale === 'en' ? 'View Profile' : 'عرض الملف الشخصي'}
-                    </button>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow p-8 text-center mb-8">
