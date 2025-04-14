@@ -558,14 +558,14 @@ export default async function GuideProfilePage({ params }) {
                           </h3>
                         </div>
                         
-                        <div className="flex items-center text-gray-600 mb-2">
+                        {/* <div className="flex items-center text-gray-600 mb-2">
                           <span className="font-medium text-secondary-700">{yearsExperience}</span>
                           <span className="ml-1">
                             {locale === 'en' 
                               ? `year${yearsExperience !== 1 ? 's' : ''} of experience` 
                               : `سنة${yearsExperience !== 1 ? '' : ''} من الخبرة`}
                           </span>
-                        </div>
+                        </div> */}
                         
                         <p className="text-sm text-gray-500">
                           {locale === 'en'

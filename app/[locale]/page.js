@@ -6,7 +6,7 @@ import User from '@/models/User';
 
 // Use dynamic imports with ssr: false for components that might cause hydration issues
 const HeroSection = dynamic(() => import('@/components/common/HeroSection'), { ssr: true });
-const TourTypes = dynamic(() => import('@/components/tours/TourTypes'), { ssr: true });
+const TourTypeCarousel = dynamic(() => import('@/components/home/TourTypeCarousel'), { ssr: true });
 const FeaturedLocations = dynamic(() => import('@/components/common/FeaturedLocations'), { ssr: true });
 const FeaturedGuides = dynamic(() => import('@/components/guides/FeaturedGuides'), { ssr: true });
 const Testimonials = dynamic(() => import('@/components/common/Testimonials'), { ssr: true });
@@ -47,7 +47,7 @@ export default async function Home({ params }) {
   return (
     <MainLayout locale={locale} user={userData}>
       <HeroSection locale={locale} />
-      <TourTypes locale={locale} />
+      <TourTypeCarousel locale={locale} />
       <FeaturedLocations locale={locale} />
       <FeaturedGuides locale={locale} />
       <Testimonials locale={locale} />
