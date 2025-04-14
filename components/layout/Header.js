@@ -195,7 +195,7 @@ const Header = ({ locale }) => {
           <Link href={getLocalizedHref('/')} className="text-2xl font-bold flex items-center">
             {/* Replace with your actual logo */}
             <span className={`transition-colors duration-300 ${useDarkText ? 'text-secondary-900' : 'text-black'}`}>
-              Tourminded
+              Watermelon Tours
             </span>
           </Link>
 
