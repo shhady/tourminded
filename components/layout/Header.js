@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Globe, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Clock } from 'lucide-react';
+import { Globe, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Clock, Heart } from 'lucide-react';
 import Button from '../ui/Button';
 import { locales } from '@/lib/i18n';
 import Image from 'next/image';
@@ -22,8 +22,6 @@ const Header = ({ locale }) => {
   const router = useRouter();
   const isHomePage = pathname === `/${locale}`;
 
-  console.log(userClerk);
-  console.log(user);
   // Fetch guide status when user is loaded
   useEffect(() => {
     const fetchGuideStatus = async () => {
@@ -104,6 +102,7 @@ const Header = ({ locale }) => {
     { name: locale === 'en' ? 'Home' : 'الرئيسية', href: '/' },
     { name: locale === 'en' ? 'Tours' : 'الجولات', href: '/tours' },
     { name: locale === 'en' ? 'Guides' : 'المرشدين', href: '/guides' },
+    { name: locale === 'en' ? 'Blog' : 'المدونة', href: '/blog' },
     // { name: locale === 'en' ? 'Locations' : 'المواقع', href: '/locations' },
     // { name: locale === 'en' ? 'Quiz' : 'الاختبار', href: '/quiz' },
     { name: locale === 'en' ? 'About' : 'عن الموقع', href: '/about' },
@@ -274,6 +273,16 @@ const Header = ({ locale }) => {
 
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-medium z-10 animate-fade-in overflow-hidden">
+                    {/* Wishlist Link */}
+                    <Link
+                      href={`/${locale}/wishlist`}
+                      className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <Heart className="mr-2 h-4 w-4" />
+                      {locale === 'en' ? 'My Wishlist' : 'قائمة رغباتي'}
+                    </Link>
+                    
                     {/* Profile Link */}
                     <Link
                       href={`/${locale}/profile`}
@@ -367,6 +376,16 @@ const Header = ({ locale }) => {
                   <p className="px-4 text-sm font-medium text-secondary-900 mb-2">
                     {locale === 'en' ? 'Account' : 'الحساب'}
                   </p>
+                  
+                  {/* Wishlist Link - Mobile */}
+                  <Link
+                    href={`/${locale}/wishlist`}
+                    className="flex items-center px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Heart className="mr-2 h-4 w-4" />
+                    {locale === 'en' ? 'My Wishlist' : 'قائمة رغباتي'}
+                  </Link>
                   
                   {/* Guide-related menu item (dynamic based on status) */}
                   {user && getGuideMenuItem()}

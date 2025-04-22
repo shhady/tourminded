@@ -1,10 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Share2, Download } from 'lucide-react';
 
 export default function ShareGuide({ locale, guideId, guideName }) {
   const [copied, setCopied] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Fix hydration issues by ensuring client-side rendering
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   // Handle share functionality
   const handleShare = async () => {
@@ -51,6 +57,15 @@ END:VCARD`;
     link.click();
     document.body.removeChild(link);
   };
+  
+  // Use a non-interactive placeholder during server rendering
+  if (!isMounted) {
+    return (
+      <div className="flex flex-wrap gap-4 mt-4">
+        <div className="bg-primary-50 text-primary-700 px-4 py-2 rounded-lg w-36 h-10"></div>
+      </div>
+    );
+  }
   
   return (
     <div className="flex flex-wrap gap-4 mt-4">

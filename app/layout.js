@@ -27,15 +27,15 @@ export const metadata = {
 export default function RootLayout({ children, params }) {
   return (
     <ClerkProvider>
-      <UserProvider>
-        <GuideProvider>
+      <GuideProvider>
+        <UserProvider>
           <html lang="en" dir="ltr">
             <body className={`${inter.variable} ${tajawal.variable} font-sans antialiased`}>
               {children}
             </body>
           </html>
-        </GuideProvider>
-      </UserProvider>
+        </UserProvider>
+      </GuideProvider>
     </ClerkProvider>
   );
 }

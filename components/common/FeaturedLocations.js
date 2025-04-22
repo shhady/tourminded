@@ -80,10 +80,9 @@ const FeaturedLocations = ({ locale }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {locations.map((location) => (
-            <Link
+            <div
               key={location.id}
-              href={`/${locale}/tours?location=${location.id}`}
-              className="group overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow"
+              className="group overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow relative"
             >
               <div className="relative h-64 w-full overflow-hidden">
                 <div className="absolute inset-0 bg-primary-900 opacity-30 group-hover:opacity-20 transition-opacity z-10"></div>
@@ -91,21 +90,40 @@ const FeaturedLocations = ({ locale }) => {
                   src={location.image}
                   alt={location.name}
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black opacity-40 z-10"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-20">
                   <h3 className="text-2xl font-bold mb-2">{location.name}</h3>
                   <p className="text-white text-opacity-90">{location.description}</p>
                 </div>
+                
+                {/* Buttons container - positioned at the top right */}
+                <div className="absolute top-4 right-4 z-30 flex flex-col gap-2 transition-opacity opacity-0 group-hover:opacity-100">
+                  {/* About Location button */}
+                  <Link
+                    href={`/${locale}/locations/${location.id}`}
+                    className="px-3 py-2 bg-white text-primary-700 text-sm font-medium rounded-md shadow-md hover:bg-primary-50 transition-colors whitespace-nowrap"
+                  >
+                    {locale === 'en' ? 'About Location' : 'حول الموقع'}
+                  </Link>
+                  
+                  {/* Explore Tours button */}
+                  <Link
+                    href={`/${locale}/tours?location=${location.id}`}
+                    className="px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded-md shadow-md hover:bg-primary-700 transition-colors whitespace-nowrap"
+                  >
+                    {locale === 'en' ? 'Explore Tours' : 'استكشف الجولات'}
+                  </Link>
+                </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
 
         <div className="text-center mt-12">
             <Link
-              href={`/${locale}/tours`}
+              href={`/${locale}/locations`}
             className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-primary-600 hover:bg-primary-700 transition-colors"
           >
             <Button> {locale === 'en' ? 'View All Locations' : 'عرض جميع المواقع'}</Button>

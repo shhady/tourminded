@@ -6,11 +6,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Star, MapPin, Clock, Users, Calendar, X } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { currentUser } from '@clerk/nextjs/server';
 import PriceRangeFilter from '@/components/tours/PriceRangeFilter';
 
 // Import the new component
 import TourFilters from '@/components/tours/TourFilters';
+import WishlistButton from '@/components/ui/WishlistButton';
 
 export const metadata = {
   title: 'Tours | Tourminded',
@@ -35,9 +35,36 @@ async function getTours(searchParams) {
     const filter = {};
     
     if (params.location) {
-      // Use $in operator to check if the location is in the locationNames array
-      filter.locationNames = { $in: [params.location] };
+      // Get all location values as an array (support for multiple values)
+      const locationValues = Array.isArray(params.location) 
+        ? params.location 
+        : params.location.split(',');
+      
+      // If multiple locations are selected, we want tours that include ALL selected locations
+      // Use $all operator instead of $in to ensure all locations are present in the tour
+      if (locationValues.length > 0) {
+        filter.locationNames = { $all: locationValues };
+        console.log('Filtering by locations (all must match):', locationValues);
+      }
     }
+    
+    // Handle search parameter
+    if (params.search && params.search.trim() !== '') {
+      const searchQuery = params.search.trim();
+      console.log('Searching for:', searchQuery);
+      
+      // Create a text search that looks for matches in title, guide name, or location
+      filter.$or = [
+        // Search in tour title (both English and Arabic)
+        { 'title.en': { $regex: searchQuery, $options: 'i' } },
+        { 'title.ar': { $regex: searchQuery, $options: 'i' } },
+        // Search in tour locationNames
+        { locationNames: { $regex: searchQuery, $options: 'i' } },
+        // Search in guide name if populated
+        { guideName: { $regex: searchQuery, $options: 'i' } }
+      ];
+    }
+    
     if (params.expertise) {
       // Make the filter case-insensitive using a regex
       filter.expertise = new RegExp(params.expertise, 'i');
@@ -218,13 +245,6 @@ export default async function ToursPage({ searchParams, params }) {
     maxPrice: awaitedSearchParams.maxPrice || '',
     priceRange: awaitedSearchParams.priceRange || '',
   };
-  // Get current user
-  let user = null;
-  try {
-    user = await currentUser();
-  } catch (error) {
-    console.error('Error getting current user:', error);
-  }
   
   // Get location options for filter
   const locationOptions = [
@@ -271,105 +291,115 @@ export default async function ToursPage({ searchParams, params }) {
         {tours.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {tours.map((tour) => (
-              <Link 
-                key={tour._id} 
-                href={`/${locale}/tours/${tour._id}`}
-                className="block group"
-              >
-                <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  {/* Tour Image */}
-                  <div className="relative h-48 w-full">
-                    <Image 
-                      src={tour.images?.cover.url || '/images/default-tour.jpg'}
-                      alt={getTourTitle(tour, locale)}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    
-                    {/* Price Badge */}
-                    <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full shadow-md">
-                      <span className="font-bold text-primary-600">
-                        {formatPrice(tour.price)}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="p-5">
-                    <h3 className="text-xl font-semibold mb-2 group-hover:text-primary-600 transition-colors">
-                      {getTourTitle(tour, locale)}
-                    </h3>
-                    
-                    <div className="flex items-center mb-3">
-                      <div className="flex items-center text-yellow-500">
-                        {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            className={`w-4 h-4 ${i < Math.floor(tour.rating || 5) ? 'fill-current' : ''}`} 
-                          />
-                        ))}
-                      </div>
-                      <span className="text-gray-500 text-sm ml-2">
-                        ({tour.reviewCount || 0} {locale === 'en' ? 'reviews' : 'تقييمات'})
-                      </span>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-y-2 mb-3">
-                      {/* Duration */}
-                      <div className="flex items-center text-gray-600 w-1/2">
-                        <Clock className="w-4 h-4 mr-1" />
-                        <span className="text-sm">
-                          {tour.duration} {locale === 'en' ? 
-                            (tour.duration === 1 ? 'day' : 'days') : 
-                            (tour.duration === 1 ? 'يوم' : 'أيام')}
-                        </span>
-                      </div>
+              <div key={tour._id} className="relative">
+                {/* WishlistButton moved outside of Link */}
+                <WishlistButton
+                  id={tour._id.toString()}
+                  type="tours"
+                  locale={locale}
+                  position="top-right"
+                  size="default"
+                  className="z-30"
+                />
+                <Link 
+                  href={`/${locale}/tours/${tour._id}`}
+                  className="block group"
+                >
+                  <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    {/* Tour Image */}
+                    <div className="relative h-48 w-full">
+                      <Image 
+                        src={tour.images?.cover.url || '/images/default-tour.jpg'}
+                        alt={getTourTitle(tour, locale)}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
                       
-                      {/* Group Size */}
-                      <div className="flex items-center text-gray-600 w-1/2">
-                        <Users className="w-4 h-4 mr-1" />
-                        <span className="text-sm">
-                          {locale === 'en' ? 'Max ' : 'الحد الأقصى '}{tour.maxGroupSize}
-                        </span>
-                      </div>
-                      
-                      {/* Location */}
-                      <div className="flex items-center text-gray-600 w-full">
-                        <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                        <span className="text-sm truncate">
-                          {tour.locationNames?.join(', ') || 'Multiple locations'}
+                      {/* Price Badge - moved to left side */}
+                      <div className="absolute top-4 left-4 bg-white px-3 py-1 rounded-full shadow-md">
+                        <span className="font-bold text-primary-600">
+                          {formatPrice(tour.price)}
                         </span>
                       </div>
                     </div>
                     
-                    {/* Description */}
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                      {getTourDescription(tour, locale)}
-                    </p>
-                    
-                    {/* Guide Info */}
-                    {tour.guide && (
-                      <div className="flex items-center mb-4">
-                        <div className="relative w-8 h-8 rounded-full overflow-hidden mr-2">
-                          <Image 
-                            src={tour.guide.profileImage?.url || '/images/default-avatar.png'}
-                            alt={getGuideName(tour.guide, locale)}
-                            fill
-                            className="object-cover"
-                          />
+                    <div className="p-5">
+                      <h3 className="text-xl font-semibold mb-2 group-hover:text-primary-600 transition-colors">
+                        {getTourTitle(tour, locale)}
+                      </h3>
+                      
+                      <div className="flex items-center mb-3">
+                        <div className="flex items-center text-yellow-500">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={`w-4 h-4 ${i < Math.floor(tour.rating || 5) ? 'fill-current' : ''}`} 
+                            />
+                          ))}
                         </div>
-                        <span className="text-sm text-gray-700">
-                          {locale === 'en' ? 'By ' : 'بواسطة '} 
-                          <span className="font-medium">{getGuideName(tour.guide, locale)}</span>
+                        <span className="text-gray-500 text-sm ml-2">
+                          ({tour.reviewCount || 0} {locale === 'en' ? 'reviews' : 'تقييمات'})
                         </span>
                       </div>
-                    )}
-                    
-                      <div className="w-full bg-gray-500 hover:bg-primary-700 text-white font-medium py-2 rounded-lg transition-colors text-center">
-                      {locale === 'en' ? 'View Tour' : 'عرض الجولة'}
+                      
+                      <div className="flex flex-wrap gap-y-2 mb-3">
+                        {/* Duration */}
+                        <div className="flex items-center text-gray-600 w-1/2">
+                          <Clock className="w-4 h-4 mr-1" />
+                          <span className="text-sm">
+                            {tour.duration} {locale === 'en' ? 
+                              (tour.duration === 1 ? 'day' : 'days') : 
+                              (tour.duration === 1 ? 'يوم' : 'أيام')}
+                          </span>
+                        </div>
+                        
+                        {/* Group Size */}
+                        <div className="flex items-center text-gray-600 w-1/2">
+                          <Users className="w-4 h-4 mr-1" />
+                          <span className="text-sm">
+                            {locale === 'en' ? 'Max ' : 'الحد الأقصى '}{tour.maxGroupSize}
+                          </span>
+                        </div>
+                        
+                        {/* Location */}
+                        <div className="flex items-center text-gray-600 w-full">
+                          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                          <span className="text-sm truncate">
+                            {tour.locationNames?.join(', ') || 'Multiple locations'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {getTourDescription(tour, locale)}
+                      </p>
+                      
+                      {/* Guide Info */}
+                      {tour.guide && (
+                        <div className="flex items-center mb-4">
+                          <div className="relative w-8 h-8 rounded-full overflow-hidden mr-2">
+                            <Image 
+                              src={tour.guide.profileImage?.url || '/images/default-avatar.png'}
+                              alt={getGuideName(tour.guide, locale)}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                          <span className="text-sm text-gray-700">
+                            {locale === 'en' ? 'By ' : 'بواسطة '} 
+                            <span className="font-medium">{getGuideName(tour.guide, locale)}</span>
+                          </span>
+                        </div>
+                      )}
+                      
+                        <div className="w-full bg-gray-500 hover:bg-primary-700 text-white font-medium py-2 rounded-lg transition-colors text-center">
+                        {locale === 'en' ? 'View Tour' : 'عرض الجولة'}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             ))}
           </div>
         ) : (

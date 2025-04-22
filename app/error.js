@@ -1,11 +1,17 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function Error({ error, reset }) {
+  const hasLogged = useRef(false);
+  
   useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('Application error:', error);
+    // Prevent infinite recursion by logging only once
+    if (!hasLogged.current) {
+      // Log the error to an error reporting service
+      console.error('Application error:', error);
+      hasLogged.current = true;
+    }
   }, [error]);
 
   return (
@@ -14,7 +20,7 @@ export default function Error({ error, reset }) {
       <p className="mb-6 text-gray-600">{error?.message || 'An unexpected error occurred'}</p>
       <button
         onClick={() => reset()}
-        className="px-4 py-2 bg-blue-600 text-black rounded hover:bg-blue-700 transition-colors"
+        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
       >
         Try again
       </button>

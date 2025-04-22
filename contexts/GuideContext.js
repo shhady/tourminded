@@ -1,26 +1,20 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { useUser } from "./UserContext";
 
 const GuideContext = createContext();
 
 export function GuideProvider({ children }) {
-  const { user, guide: initialGuide } = useUser();
-  const [guide, setGuide] = useState(initialGuide);
+  const [guide, setGuide] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setGuide(initialGuide);
-  }, [initialGuide]);
-
   // Function to update guide profile
-  const updateGuideProfile = async (guideData) => {
-    if (!user || user.role !== "guide") return false;
+  const updateGuideProfile = async (guideData, guideId) => {
+    if (!guideId) return false;
     
     setLoading(true);
     try {
-      const response = await fetch(`/api/guides/${guide._id}`, {
+      const response = await fetch(`/api/guides/${guideId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -43,8 +37,13 @@ export function GuideProvider({ children }) {
     }
   };
 
+  // Update guide data when it changes
+  const setGuideData = (guideData) => {
+    setGuide(guideData);
+  };
+
   return (
-    <GuideContext.Provider value={{ guide, loading, updateGuideProfile }}>
+    <GuideContext.Provider value={{ guide, loading, updateGuideProfile, setGuideData }}>
       {children}
     </GuideContext.Provider>
   );

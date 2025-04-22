@@ -1,25 +1,30 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, X, Search } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
 export default function TourFilters({ locale, initialFilters = {} }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   
   const [isExpanded, setIsExpanded] = useState(false);
   const [filters, setFilters] = useState({
-    location: initialFilters.location || '',
+    search: initialFilters.search || '',
+    location: initialFilters.location ? 
+      (Array.isArray(initialFilters.location) ? initialFilters.location : [initialFilters.location]) 
+      : [],
     duration: initialFilters.duration || '',
-    expertise: initialFilters.expertise || '', // Changed from type to expertise
+    expertise: initialFilters.expertise || '',
     language: initialFilters.language || '',
     travelers: initialFilters.travelers || '',
-    minPrice: initialFilters.minPrice || '',
-    maxPrice: initialFilters.maxPrice || '',
     priceRange: initialFilters.priceRange || '',
   });
+
+  // Track input value separately from filters state
+  const [searchInput, setSearchInput] = useState(initialFilters.search || '');
   
   // Check if any filters are active
   const hasActiveFilters = Object.values(filters).some(value => value !== '');
@@ -32,6 +37,13 @@ export default function TourFilters({ locale, initialFilters = {} }) {
     { value: 'bethlehem', label: locale === 'en' ? 'Bethlehem' : 'بيت لحم' },
     { value: 'jerusalem', label: locale === 'en' ? 'Jerusalem' : 'القدس' },
     { value: 'deadsea', label: locale === 'en' ? 'Dead Sea' : 'البحر الميت' },
+    { value: 'jaffa', label: locale === 'en' ? 'Jaffa' : 'يافا' },
+    { value: 'haifa', label: locale === 'en' ? 'Haifa' : 'حيفا' },
+    {value: 'tiberias', label: locale === 'en' ? 'Tiberias' : 'طبريا'},
+    {value: 'masada', label: locale === 'en' ? 'Masada' : 'مصدا'},
+    {value: 'nablus', label: locale === 'en' ? 'Nablus' : 'نابلس'},
+    {value: 'ramallah', label: locale === 'en' ? 'Ramallah' : 'رام الله'},
+    
   ];
   
   // Duration options
@@ -41,7 +53,17 @@ export default function TourFilters({ locale, initialFilters = {} }) {
     { value: '2', label: locale === 'en' ? '2 Days' : 'يومان' },
     { value: '3', label: locale === 'en' ? '3 Days' : '3 أيام' },
     { value: '4', label: locale === 'en' ? '4 Days' : '4 أيام' },
-    { value: '5', label: locale === 'en' ? '5+ Days' : '5+ أيام' },
+    { value: '5', label: locale === 'en' ? '5 Days' : '5 أيام' },
+    { value: '6', label: locale === 'en' ? '6 Days' : '6 أيام' },
+    { value: '7', label: locale === 'en' ? '7 Days' : '7 أيام' },
+    { value: '8', label: locale === 'en' ? '8 Days' : '8 أيام' },
+    { value: '9', label: locale === 'en' ? '9 Days' : '9 أيام' },
+    { value: '10', label: locale === 'en' ? '10 Days' : '10 أيام' },
+    { value: '11', label: locale === 'en' ? '11 Days' : '11 أيام' },
+    { value: '12', label: locale === 'en' ? '12 Days' : '12 أيام' },
+    { value: '13', label: locale === 'en' ? '13 Days' : '13 أيام' },
+    { value: '14', label: locale === 'en' ? '14 Days' : '14 أيام' },
+    { value: '15', label: locale === 'en' ? '15+ Days' : '15+ أيام' },
   ];
   
   // Expertise options (previously Tour type options)
@@ -100,80 +122,230 @@ export default function TourFilters({ locale, initialFilters = {} }) {
     { value: '500+', label: '$500+' },
   ];
   
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // Create query string from filters
+  const createQueryString = (params) => {
+    const searchParams = new URLSearchParams();
     
-    // Create a new URLSearchParams object
-    const params = new URLSearchParams();
-    
-    // Add all non-empty filters to the params
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
-        params.append(key, value);
+    Object.entries(params).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        if (value.length > 0) {
+          value.forEach(val => {
+            if (val) searchParams.append(key, val);
+          });
+        }
+      } else if (value) {
+        searchParams.set(key, value);
       }
     });
     
-    // Navigate to the tours page with the filters
-    router.push(`${pathname}?${params.toString()}`);
+    return searchParams.toString();
+  };
+
+  // Apply filters - updates URL and triggers page refresh
+  const applyFilters = useCallback((updatedFilters) => {
+    const queryString = createQueryString(updatedFilters);
+    startTransition(() => {
+      router.push(`${pathname}?${queryString}`);
+    });
+  }, [pathname, router]);
+
+  // Handle search input change - just update the input value, don't apply filters yet
+  const handleSearchChange = (e) => {
+    setSearchInput(e.target.value);
+  };
+  
+  // Check if input is a location name
+  const findLocationMatch = (input) => {
+    if (!input) return null;
+    const searchTerm = input.trim().toLowerCase();
+    
+    // Try exact match first
+    let match = locationOptions.find(loc => 
+      loc.value.toLowerCase() === searchTerm ||
+      loc.label.toLowerCase() === searchTerm
+    );
+    
+    // Then try partial matches
+    if (!match) {
+      match = locationOptions.find(loc => 
+        loc.value.toLowerCase().includes(searchTerm) ||
+        loc.label.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    return match;
+  };
+  
+  // Process search - called when search button is clicked
+  const processSearch = () => {
+    if (!searchInput.trim()) {
+      return; // No search input provided
+    }
+    
+    const updatedFilters = { ...filters };
+    updatedFilters.search = searchInput.trim();
+    
+    setFilters(updatedFilters);
+    applyFilters(updatedFilters);
+  };
+  
+  // Handle location checkbox toggle
+  const handleLocationToggle = (locationValue) => {
+    let updatedLocations;
+    
+    if (filters.location.includes(locationValue)) {
+      // Remove location if already selected
+      updatedLocations = filters.location.filter(loc => loc !== locationValue);
+    } else {
+      // Add location if not selected
+      updatedLocations = [...filters.location, locationValue];
+    }
+    
+    const updatedFilters = { ...filters, location: updatedLocations };
+    setFilters(updatedFilters);
+    applyFilters(updatedFilters);
+  };
+  
+  // Handle non-search filter changes
+  const handleFilterChange = (name, value) => {
+    const updatedFilters = { ...filters, [name]: value };
+    setFilters(updatedFilters);
+    applyFilters(updatedFilters);
+  };
+  
+  // Handle price range change
+  const handlePriceRangeChange = (range, min, max) => {
+    const updatedFilters = {
+      ...filters,
+      priceRange: range,
+      minPrice: min,
+      maxPrice: max
+    };
+    setFilters(updatedFilters);
+    applyFilters(updatedFilters);
+  };
+  
+  // Clear all filters
+  const clearFilters = () => {
+    const emptyFilters = {
+      search: '',
+      location: [],
+      duration: '',
+      expertise: '',
+      language: '',
+      travelers: '',
+      minPrice: '',
+      maxPrice: '',
+      priceRange: '',
+    };
+    setSearchInput('');
+    setFilters(emptyFilters);
+    applyFilters(emptyFilters);
+  };
+  
+  // Location Filter with custom dropdown and checkboxes
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+
+  // Toggle location dropdown
+  const toggleLocationDropdown = () => {
+    setIsLocationDropdownOpen(!isLocationDropdownOpen);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isLocationDropdownOpen && !event.target.closest('#location-dropdown-container')) {
+        setIsLocationDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isLocationDropdownOpen]);
+
+  // Close location dropdown when submitting form
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Process the search input first
+    if (searchInput.trim() !== '') {
+      processSearch();
+    } else {
+      // If search input is empty, just apply the current filters
+      applyFilters(filters);
+    }
+    
+    // Close location dropdown
+    setIsLocationDropdownOpen(false);
     
     // On mobile, collapse the filter after submission
     if (window.innerWidth < 768) {
       setIsExpanded(false);
     }
   };
-  
-  // Handle filter change
-  const handleFilterChange = (name, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  
-  // Handle price range change
-  const handlePriceRangeChange = (range, min, max) => {
-    setFilters(prev => ({
-      ...prev,
-      priceRange: range,
-      minPrice: min,
-      maxPrice: max
-    }));
-  };
-  
-  // Clear all filters
-  const clearFilters = () => {
-    setFilters({
-      location: '',
-      duration: '',
-      expertise: '', // Changed from type to expertise
-      language: '',
-      travelers: '',
-      minPrice: '',
-      maxPrice: '',
-      priceRange: '',
-    });
-    
-    router.push(pathname);
-  };
-  
-  // Initialize filters from URL on component mount
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    const newFilters = { ...filters };
-    
-    // Update filters from URL params
-    for (const [key, value] of params.entries()) {
-      if (key in newFilters) {
-        newFilters[key] = value;
-      }
+
+  // Function to get text for selected locations
+  const getSelectedLocationsText = () => {
+    if (filters.location.length === 0) {
+      return locale === 'en' ? 'All Locations' : 'جميع المواقع';
     }
     
-    setFilters(newFilters);
+    if (filters.location.length === 1) {
+      const selectedOption = locationOptions.find(option => option.value === filters.location[0]);
+      return selectedOption ? selectedOption.label : locale === 'en' ? 'All Locations' : 'جميع المواقع';
+    }
+    
+    return `${filters.location.length} ${locale === 'en' ? 'locations selected' : 'مواقع مختارة'}`;
+  };
+  
+  // Update filter initialization from URL
+  useEffect(() => {
+    if (!searchParams) return;
+    
+    // Extract filters from URL
+    const urlFilters = {
+      search: searchParams.get('search') || '',
+      location: [], // Initialize as empty array
+      duration: searchParams.get('duration') || '',
+      expertise: searchParams.get('expertise') || '',
+      language: searchParams.get('language') || '',
+      travelers: searchParams.get('travelers') || '',
+      priceRange: searchParams.get('priceRange') || ''
+    };
+    
+    // Handle location specially since it can have multiple values
+    const locationParams = searchParams.getAll('location');
+    if (locationParams && locationParams.length > 0) {
+      urlFilters.location = locationParams.filter(Boolean); // Filter out empty values
+    }
+
+    // Only update if filters actually changed to prevent infinite loop
+    const hasChanged = Object.keys(urlFilters).some(key => {
+      if (key === 'location') {
+        // Compare arrays
+        const current = filters.location || [];
+        const fromUrl = urlFilters.location || [];
+        if (current.length !== fromUrl.length) return true;
+        return current.some(val => !fromUrl.includes(val)) || fromUrl.some(val => !current.includes(val));
+      }
+      return filters[key] !== urlFilters[key];
+    });
+
+    if (hasChanged) {
+      console.log('Updating filters from URL:', urlFilters);
+      setFilters(urlFilters);
+      
+      // Also update the search input if search filter is applied
+      if (urlFilters.search && urlFilters.search !== searchInput) {
+        setSearchInput(urlFilters.search);
+      }
+    }
   }, [searchParams]);
   
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+    <div className="bg-white rounded-lg shadow-sm mb-8">
       {/* Mobile Header - Clickable to expand/collapse */}
       <div 
         className="md:hidden p-4 flex justify-between items-center cursor-pointer"
@@ -212,157 +384,310 @@ export default function TourFilters({ locale, initialFilters = {} }) {
       
       {/* Filter Form - Visible on desktop or when expanded on mobile */}
       <div className={`${isExpanded || 'md:block hidden'} p-4`}>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Location Filter */}
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium text-secondary-700 mb-1">
-              {locale === 'en' ? 'Location' : 'الموقع'}
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
+          {/* Search Input - Full width at the top */}
+          <div className="col-span-1 md:col-span-3">
+            <label htmlFor="search" className="block text-sm font-medium text-secondary-700 mb-1">
+              {locale === 'en' ? 'Search tours' : 'البحث عن الجولات'}
             </label>
-            <select
-              id="location"
-              name="location"
-              value={filters.location}
-              onChange={(e) => handleFilterChange('location', e.target.value)}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {locationOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Duration Filter */}
-          <div>
-            <label htmlFor="duration" className="block text-sm font-medium text-secondary-700 mb-1">
-              {locale === 'en' ? 'Duration' : 'المدة'}
-            </label>
-            <select
-              id="duration"
-              name="duration"
-              value={filters.duration}
-              onChange={(e) => handleFilterChange('duration', e.target.value)}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {durationOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Expertise Filter (previously Tour Type) */}
-          <div>
-            <label htmlFor="expertise" className="block text-sm font-medium text-secondary-700 mb-1">
-              {locale === 'en' ? 'Tour Guide Expertise' : 'خبرة المرشد'}
-            </label>
-            <select
-              id="expertise"
-              name="expertise"
-              value={filters.expertise}
-              onChange={(e) => handleFilterChange('expertise', e.target.value)}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {expertiseOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Language Filter */}
-          <div>
-            <label htmlFor="language" className="block text-sm font-medium text-secondary-700 mb-1">
-              {locale === 'en' ? 'Language' : 'اللغة'}
-            </label>
-            <select
-              id="language"
-              name="language"
-              value={filters.language}
-              onChange={(e) => handleFilterChange('language', e.target.value)}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {languageOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Travelers Filter */}
-          <div>
-            <label htmlFor="travelers" className="block text-sm font-medium text-secondary-700 mb-1">
-              {locale === 'en' ? 'Travelers' : 'المسافرين'}
-            </label>
-            <select
-              id="travelers"
-              name="travelers"
-              value={filters.travelers}
-              onChange={(e) => handleFilterChange('travelers', e.target.value)}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {travelersOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Price Range Filter */}
-          <div>
-            <label htmlFor="priceRange" className="block text-sm font-medium text-secondary-700 mb-1">
-              {locale === 'en' ? 'Price Range' : 'نطاق السعر'}
-            </label>
-            <select
-              id="priceRange"
-              name="priceRange"
-              value={filters.priceRange}
-              onChange={(e) => {
-                const range = e.target.value;
-                let min = '';
-                let max = '';
-                
-                if (range) {
-                  if (range === '500+') {
-                    min = '500';
-                    max = '10000'; // Some high value
-                  } else {
-                    [min, max] = range.split('-');
-                  }
-                }
-                
-                handlePriceRangeChange(range, min, max);
-              }}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {priceRangeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Submit and Clear Buttons */}
-          <div className="md:col-span-3 mt-2 flex space-x-2">
-            <Button type="submit" className="flex-1 md:flex-none md:w-auto">
-              {locale === 'en' ? 'Apply Filters' : 'تطبيق الفلاتر'}
-            </Button>
+            <div className="flex items-stretch">
+              <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search size={18} className="text-gray-500" />
+                </div>
+                <input
+                  type="text"
+                  id="search"
+                  name="search"
+                  value={searchInput}
+                  onChange={handleSearchChange}
+                  placeholder={locale === 'en' ? 'Search by tour name, guide or location...' : 'البحث حسب اسم الجولة، المرشد، أو الموقع...'}
+                  className="w-full pl-10 px-3 py-2 border border-secondary-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="primary"
+                className="rounded-l-none px-4"
+                disabled={isPending}
+              >
+                {isPending ? (
+                  <span className="w-4 h-4 border-t-2 border-white rounded-full animate-spin"></span>
+                ) : (
+                  locale === 'en' ? 'Search' : 'بحث'
+                )}
+              </Button>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              {locale === 'en' 
+                ? 'Tip: If you search for a location name, we\'ll auto-filter by that location' 
+                : 'نصيحة: إذا بحثت عن اسم موقع، سنقوم بتصفية تلقائية حسب ذلك الموقع'}
+            </p>
             
-            {/* Clear button - Only show if filters are active */}
-            {hasActiveFilters && (
+            {/* Show visual indication if location filters are active */}
+            {filters.location.length > 0 && (
+              <div className="mt-2 text-sm text-primary-600">
+                <span className="font-medium">
+                  {locale === 'en' 
+                    ? `Filtering by ${filters.location.length > 1 ? 'locations' : 'location'}: ` 
+                    : `تصفية حسب ${filters.location.length > 1 ? 'المواقع' : 'الموقع'}: `}
+                </span>
+                <span>
+                  {filters.location.map((locValue, index) => {
+                    const label = locationOptions.find(o => o.value === locValue)?.label || locValue;
+                    return (
+                      <span key={locValue}>
+                        {label}
+                        {index < filters.location.length - 1 ? ', ' : ''}
+                      </span>
+                    );
+                  })}
+                </span>
+                {filters.location.length > 1 && (
+                  <div className="mt-1 text-xs text-gray-600">
+                    {locale === 'en' 
+                      ? 'Showing tours that include ALL selected locations' 
+                      : 'عرض الجولات التي تشمل جميع المواقع المحددة'}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Location Filter */}
+            <div id="location-dropdown-container" className="relative" style={{ zIndex: 100 }}>
+              <label htmlFor="location" className="block text-sm font-medium text-secondary-700 mb-1">
+                {locale === 'en' ? 'Locations (select multiple)' : 'المواقع (يمكن اختيار أكثر من موقع)'}
+              </label>
               <button
                 type="button"
-                onClick={clearFilters}
-                className="flex-1 md:flex-none md:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors text-center"
+                onClick={toggleLocationDropdown}
+                className="w-full flex items-center justify-between bg-white border border-secondary-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                aria-expanded={isLocationDropdownOpen}
+                aria-haspopup="listbox"
               >
-                {locale === 'en' ? 'Clear' : 'مسح'}
+                <span className={`block truncate ${filters.location.length === 0 ? 'text-black' : 'text-gray-900'}`}>
+                  {getSelectedLocationsText()}
+                </span>
+                <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${isLocationDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
+
+              {isLocationDropdownOpen && (
+                <div className="absolute z-[1000] mt-1 w-full rounded-md bg-white shadow-xl border border-gray-200">
+                  <div className="p-2">
+                    <div className="px-2 py-2 mb-2 text-xs text-gray-600 border-b border-gray-100">
+                      {locale === 'en' 
+                        ? 'Select multiple locations to find tours that include ALL of them' 
+                        : 'حدد مواقع متعددة للعثور على الجولات التي تشمل جميعها'}
+                    </div>
+                    {/* All Locations option */}
+                    <div 
+                      className="flex  items-center px-2 py-2 hover:bg-gray-100 rounded cursor-pointer border-b border-gray-100 mb-1"
+                      onClick={() => {
+                        const updatedFilters = {...filters, location: []};
+                        setFilters(updatedFilters);
+                        applyFilters(updatedFilters);
+                        setIsLocationDropdownOpen(false);
+                      }}
+                    >
+                      <span className={`text-black block text-sm ${filters.location.length === 0 ? 'font-medium' : ''}`}>
+                        {locale === 'en' ? 'All Locations' : 'جميع المواقع'}
+                      </span>
+                    </div>
+                    
+                    {/* Container for location options with single scrollbar */}
+                    <div className="max-h-60 overflow-y-auto py-1">
+                      {/* Individual location options */}
+                      {locationOptions.slice(1).map((option) => (
+                        <div 
+                          key={option.value} 
+                          className="flex items-center px-2 py-2 hover:bg-gray-100 rounded cursor-pointer"
+                          onClick={() => handleLocationToggle(option.value)}
+                        >
+                          <input
+                            type="checkbox"
+                            id={`location-${option.value}`}
+                            checked={filters.location.includes(option.value)}
+                            onChange={() => {}} // Handle the change in the onClick handler of the parent div
+                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                          />
+                          <label 
+                            htmlFor={`location-${option.value}`} 
+                            className="ml-2 block text-sm w-full cursor-pointer"
+                          >
+                            {option.label}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {filters.location.length > 0 && (
+                    <div className="border-t border-gray-200 p-2 bg-gray-50">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updatedFilters = {...filters, location: []};
+                          setFilters(updatedFilters);
+                          applyFilters(updatedFilters);
+                          setIsLocationDropdownOpen(false);
+                        }}
+                        className="w-full text-center py-1.5 text-sm text-primary-600 hover:text-primary-800 font-medium"
+                      >
+                        {locale === 'en' ? 'Clear selections' : 'مسح الاختيارات'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Duration Filter */}
+            <div>
+              <label htmlFor="duration" className="block text-sm font-medium text-secondary-700 mb-1">
+                {locale === 'en' ? 'Duration' : 'المدة'}
+              </label>
+              <select
+                id="duration"
+                name="duration"
+                value={filters.duration}
+                onChange={(e) => handleFilterChange('duration', e.target.value)}
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {durationOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Expertise (Tour Type) Filter */}
+            <div>
+              <label htmlFor="expertise" className="block text-sm font-medium text-secondary-700 mb-1">
+                {locale === 'en' ? 'Guide Expertise' : 'خبرة المرشد'}
+              </label>
+              <select
+                id="expertise"
+                name="expertise"
+                value={filters.expertise}
+                onChange={(e) => handleFilterChange('expertise', e.target.value)}
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {expertiseOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Language Filter */}
+            <div>
+              <label htmlFor="language" className="block text-sm font-medium text-secondary-700 mb-1">
+                {locale === 'en' ? 'Guide Language' : 'لغة المرشد'}
+              </label>
+              <select
+                id="language"
+                name="language"
+                value={filters.language}
+                onChange={(e) => handleFilterChange('language', e.target.value)}
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {languageOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Travelers Filter */}
+            <div>
+              <label htmlFor="travelers" className="block text-sm font-medium text-secondary-700 mb-1">
+                {locale === 'en' ? 'Travelers' : 'المسافرون'}
+              </label>
+              <select
+                id="travelers"
+                name="travelers"
+                value={filters.travelers}
+                onChange={(e) => handleFilterChange('travelers', e.target.value)}
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {travelersOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Price Range Filter */}
+            <div>
+              <label htmlFor="priceRange" className="block text-sm font-medium text-secondary-700 mb-1">
+                {locale === 'en' ? 'Price Range' : 'نطاق السعر'}
+              </label>
+              <select
+                id="priceRange"
+                name="priceRange"
+                value={filters.priceRange}
+                onChange={(e) => {
+                  // Extract min and max values from the range
+                  const range = e.target.value;
+                  let min = '', max = '';
+                  
+                  if (range) {
+                    if (range.includes('-')) {
+                      [min, max] = range.split('-');
+                    } else if (range.includes('+')) {
+                      min = range.replace('+', '');
+                    }
+                  }
+                  
+                  handlePriceRangeChange(range, min, max);
+                }}
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {priceRangeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          
+          {/* Action Buttons - Apply Filters & Clear Filters */}
+          <div className="flex flex-col sm:flex-row gap-2 mt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              className="flex-1"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <span className="flex items-center justify-center">
+                  <span className="w-4 h-4 mr-2 border-t-2 border-white rounded-full animate-spin"></span>
+                  {locale === 'en' ? 'Applying...' : 'جاري التطبيق...'}
+                </span>
+              ) : (
+                locale === 'en' ? 'Apply Filters' : 'تطبيق الفلاتر'
+              )}
+            </Button>
+            
+            {/* Clear Filters Button - Only show on mobile if filters are active */}
+            {hasActiveFilters && (
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 md:hidden flex items-center justify-center"
+                onClick={clearFilters}
+                disabled={isPending}
+              >
+                <X size={16} className="mr-1" />
+                {locale === 'en' ? 'Clear Filters' : 'مسح الفلاتر'}
+              </Button>
             )}
           </div>
         </form>

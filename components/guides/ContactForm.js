@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
 
 export default function ContactForm({ locale, guideId, guideName }) {
@@ -9,6 +9,12 @@ export default function ContactForm({ locale, guideId, guideName }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Fix hydration issues by ensuring client-side rendering for interactive elements
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,6 +40,25 @@ export default function ContactForm({ locale, guideId, guideName }) {
       setIsSubmitting(false);
     }
   };
+
+  // Use a simple non-interactive placeholder during server rendering
+  if (!isMounted) {
+    return (
+      <div className="bg-white rounded-2xl shadow-lg p-8 text-gray-800">
+        <h2 className="text-2xl font-bold mb-6 flex items-center">
+          <span className="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3">
+            <MessageCircle className="w-5 h-5" />
+          </span>
+          {locale === 'en' ? 'Contact Me' : 'تواصل معي'}
+        </h2>
+        <div className="animate-pulse space-y-4">
+          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-12 bg-gray-300 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8 text-gray-800">
@@ -96,7 +121,7 @@ export default function ContactForm({ locale, guideId, guideName }) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full bg-gray-500 hover:bg-primary-700 text-white font-medium py-3 rounded-lg transition-colors ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 rounded-lg transition-colors ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
             {isSubmitting 
               ? (locale === 'en' ? 'Sending...' : 'جاري الإرسال...') 
