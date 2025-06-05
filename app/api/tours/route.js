@@ -123,13 +123,81 @@ export async function POST(request) {
       );
     }
     
+    // Find the guide profile for this user
+    const guide = await Guide.findOne({ user: user._id });
+    
+    if (!guide) {
+      return NextResponse.json(
+        { success: false, message: 'Guide profile not found' },
+        { status: 404 }
+      );
+    }
+    
     // Get tour data from request body
     const tourData = await request.json();
     
-    // Create tour with user ID as guide
+    // Validate required fields
+    if (!tourData.title || !tourData.title.en || !tourData.description || !tourData.description.en) {
+      return NextResponse.json(
+        { success: false, message: 'Title and description in English are required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!tourData.price || tourData.price <= 0) {
+      return NextResponse.json(
+        { success: false, message: 'Valid price is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!tourData.duration || tourData.duration <= 0) {
+      return NextResponse.json(
+        { success: false, message: 'Valid duration is required' },
+        { status: 400 }
+      );
+    }
+    
+    // Validate tour plan for multi-day tours
+    if (tourData.durationUnit === 'days' && Math.floor(tourData.duration) > 0) {
+      if (!tourData.tourPlan || !Array.isArray(tourData.tourPlan)) {
+        return NextResponse.json(
+          { success: false, message: 'Tour plan is required for multi-day tours' },
+          { status: 400 }
+        );
+      }
+      
+      // Check if all days have content
+      const expectedDays = Math.floor(tourData.duration);
+      if (tourData.tourPlan.length !== expectedDays) {
+        return NextResponse.json(
+          { success: false, message: `Tour plan must have exactly ${expectedDays} days` },
+          { status: 400 }
+        );
+      }
+      
+      // Validate each day's content
+      for (let i = 0; i < tourData.tourPlan.length; i++) {
+        const day = tourData.tourPlan[i];
+        if (!day.content || !day.content.en || !day.content.ar) {
+          return NextResponse.json(
+            { success: false, message: `Day ${i + 1} content in both English and Arabic is required` },
+            { status: 400 }
+          );
+        }
+        if (!day.day || day.day !== (i + 1)) {
+          return NextResponse.json(
+            { success: false, message: `Invalid day number for day ${i + 1}` },
+            { status: 400 }
+          );
+        }
+      }
+    }
+    
+    // Create tour with guide ID
     const tour = await Tour.create({
       ...tourData,
-      // guide: user._id, // Use user ID directly
+      guide: guide._id, // Use guide profile ID
       rating: 5, // Default rating
       reviewCount: 0
     });
@@ -140,6 +208,16 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error('Error creating tour:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return NextResponse.json(
+        { success: false, message: 'Validation error', errors },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, message: 'Server error: ' + error.message },
       { status: 500 }

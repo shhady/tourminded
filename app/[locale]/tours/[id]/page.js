@@ -285,6 +285,46 @@ export default async function TourPage({ params }) {
                 </div>
               </div>
               
+              {/* Tour Plan - Only show for multi-day tours */}
+              {tourData.tourPlan && tourData.tourPlan.length > 0 && (
+                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                  <h2 className="text-2xl font-bold mb-4 text-secondary-900">
+                    {locale === 'en' ? 'Tour Plan' : 'خطة الجولة'}
+                  </h2>
+                  <div className="space-y-4">
+                    {tourData.tourPlan.map((day, index) => (
+                      <details key={day.day} className="group border border-secondary-200 rounded-lg">
+                        <summary className="cursor-pointer p-4 bg-secondary-50 hover:bg-secondary-100 transition-colors rounded-lg group-open:rounded-b-none">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-secondary-900">
+                              {locale === 'en' ? `Day ${day.day}` : `اليوم ${day.day}`}
+                              {day.title && day.title[locale] && (
+                                <span className="text-base font-normal text-secondary-600 ml-2">
+                                  - {day.title[locale]}
+                                </span>
+                              )}
+                            </h3>
+                            <ChevronRight className="w-5 h-5 text-secondary-600 transition-transform group-open:rotate-90" />
+                          </div>
+                        </summary>
+                        <div className="p-4 border-t border-secondary-200">
+                          {day.title && day.title[locale] && (
+                            <h4 className="font-semibold text-secondary-800 mb-2">
+                              {day.title[locale]}
+                            </h4>
+                          )}
+                          <div className="prose max-w-none text-gray-700">
+                            <p className="whitespace-pre-line">
+                              {day.content && day.content[locale] ? day.content[locale] : day.content?.en || ''}
+                            </p>
+                          </div>
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               {/* Tour Features */}
               <div className="bg-white rounded-lg shadow-md p-6 mb-8">
                 <h3 className="text-xl font-semibold mb-4 text-secondary-900">

@@ -24,6 +24,7 @@ export default function EditTourPage({ params }) {
   const [itineraryItems, setItineraryItems] = useState([{ title: '', description: '' }]);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [tour, setTour] = useState(null);
+  const [tourPlan, setTourPlan] = useState([]);
   
   // Hardcoded locations in Palestine and Israel
   const locations = [
@@ -46,6 +47,49 @@ export default function EditTourPage({ params }) {
   
   const { register, handleSubmit, formState: { errors }, reset, watch } = useForm();
   
+  // Watch duration and durationUnit to update tour plan
+  const duration = watch('duration');
+  const durationUnit = watch('durationUnit');
+  
+  // Update tour plan when duration or unit changes
+  useEffect(() => {
+    if (duration && durationUnit === 'days' && Math.floor(duration) > 0) {
+      const days = Math.floor(duration);
+      const newTourPlan = [];
+      
+      for (let i = 1; i <= days; i++) {
+        const existingDay = tourPlan.find(day => day.day === i);
+        newTourPlan.push({
+          day: i,
+          title: {
+            en: existingDay?.title?.en || '',
+            ar: existingDay?.title?.ar || ''
+          },
+          content: {
+            en: existingDay?.content?.en || '',
+            ar: existingDay?.content?.ar || ''
+          }
+        });
+      }
+      
+      setTourPlan(newTourPlan);
+    } else if (durationUnit === 'hours') {
+      setTourPlan([]);
+    }
+  }, [duration, durationUnit]);
+  
+  // Handle tour plan updates
+  const updateTourPlanDay = (dayIndex, field, language, value) => {
+    setTourPlan(prev => {
+      const updated = [...prev];
+      if (!updated[dayIndex][field]) {
+        updated[dayIndex][field] = {};
+      }
+      updated[dayIndex][field][language] = value;
+      return updated;
+    });
+  };
+  
   // Fetch tour data
   useEffect(() => {
     const fetchTour = async () => {
@@ -67,6 +111,7 @@ export default function EditTourPage({ params }) {
         setIncludedItems(data.data.included || ['']);
         setExcludedItems(data.data.excluded || ['']);
         setItineraryItems(data.data.itinerary || [{ title: '', description: '' }]);
+        setTourPlan(data.data.tourPlan || []);
         
         // Reset form with tour data
         reset({
@@ -185,6 +230,19 @@ export default function EditTourPage({ params }) {
       return;
     }
     
+    // Validate tour plan for multi-day tours
+    if (data.durationUnit === 'days' && Math.floor(data.duration) > 0) {
+      const hasEmptyContent = tourPlan.some(day => 
+        !day.content.en.trim() || !day.content.ar.trim()
+      );
+      
+      if (hasEmptyContent) {
+        setError(locale === 'en' ? 'All daily activities must be filled in' : 'يجب ملء جميع الأنشطة اليومية');
+        setIsLoading(false);
+        return;
+      }
+    }
+    
     try {
       // Prepare tour data
       const tourData = {
@@ -196,6 +254,8 @@ export default function EditTourPage({ params }) {
           en: data['description.en'],
           ar: data['description.ar'],
         },
+        // Add tour plan for multi-day tours
+        tourPlan: data.durationUnit === 'days' && Math.floor(data.duration) > 0 ? tourPlan : [],
         price: parseFloat(data.price),
         duration: parseInt(data.duration),
         durationUnit: data.durationUnit,
@@ -694,6 +754,96 @@ export default function EditTourPage({ params }) {
           
           {/* Itinerary Tab */}
           <TabsContent value="itinerary" className="space-y-6">
+            {/* Tour Plan - Only show for multi-day tours */}
+            {tourPlan.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+                  {locale === 'en' ? 'Daily Tour Plan' : 'خطة الجولة اليومية'}
+                </h3>
+                <p className="text-sm text-secondary-600 mb-6">
+                  {locale === 'en' 
+                    ? 'Describe what activities and locations will be covered each day of the tour.' 
+                    : 'اوصف الأنشطة والمواقع التي سيتم تغطيتها في كل يوم من الجولة.'}
+                </p>
+                
+                <div className="space-y-6">
+                  {tourPlan.map((day, index) => (
+                    <div key={day.day} className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="text-md font-medium text-secondary-800 mb-4">
+                        {locale === 'en' ? `Day ${day.day}` : `اليوم ${day.day}`}
+                      </h4>
+                      
+                      {/* Day Title */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="block text-sm font-medium text-secondary-700 mb-1">
+                            {locale === 'en' ? 'Title (English)' : 'العنوان (بالإنجليزية)'}
+                          </label>
+                          <input
+                            type="text"
+                            value={day.title.en}
+                            onChange={(e) => updateTourPlanDay(index, 'title', 'en', e.target.value)}
+                            placeholder={locale === 'en' ? 'e.g., Jerusalem Old City Tour' : 'مثل: جولة البلدة القديمة في القدس'}
+                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-secondary-700 mb-1">
+                            {locale === 'en' ? 'Title (Arabic)' : 'العنوان (بالعربية)'}
+                          </label>
+                          <input
+                            type="text"
+                            value={day.title.ar}
+                            onChange={(e) => updateTourPlanDay(index, 'title', 'ar', e.target.value)}
+                            placeholder={locale === 'en' ? 'e.g., جولة البلدة القديمة في القدس' : 'مثل: جولة البلدة القديمة في القدس'}
+                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            dir="rtl"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Day Content */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-secondary-700 mb-1">
+                            {locale === 'en' ? 'Activities & Details (English)' : 'الأنشطة والتفاصيل (بالإنجليزية)'}*
+                          </label>
+                          <textarea
+                            rows="4"
+                            value={day.content.en}
+                            onChange={(e) => updateTourPlanDay(index, 'content', 'en', e.target.value)}
+                            placeholder={locale === 'en' 
+                              ? 'Describe the activities, locations, meals, and experiences for this day...' 
+                              : 'اوصف الأنشطة والمواقع والوجبات والتجارب لهذا اليوم...'}
+                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            required
+                          ></textarea>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-secondary-700 mb-1">
+                            {locale === 'en' ? 'Activities & Details (Arabic)' : 'الأنشطة والتفاصيل (بالعربية)'}*
+                          </label>
+                          <textarea
+                            rows="4"
+                            value={day.content.ar}
+                            onChange={(e) => updateTourPlanDay(index, 'content', 'ar', e.target.value)}
+                            placeholder={locale === 'en' 
+                              ? 'اوصف الأنشطة والمواقع والوجبات والتجارب لهذا اليوم...' 
+                              : 'اوصف الأنشطة والمواقع والوجبات والتجارب لهذا اليوم...'}
+                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            dir="rtl"
+                            required
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div>
               <label className="block text-sm font-medium text-secondary-700 mb-3">
                 {locale === 'en' ? 'Tour Itinerary' : 'جدول الجولة'}

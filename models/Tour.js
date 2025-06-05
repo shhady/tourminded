@@ -23,6 +23,34 @@ const TourSchema = new mongoose.Schema({
       required: [true, 'Please provide a description in Arabic'],
     },
   },
+  tourPlan: [
+    {
+      day: {
+        type: Number,
+        required: [true, 'Day number is required'],
+      },
+      title: {
+        en: {
+          type: String,
+          trim: true,
+        },
+        ar: {
+          type: String,
+          trim: true,
+        },
+      },
+      content: {
+        en: {
+          type: String,
+          required: [true, 'Day content in English is required'],
+        },
+        ar: {
+          type: String,
+          required: [true, 'Day content in Arabic is required'],
+        },
+      },
+    }
+  ],
   guide: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Guide',

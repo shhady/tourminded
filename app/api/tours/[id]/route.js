@@ -88,6 +88,74 @@ export async function PUT(request, { params }) {
       );
     }
     
+    // Validate required fields if they are being updated
+    if (tourData.title && (!tourData.title.en)) {
+      return NextResponse.json(
+        { success: false, message: 'Title in English is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (tourData.description && (!tourData.description.en)) {
+      return NextResponse.json(
+        { success: false, message: 'Description in English is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (tourData.price !== undefined && tourData.price <= 0) {
+      return NextResponse.json(
+        { success: false, message: 'Valid price is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (tourData.duration !== undefined && tourData.duration <= 0) {
+      return NextResponse.json(
+        { success: false, message: 'Valid duration is required' },
+        { status: 400 }
+      );
+    }
+    
+    // Validate tour plan for multi-day tours
+    if (tourData.durationUnit === 'days' && tourData.duration && Math.floor(tourData.duration) > 0) {
+      if (!tourData.tourPlan || !Array.isArray(tourData.tourPlan)) {
+        return NextResponse.json(
+          { success: false, message: 'Tour plan is required for multi-day tours' },
+          { status: 400 }
+        );
+      }
+      
+      // Check if all days have content
+      const expectedDays = Math.floor(tourData.duration);
+      if (tourData.tourPlan.length !== expectedDays) {
+        return NextResponse.json(
+          { success: false, message: `Tour plan must have exactly ${expectedDays} days` },
+          { status: 400 }
+        );
+      }
+      
+      // Validate each day's content
+      for (let i = 0; i < tourData.tourPlan.length; i++) {
+        const day = tourData.tourPlan[i];
+        if (!day.content || !day.content.en || !day.content.ar) {
+          return NextResponse.json(
+            { success: false, message: `Day ${i + 1} content in both English and Arabic is required` },
+            { status: 400 }
+          );
+        }
+        if (!day.day || day.day !== (i + 1)) {
+          return NextResponse.json(
+            { success: false, message: `Invalid day number for day ${i + 1}` },
+            { status: 400 }
+          );
+        }
+      }
+    } else if (tourData.durationUnit === 'hours') {
+      // For hourly tours, clear any existing tour plan
+      tourData.tourPlan = [];
+    }
+    
     // Update tour
     const updatedTour = await Tour.findByIdAndUpdate(
       id,
@@ -101,6 +169,16 @@ export async function PUT(request, { params }) {
     });
   } catch (error) {
     console.error('Error updating tour:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return NextResponse.json(
+        { success: false, message: 'Validation error', errors },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, message: error.message || 'Server error' },
       { status: 500 }
