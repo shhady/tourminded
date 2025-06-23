@@ -5,6 +5,7 @@ import Button from '../ui/Button';
 import Image from 'next/image';
 import { Search, Users, GraduationCap, Languages, ChevronDown } from 'lucide-react';
 import TravelerCounter from './TravelerCounter.js';
+import TravelDatesDropdown from '../ui/TravelDatesDropdown';
 
 const HeroSection = ({ locale }) => {
   const router = useRouter();
@@ -19,6 +20,7 @@ const HeroSection = ({ locale }) => {
   const [hasServiceAnimal, setHasServiceAnimal] = useState(false);
   const [expertise, setExpertise] = useState('');
   const [language, setLanguage] = useState('');
+  const [travelDates, setTravelDates] = useState('');
   const [currentBg, setCurrentBg] = useState(0);
   const [isFormExpanded, setIsFormExpanded] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -92,6 +94,11 @@ const HeroSection = ({ locale }) => {
     if (hasServiceAnimal) {
       searchParams.append('serviceAnimal', 'true');
       console.log('Adding service animal');
+    }
+    
+    if (travelDates) {
+      searchParams.append('travelDates', travelDates);
+      console.log('Adding travel dates:', travelDates);
     }
     
     // Navigate to the tours page with the search parameters
@@ -257,6 +264,13 @@ const HeroSection = ({ locale }) => {
                   </div>
                 </div>
 
+                {/* Travel Dates */}
+                <TravelDatesDropdown
+                  value={travelDates}
+                  onChange={setTravelDates}
+                  locale={locale}
+                />
+
                 {/* Expertise */}
                 <div>
                   <label className="text-gray-800 text-sm font-medium mb-1 block">
@@ -312,7 +326,7 @@ const HeroSection = ({ locale }) => {
 
         {/* Search Form - Desktop Version */}
         <div className="hidden md:block bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 max-w-5xl mx-auto animate-fade-in">
-          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-5">
             {/* Travelers */}
             <div className="relative">
               <label className="text-gray-800 text-sm font-medium mb-2 flex items-center">
@@ -349,6 +363,13 @@ const HeroSection = ({ locale }) => {
                 )}
               </div>
             </div>
+
+            {/* Travel Dates */}
+            <TravelDatesDropdown
+              value={travelDates}
+              onChange={setTravelDates}
+              locale={locale}
+            />
 
             {/* Expertise */}
             <div>
@@ -391,7 +412,7 @@ const HeroSection = ({ locale }) => {
             </div>
 
             {/* Search Button */}
-            <div className="md:col-span-3 mt-1">
+            <div className="md:col-span-4 mt-1">
               <Button 
                 type="submit" 
                 className="w-full py-3 px-6 text-base font-medium bg-primary-600 hover:bg-primary-700 text-black rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"

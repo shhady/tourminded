@@ -117,6 +117,26 @@ export async function PUT(request, { params }) {
       );
     }
     
+    // Validate includes field if provided
+    if (tourData.includes !== undefined) {
+      if (!Array.isArray(tourData.includes)) {
+        return NextResponse.json(
+          { success: false, message: 'Includes must be an array' },
+          { status: 400 }
+        );
+      }
+      
+      // Validate that all items in includes are strings
+      for (let i = 0; i < tourData.includes.length; i++) {
+        if (typeof tourData.includes[i] !== 'string') {
+          return NextResponse.json(
+            { success: false, message: `Includes item at index ${i} must be a string` },
+            { status: 400 }
+          );
+        }
+      }
+    }
+    
     // Validate tour plan for multi-day tours
     if (tourData.durationUnit === 'days' && tourData.duration && Math.floor(tourData.duration) > 0) {
       if (!tourData.tourPlan || !Array.isArray(tourData.tourPlan)) {

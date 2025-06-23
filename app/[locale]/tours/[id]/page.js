@@ -138,6 +138,7 @@ async function getTourData(id) {
       kidFriendly: tourData.kidFriendly || false,
       rating: tourData.rating || 0,
       reviewCount: tourData.reviewCount || 0,
+      includes: tourData.includes || [],
       images: tourData.images || { cover: { url: null }, gallery: [] }
     };
   } catch (error) {
@@ -378,15 +379,34 @@ export default async function TourPage({ params }) {
                 </div>
               </div>
               
+              {/* What's Included */}
+              {tourData.includes && tourData.includes.length > 0 && (
+                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                  <h3 className="text-xl font-semibold mb-4 text-secondary-900">
+                    {locale === 'en' ? 'What\'s Included' : 'ما هو مشمول'}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {tourData.includes.map((item, index) => (
+                      <div key={index} className="flex items-center">
+                        <Check className="text-primary-600 w-5 h-5 mr-3" />
+                        <div>
+                          <p className="font-medium text-secondary-900">{item}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               {/* Gallery */}
               {tourData.images?.gallery && tourData.images.gallery.length > 0 && (
-  <div className="mb-8">
-    <h3 className="text-xl font-semibold mb-4 text-secondary-900">
-      {locale === 'en' ? 'Tour Gallery' : 'معرض الصور'}
-    </h3>
-    <GalleryLightbox images={tourData.images.gallery} locale={locale} />
-  </div>
-)}
+                <div className="mb-8">
+                  <h3 className="text-xl font-semibold mb-4 text-secondary-900">
+                    {locale === 'en' ? 'Tour Gallery' : 'معرض الصور'}
+                  </h3>
+                  <GalleryLightbox images={tourData.images.gallery} locale={locale} />
+                </div>
+              )}
             </div>
             
             {/* Sidebar */}

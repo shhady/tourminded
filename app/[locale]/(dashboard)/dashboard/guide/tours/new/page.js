@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import Button from '@/components/ui/Button';
 import ImageUploader from '@/components/ui/ImageUploader';
-import { Loader } from 'lucide-react';
+import { Loader, Plus, Minus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useGuide } from '@/contexts/GuideContext';
 
@@ -25,6 +25,7 @@ export default function NewTourPage({ params }) {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [guideLanguages, setGuideLanguages] = useState([]);
   const [tourPlan, setTourPlan] = useState([]);
+  const [includesItems, setIncludesItems] = useState(['']);
   
   // Hardcoded locations in Palestine and Israel
   const locations = [
@@ -146,6 +147,22 @@ export default function NewTourPage({ params }) {
     });
   };
   
+  const addIncludesItem = () => {
+    setIncludesItems([...includesItems, '']);
+  };
+  
+  const removeIncludesItem = (index) => {
+    const newItems = [...includesItems];
+    newItems.splice(index, 1);
+    setIncludesItems(newItems);
+  };
+  
+  const updateIncludesItem = (index, value) => {
+    const newItems = [...includesItems];
+    newItems[index] = value;
+    setIncludesItems(newItems);
+  };
+  
   const onSubmit = async (data) => {
     setIsLoading(true);
     setError('');
@@ -234,6 +251,8 @@ export default function NewTourPage({ params }) {
         languages: guide.languages ? guide.languages.map(lang => lang.language) : ['en'],
         // Use selected locations
         locationNames: selectedLocations,
+        // Add includes items
+        includes: includesItems.filter(item => item.trim() !== ''),
         // Set active status
         isActive: true
       };
@@ -675,6 +694,48 @@ export default function NewTourPage({ params }) {
                 {locale === 'en' ? 'Kid Friendly' : 'مناسب للأطفال'}
               </label>
             </div>
+          </div>
+          
+          {/* Includes */}
+          <div>
+            <label className="block text-sm font-medium text-secondary-700 mb-3">
+              {locale === 'en' ? 'What\'s Included' : 'ما هو مشمول'}
+            </label>
+            
+            {includesItems.map((item, index) => (
+              <div key={`includes-${index}`} className="mb-4 p-4 border border-secondary-200 rounded-md">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium">
+                    {locale === 'en' ? `Item ${index + 1}` : `العنصر ${index + 1}`}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => removeIncludesItem(index)}
+                    className="text-red-500 hover:text-red-700"
+                    disabled={includesItems.length === 1}
+                  >
+                    <Minus className="h-5 w-5" />
+                  </button>
+                </div>
+                
+                <input
+                  type="text"
+                  value={item}
+                  onChange={(e) => updateIncludesItem(index, e.target.value)}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder={locale === 'en' ? 'E.g., Professional guide, Transportation, Lunch' : 'مثال: دليل محترف، النقل، الغداء'}
+                />
+              </div>
+            ))}
+            
+            <button
+              type="button"
+              onClick={addIncludesItem}
+              className="flex items-center text-primary-600 hover:text-primary-700"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              {locale === 'en' ? 'Add Included Item' : 'إضافة عنصر مشمول'}
+            </button>
           </div>
           
           {/* Cover Image */}

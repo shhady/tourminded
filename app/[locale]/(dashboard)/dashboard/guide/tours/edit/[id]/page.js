@@ -108,7 +108,7 @@ export default function EditTourPage({ params }) {
         setCoverImage(data.data.images?.cover?.url || '');
         setGalleryImages(data.data.images?.gallery?.map(img => img.url) || []);
         setSelectedLocations(data.data.locationNames || []);
-        setIncludedItems(data.data.included || ['']);
+        setIncludedItems(data.data.includes || ['']);
         setExcludedItems(data.data.excluded || ['']);
         setItineraryItems(data.data.itinerary || [{ title: '', description: '' }]);
         setTourPlan(data.data.tourPlan || []);
@@ -268,7 +268,7 @@ export default function EditTourPage({ params }) {
         expertise: data.expertise,
         isActive: data.isActive,
         locationNames: selectedLocations,
-        included: includedItems.filter(item => item.trim() !== ''),
+        includes: includedItems.filter(item => item.trim() !== ''),
         excluded: excludedItems.filter(item => item.trim() !== ''),
         itinerary: itineraryItems.filter(item => item.title.trim() !== '' || item.description.trim() !== ''),
         images: {

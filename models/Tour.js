@@ -125,6 +125,7 @@ const TourSchema = new mongoose.Schema({
   expertise: {
     type: String,
     enum: [
+      'Religious',
       'Christian',
       'Jewish',
       'Muslim',
@@ -140,6 +141,12 @@ const TourSchema = new mongoose.Schema({
     ],
     required: [true, 'Tour must have an expertise category'],
   },
+  includes: [
+    {
+      type: String,
+      trim: true,
+    },
+  ],
   averageTemperature: {
     type: Number,
   },
