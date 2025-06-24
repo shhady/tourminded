@@ -297,7 +297,7 @@ const Header = ({ locale }) => {
                     {user && getGuideMenuItem()}
                     
                     {/* Admin Dashboard - only for admins */}
-                    {user && user.publicMetadata?.role === 'admin' && (
+                    {user && user.role === 'admin' && (
                       <Link
                         href={`/${locale}/dashboard/admin`}
                         className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"

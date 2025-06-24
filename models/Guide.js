@@ -115,6 +115,12 @@ const GuideSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  googleCalendar: {
+    accessToken: { type: String },
+    refreshToken: { type: String },
+    calendarId: { type: String }, // usually the user's email
+    tokenExpiry: { type: Date },
+  },
   createdAt: {
     type: Date,
     default: Date.now,
