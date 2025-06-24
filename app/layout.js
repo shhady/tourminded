@@ -4,7 +4,7 @@ import { getDirection } from "@/lib/i18n";
 import { ClerkProvider } from '@clerk/nextjs'
 import { UserProvider } from "@/contexts/UserContext";
 import { GuideProvider } from "@/contexts/GuideContext";
-
+import { Analytics } from "@vercel/analytics/next"
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -32,6 +32,7 @@ export default function RootLayout({ children, params }) {
           <html lang="en" dir="ltr">
             <body className={`${inter.variable} ${tajawal.variable} font-sans antialiased`}>
               {children}
+              <Analytics />
             </body>
           </html>
         </UserProvider>
