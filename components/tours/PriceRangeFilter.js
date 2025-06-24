@@ -12,7 +12,7 @@ export default function PriceRangeFilter({
   const handlePriceRangeChange = (e) => {
     const range = e.target.value.split('-');
     
-    // Find the min and max price input elements and update their values
+    // Find the min and max price d input elements and update their values
     const minPriceInput = document.getElementById('minPrice');
     const maxPriceInput = document.getElementById('maxPrice');
     
