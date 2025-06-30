@@ -4,8 +4,8 @@ import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 import ContactForm from '@/components/contact/ContactForm';
 
 export const metadata = {
-  title: 'Contact Us | Tourminded',
-  description: 'Get in touch with the Tourminded team for any questions or support',
+  title: 'Contact Us | Watermelon Tours',
+  description: 'Get in touch with the Watermelon Tours team for any questions or support',
 };
 
 export default async function ContactPage({ params }) {
@@ -37,10 +37,10 @@ export default async function ContactPage({ params }) {
                 {locale === 'en' ? 'For general inquiries' : 'للاستفسارات العامة'}
               </p>
               <a 
-                href="mailto:info@tourminded.com" 
+                href="mailto:info@Watermelontours.com" 
                 className="text-primary-600 hover:text-primary-700 font-medium"
               >
-                info@tourminded.com
+                info@Watermelontours.com
               </a>
             </div>
             

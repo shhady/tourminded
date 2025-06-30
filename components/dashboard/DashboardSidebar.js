@@ -57,7 +57,7 @@ export default function DashboardSidebar({ locale, userRole }) {
       {/* Mobile menu toggle */}
       <h1 className="text-3xl font-bold mb-8">
             <Link href="/" className="text-primary-600 hover:text-primary-700 transition-colors border-b-2 border-primary-600">
-              Tourminded.
+            Watermelon Tours.
             </Link>
           </h1>
       <div className="md:hidden bg-white rounded-lg shadow-md p-4 mb-4 flex justify-between items-center">

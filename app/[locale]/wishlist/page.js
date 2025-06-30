@@ -325,6 +325,7 @@ export default function WishlistPage({ params }) {
                               src={tour.images?.cover?.url || '/images/default-tour.jpg'}
                               alt={getTourTitle(tour)}
                               fill
+                              sizes='100vw'
                               className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                             
@@ -398,6 +399,7 @@ export default function WishlistPage({ params }) {
                                   }
                                   alt={tour.guide ? getGuideName(tour.guide) : 'Tour guide'}
                                   fill
+                                  sizes='100vw'
                                   className="object-cover"
                                 />
                               </div>
@@ -464,6 +466,7 @@ export default function WishlistPage({ params }) {
                                 src={guide.coverImage?.url || '/images/default-cover.jpg'}
                                 alt={`${getGuideName(guide)} cover image`}
                                 fill
+                                sizes='100vw'
                                 className="object-cover"
                               />
                               
@@ -472,7 +475,8 @@ export default function WishlistPage({ params }) {
                                   <Image 
                                     src={guide.profileImage?.url || '/images/default-avatar.png'}
                                     alt={getGuideName(guide) || 'Guide profile image'}
-                                    fill
+                                      fill
+                                    sizes='100vw'
                                     className="object-cover"
                                   />
                                 </div>

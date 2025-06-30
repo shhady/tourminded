@@ -6,7 +6,7 @@ import Button from '@/components/ui/Button';
 import { getCurrentUser } from '@/lib/auth';
 
 export const metadata = {
-  title: 'Personalized Tour Quiz | Tourminded',
+  title: 'Personalized Tour Quiz | Watermelon Tours',
   description: 'Take our quiz to find the perfect tour for your Holy Land adventure',
 };
 

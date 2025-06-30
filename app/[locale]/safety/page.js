@@ -5,7 +5,7 @@ import { Shield, AlertTriangle, Check, Info, MapPin } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
 export const metadata = {
-  title: 'Safety Information | Tourminded',
+  title: 'Safety Information | Watermelon Tours',
   description: 'Learn about safety measures and guidelines for traveling in the Holy Land',
 };
 

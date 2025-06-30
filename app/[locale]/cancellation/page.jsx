@@ -4,7 +4,7 @@ import { Calendar, Clock, ArrowLeft, CheckCircle, XCircle, AlertCircle } from 'l
 import Button from '@/components/ui/Button';
 
 export const metadata = {
-  title: 'Cancellation Options | Tourminded',
+  title: 'Cancellation Options | Watermelon Tours',
   description: 'Learn about our flexible cancellation policies for tours in the Holy Land',
 };
 
@@ -42,8 +42,8 @@ export default async function CancellationPage({ params }) {
             <div className="bg-white rounded-xl shadow-sm p-8 mb-12">
               <p className="text-secondary-700 mb-8">
                 {locale === 'en' 
-                  ? 'At Tourminded, we strive to provide fair and transparent cancellation policies. We offer different levels of flexibility depending on the tour type and timing of your cancellation.' 
-                  : 'في Tourminded، نسعى جاهدين لتقديم سياسات إلغاء عادلة وشفافة. نقدم مستويات مختلفة من المرونة اعتمادًا على نوع الجولة وتوقيت الإلغاء.'}
+                  ? 'At Watermelon Tours, we strive to provide fair and transparent cancellation policies. We offer different levels of flexibility depending on the tour type and timing of your cancellation.' 
+                  : 'في Watermelon Tours، نسعى جاهدين لتقديم سياسات إلغاء عادلة وشفافة. نقدم مستويات مختلفة من المرونة اعتمادًا على نوع الجولة وتوقيت الإلغاء.'}
               </p>
               
               <div className="space-y-8">
@@ -249,8 +249,8 @@ export default async function CancellationPage({ params }) {
                     </h3>
                     <p className="text-secondary-700">
                       {locale === 'en' 
-                        ? 'Log in to your Tourminded account and navigate to "My Bookings" to cancel or modify your reservation.' 
-                        : 'قم بتسجيل الدخول إلى حساب Tourminded الخاص بك وانتقل إلى "حجوزاتي" لإلغاء أو تعديل حجزك.'}
+                        ? 'Log in to your Watermelon Tours account and navigate to "My Bookings" to cancel or modify your reservation.' 
+                        : 'قم بتسجيل الدخول إلى حساب Watermelon Tours الخاص بك وانتقل إلى "حجوزاتي" لإلغاء أو تعديل حجزك.'}
                     </p>
                   </div>
                 </div>
@@ -265,8 +265,8 @@ export default async function CancellationPage({ params }) {
                     </h3>
                     <p className="text-secondary-700">
                       {locale === 'en' 
-                        ? 'Send an email to cancellations@tourminded.com with your booking reference number and cancellation request.' 
-                        : 'أرسل بريدًا إلكترونيًا إلى cancellations@tourminded.com مع رقم مرجع الحجز الخاص بك وطلب الإلغاء.'}
+                        ? 'Send an email to cancellations@Watermelontours.com with your booking reference number and cancellation request.' 
+                        : 'أرسل بريدًا إلكترونيًا إلى cancellations@Watermelontours.com مع رقم مرجع الحجز الخاص بك وطلب الإلغاء.'}
                     </p>
                   </div>
                 </div>

@@ -5,8 +5,8 @@ import { Star, User, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Guide Reviews | Tourminded',
-  description: 'Manage and view your reviews as a guide on Tourminded.',
+  title: 'Guide Reviews | Watermelon Tours',
+  description: 'Manage and view your reviews as a guide on Watermelon Tours.',
 };
 
 async function getGuideReviews(userId) {

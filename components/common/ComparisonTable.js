@@ -85,7 +85,7 @@ export default function ComparisonTable({ locale }) {
   return (
     <div className="w-full overflow-hidden">
       <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">
-        {locale === 'en' ? 'What makes Tourminded better?' : 'ما الذي يجعل Tourminded أفضل؟'}
+        {locale === 'en' ? 'What makes Watermelon Tours better?' : 'ما الذي يجعل Watermelon Tours أفضل؟'}
       </h2>
       
       {/* Desktop version - hidden on mobile */}
@@ -144,7 +144,7 @@ export default function ComparisonTable({ locale }) {
             {locale === 'en' ? 'Feature' : 'الميزة'}
           </div>
           <div className="col-span-1 text-center font-semibold text-primary-700">
-            Tourminded
+          Watermelon Tours
           </div>
           <div className="col-span-1 text-center font-semibold text-gray-700 text-sm">
             {locale === 'en' ? 'Others' : 'الآخرون'}

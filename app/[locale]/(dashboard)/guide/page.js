@@ -6,7 +6,7 @@ import Guide from '@/models/Guide';
 import { Calendar, Star, Compass } from 'lucide-react';
 
 export const metadata = {
-  title: 'Guide Dashboard | Tourminded',
+  title: 'Guide Dashboard | Watermelon Tours',
   description: 'Manage your tours, bookings, and profile as a guide',
 };
 

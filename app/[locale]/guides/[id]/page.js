@@ -145,13 +145,13 @@ export async function generateMetadata({ params }) {
     const name = getGuideName(guide, locale);
     
     return {
-      title: `${name} | Tourminded`,
+      title: `${name} | Watermelon Tours`,
       description: getGuideBio(guide, locale).substring(0, 160),
     };
   } catch (error) {
     console.error('Error generating metadata:', error);
     return {
-      title: 'Tour Guide | Tourminded',
+      title: 'Tour Guide | Watermelon Tours',
       description: 'Professional tour guide profile',
     };
   }
@@ -187,7 +187,7 @@ export default async function GuideProfilePage({ params }) {
     const vehicle = guide.vehicle || {};
     
     // Generate QR code URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://tourminded.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://watermelontours.com';
     const guideUrl = `${baseUrl}/${locale}/guides/${id}`;
     const qrCode = generateQRCode(guideUrl);
     
@@ -203,6 +203,7 @@ export default async function GuideProfilePage({ params }) {
               fill
               className="object-cover"
               priority
+              sizes='100vw'
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/70"></div>
           </div>
@@ -228,6 +229,7 @@ export default async function GuideProfilePage({ params }) {
                     alt={name}
                     fill
                     className="object-cover"
+                    sizes='100vw'
                   />
                 </div>
                 <div>
@@ -326,7 +328,8 @@ export default async function GuideProfilePage({ params }) {
                             alt="Guide's vehicle"
                             fill
                             className="object-cover"
-                          />
+                            sizes='100vw'
+                            />
                         </div>
                       )}
                       
@@ -478,6 +481,7 @@ export default async function GuideProfilePage({ params }) {
                               alt="Guide's vehicle"
                               fill
                               className="object-cover"
+                              sizes='100vw'
                             />
                           </div>
                         )}
@@ -602,6 +606,7 @@ export default async function GuideProfilePage({ params }) {
                               alt={tour.title?.[locale] || tour.title?.en || 'Tour'}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              sizes='100vw'
                             />
                           </div>
                           

@@ -10,7 +10,7 @@ import DeleteTourButton from '@/components/dashboard/DeleteTourButton';
 import Guide from '@/models/Guide';
 
 export const metadata = {
-  title: 'My Tours | Tourminded',
+  title: 'My Tours | Watermelon Tours',
   description: 'Manage your tours as a guide',
 };
 

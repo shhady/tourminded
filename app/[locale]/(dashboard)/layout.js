@@ -33,7 +33,7 @@ export default async function DashboardLayout({ children, params }) {
       <header className="bg-white shadow-sm py-4 px-6 mb-6">
         <div className="container mx-auto flex justify-between items-center">
           <Link href={`/${locale}`} className="text-2xl font-bold text-primary-600">
-            Tourminded
+          Watermelon Tours
           </Link>
           <div className="flex items-center space-x-4">
             {/* Add user menu or other header elements here */}

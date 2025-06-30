@@ -614,6 +614,7 @@ export default async function LocationDetailsPage({ params }) {
               src={location.image} 
               alt={location.name}
               fill
+              sizes='100vw'
               className="object-cover"
               priority
             />

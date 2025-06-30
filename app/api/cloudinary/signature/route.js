@@ -24,7 +24,7 @@ export async function POST(request) {
     // Create the signature string
     const signatureParams = {
       timestamp: timestamp,
-      folder: folder || 'tourminded',
+      folder: folder || 'Watermelon Tours',
     };
 
     // Create the signature string

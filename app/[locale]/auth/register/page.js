@@ -2,8 +2,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import RegisterForm from '@/components/forms/RegisterForm';
 
 export const metadata = {
-  title: 'Register | Tourminded',
-  description: 'Create a Tourminded account to book tours and connect with expert local guides',
+  title: 'Register | Watermelon Tours',
+  description: 'Create a Watermelon Tours account to book tours and connect with expert local guides',
 };
 
 export default async function RegisterPage({ params }) {

@@ -62,7 +62,7 @@ const Footer = ({ locale }) => {
           {/* Logo and Description */}
           <div className="lg:col-span-2">
             <Link href={getLocalizedHref('/')} className="text-3xl font-bold text-secondary-900 inline-block">
-              Tourminded
+            Watermelon Tours
             </Link>
             <p className="mt-6 text-secondary-900 max-w-md leading-relaxed">
               {locale === 'en' 
@@ -80,8 +80,8 @@ const Footer = ({ locale }) => {
               </div>
               <div className="flex items-center">
                 <Mail className="text-primary-500 mr-3 flex-shrink-0" />
-                <a href="mailto:info@tourminded.com" className="text-secondary-900 hover:text-primary-600 transition-colors">
-                  info@tourminded.com
+                <a href="mailto:info@Watermelontours.com" className="text-secondary-900 hover:text-primary-600 transition-colors">
+                  info@Watermelontours.com
                 </a>
               </div>
               <div className="flex items-center">
@@ -138,7 +138,7 @@ const Footer = ({ locale }) => {
 
         <div className="mt-16 pt-8 border-t border-gray-200 text-center text-secondary-900">
           <p>
-            &copy; {currentYear} Tourminded. {locale === 'en' ? 'All rights reserved.' : 'جميع الحقوق محفوظة.'}
+            &copy; {currentYear} Watermelon Tours. {locale === 'en' ? 'All rights reserved.' : 'جميع الحقوق محفوظة.'}
           </p>
         </div>
       </div>

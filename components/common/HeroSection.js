@@ -25,9 +25,12 @@ const HeroSection = ({ locale }) => {
   const [isFormExpanded, setIsFormExpanded] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showTravelerCounter, setShowTravelerCounter] = useState(false);
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [languageSearchTerm, setLanguageSearchTerm] = useState('');
   
   // Ref for handling click outside
   const travelerDropdownRef = useRef(null);
+  const languageDropdownRef = useRef(null);
 
   // Background images for carousel
   const bgImages = [
@@ -58,6 +61,15 @@ const HeroSection = ({ locale }) => {
       if (travelerDropdownRef.current && !travelerDropdownRef.current.contains(event.target)) {
         setShowTravelerCounter(false);
       }
+      // Only close language dropdown if click is outside the WHOLE dropdown (including input and options)
+      if (
+        showLanguageDropdown &&
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target)
+      ) {
+        setShowLanguageDropdown(false);
+        setLanguageSearchTerm('');
+      }
     };
     
     document.addEventListener('mousedown', handleClickOutside);
@@ -67,7 +79,7 @@ const HeroSection = ({ locale }) => {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [bgImages.length]);
+  }, [bgImages.length, showLanguageDropdown]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -124,6 +136,20 @@ const HeroSection = ({ locale }) => {
     setShowTravelerCounter(!showTravelerCounter);
   };
 
+  const toggleLanguageDropdown = (e) => {
+    e.stopPropagation();
+    setShowLanguageDropdown(!showLanguageDropdown);
+    if (!showLanguageDropdown) {
+      setLanguageSearchTerm('');
+    }
+  };
+
+  const handleLanguageSelect = (selectedLanguage) => {
+    setLanguage(selectedLanguage);
+    setShowLanguageDropdown(false);
+    setLanguageSearchTerm('');
+  };
+
   // Get summary text for travelers
   const getTravelersText = () => {
     if (travelers === 0) {
@@ -152,15 +178,47 @@ const HeroSection = ({ locale }) => {
 
   const languageOptions = [
     { value: '', label: locale === 'en' ? 'All Languages' : 'جميع اللغات' },
+      { value: 'Arabic', label: locale === 'en' ? 'Arabic' : 'العربية' },
+    { value: 'Belarusian', label: locale === 'en' ? 'Belarusian' : 'البيلاروسية' },
+    { value: 'Czech', label: locale === 'en' ? 'Czech' : 'التشيكية' },
+    { value: 'Danish', label: locale === 'en' ? 'Danish' : 'الدنماركية' },
+    { value: 'Dutch', label: locale === 'en' ? 'Dutch' : 'الهولندية' },
     { value: 'English', label: locale === 'en' ? 'English' : 'الإنجليزية' },
-    { value: 'Arabic', label: locale === 'en' ? 'Arabic' : 'العربية' },
-    { value: 'Hebrew', label: locale === 'en' ? 'Hebrew' : 'العبرية' },
-    { value: 'Spanish', label: locale === 'en' ? 'Spanish' : 'الإسبانية' },
+    { value: 'Filipino', label: locale === 'en' ? 'Filipino' : 'الفلبينية' },
+    { value: 'Finnish', label: locale === 'en' ? 'Finnish' : 'الفنلندية' },
     { value: 'French', label: locale === 'en' ? 'French' : 'الفرنسية' },
     { value: 'German', label: locale === 'en' ? 'German' : 'الألمانية' },
+    { value: 'Greek', label: locale === 'en' ? 'Greek' : 'اليونانية' },
+    { value: 'Hebrew', label: locale === 'en' ? 'Hebrew' : 'العبرية' },
+    { value: 'Hindi', label: locale === 'en' ? 'Hindi' : 'الهندية' },
+    { value: 'Hungarian', label: locale === 'en' ? 'Hungarian' : 'المجرية' },
     { value: 'Italian', label: locale === 'en' ? 'Italian' : 'الإيطالية' },
+    { value: 'Japanese', label: locale === 'en' ? 'Japanese' : 'اليابانية' },
+    { value: 'Kazakh', label: locale === 'en' ? 'Kazakh' : 'الكازاخية' },
+    { value: 'Korean', label: locale === 'en' ? 'Korean' : 'الكورية' },
+    { value: 'Latvian', label: locale === 'en' ? 'Latvian' : 'اللاتفية' },
+    { value: 'Lithuanian', label: locale === 'en' ? 'Lithuanian' : 'الليتوانية' },
+    { value: 'Malay', label: locale === 'en' ? 'Malay' : 'الملايو' },
+    { value: 'Mandarin Chinese', label: locale === 'en' ? 'Mandarin Chinese' : 'الصينية الماندرين' },
+    { value: 'Norwegian', label: locale === 'en' ? 'Norwegian' : 'النرويجية' },
+    { value: 'Polish', label: locale === 'en' ? 'Polish' : 'البولندية' },
+    { value: 'Portuguese', label: locale === 'en' ? 'Portuguese' : 'البرتغالية' },
+    { value: 'Romanian', label: locale === 'en' ? 'Romanian' : 'الرومانية' },
     { value: 'Russian', label: locale === 'en' ? 'Russian' : 'الروسية' },
+    { value: 'Slovak', label: locale === 'en' ? 'Slovak' : 'السلوفاكية' },
+    { value: 'Spanish', label: locale === 'en' ? 'Spanish' : 'الإسبانية' },
+    { value: 'Swedish', label: locale === 'en' ? 'Swedish' : 'السويدية' },
+    { value: 'Turkish', label: locale === 'en' ? 'Turkish' : 'التركية' },
+    { value: 'Ukrainian', label: locale === 'en' ? 'Ukrainian' : 'الأوكرانية' },
   ];
+
+  // Filter languages based on search term
+  const filteredLanguages = languageOptions.filter(lang =>
+    lang.label.toLowerCase().includes(languageSearchTerm.toLowerCase())
+  );
+
+  // Get selected language label
+  const selectedLanguage = languageOptions.find(lang => lang.value === language);
 
   return (
     <div className="relative min-h-[550px] sm:min-h-[650px] md:min-h-[80vh]">
@@ -181,6 +239,7 @@ const HeroSection = ({ locale }) => {
               src={img} 
               alt="Holy Land scenery" 
               fill 
+              sizes='100vw'
               priority
               className="object-cover" 
               quality={90}
@@ -254,7 +313,7 @@ const HeroSection = ({ locale }) => {
                     )}
 
                     {showTravelerCounter && (
-                      <div className="absolute top-full left-0 z-50 shadow-xl rounded-lg w-full max-w-md" style={{ minWidth: '280px' }}>
+                      <div className="absolute top-full left-0 z-50 shadow-xl rounded-lg w-full max-w-md bg-white">
                         <TravelerCounter 
                           onChange={handleTravelerChange} 
                           locale={locale} 
@@ -295,18 +354,43 @@ const HeroSection = ({ locale }) => {
                   <label className="text-gray-800 text-sm font-medium mb-1 block">
                     {locale === 'en' ? 'Languages' : 'اللغات'}
                   </label>
-                  <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white hover:border-primary-300 transition-colors`}
-                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
-                  >
-                    {languageOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative" ref={languageDropdownRef} tabIndex={-1}>
+                    <button
+                      type="button"
+                      onClick={toggleLanguageDropdown}
+                      className={`w-full py-2 px-3 border border-gray-200 rounded-lg text-gray-800 flex justify-between items-center bg-white hover:border-primary-300 transition-colors ${showLanguageDropdown ? 'border-primary-400 ring-1 ring-primary-300' : ''}`}
+                    >
+                      <div className="flex items-center">
+                        <span className="text-sm">
+                          {selectedLanguage ? selectedLanguage.label : 'Select Language'}
+                        </span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {showLanguageDropdown && (
+                      <div className="absolute top-full left-0 z-50 shadow-xl rounded-lg w-full max-w-md bg-white">
+                        <input
+                          type="text"
+                          value={languageSearchTerm}
+                          onChange={(e) => setLanguageSearchTerm(e.target.value)}
+                          placeholder="Search languages"
+                          className="w-full py-2 px-3 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                        />
+                        <div className="mt-2 max-h-[200px] overflow-y-auto">
+                          {filteredLanguages.map((lang) => (
+                            <div
+                              key={lang.value}
+                              className="py-1 px-3 cursor-pointer hover:bg-primary-100 bg-white"
+                              onMouseDown={() => handleLanguageSelect(lang.value)}
+                            >
+                              {lang.label}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Search Button */}
@@ -354,7 +438,7 @@ const HeroSection = ({ locale }) => {
                 )}
 
                 {showTravelerCounter && (
-                  <div className="absolute top-full left-0 mt-1 z-50 shadow-xl rounded-lg" style={{ width: '320px' }}>
+                  <div className="absolute top-full left-0 mt-1 z-50 shadow-xl rounded-lg bg-white" style={{ width: '320px' }}>
                     <TravelerCounter 
                       onChange={handleTravelerChange} 
                       locale={locale} 
@@ -397,18 +481,43 @@ const HeroSection = ({ locale }) => {
                 <Languages className="text-primary-600 mr-2" size={16} />
                 <span>{locale === 'en' ? 'Languages' : 'اللغات'}</span>
               </label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white hover:border-primary-300 transition-colors`}
-                style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
-              >
-                {languageOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative" ref={languageDropdownRef} tabIndex={-1}>
+                <button
+                  type="button"
+                  onClick={toggleLanguageDropdown}
+                  className={`w-full py-3 px-4 border border-gray-200 rounded-lg text-gray-800 flex justify-between items-center bg-white hover:border-primary-300 transition-colors ${showLanguageDropdown ? 'border-primary-400 ring-1 ring-primary-300' : ''}`}
+                >
+                  <div className="flex items-center">
+                    <span>
+                      {selectedLanguage ? selectedLanguage.label : 'Select Language'}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showLanguageDropdown && (
+                  <div className="absolute top-full left-0 mt-1 z-50 shadow-xl rounded-lg bg-white" style={{ width: '320px' }}>
+                    <input
+                      type="text"
+                      value={languageSearchTerm}
+                      onChange={(e) => setLanguageSearchTerm(e.target.value)}
+                      placeholder="Search languages"
+                      className="w-full py-2 px-3 border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                    />
+                    <div className="mt-2 max-h-[200px] overflow-y-auto">
+                      {filteredLanguages.map((lang) => (
+                        <div
+                          key={lang.value}
+                          className="py-1 px-3 cursor-pointer hover:bg-primary-100"
+                          onMouseDown={() => handleLanguageSelect(lang.value)}
+                        >
+                          {lang.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Search Button */}

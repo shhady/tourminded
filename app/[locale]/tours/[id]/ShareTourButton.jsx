@@ -16,8 +16,8 @@ export default function ShareTourButton({ locale, tourTitle }) {
         await navigator.share({
           title: tourTitle,
           text: locale === 'en' 
-            ? `Check out this tour on Tourminded: ${tourTitle}` 
-            : `تحقق من هذه الجولة على Tourminded: ${tourTitle}`,
+            ? `Check out this tour on Watermelon Tours: ${tourTitle}` 
+            : `تحقق من هذه الجولة على Watermelon Tours: ${tourTitle}`,
           url: url,
         });
       } catch (error) {

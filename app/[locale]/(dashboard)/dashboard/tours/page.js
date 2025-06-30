@@ -8,7 +8,7 @@ import { Eye, Edit, Trash, Plus, Star } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
 export const metadata = {
-  title: 'Tours | Tourminded',
+  title: 'Tours | Watermelon Tours',
   description: 'Manage your tours',
 };
 

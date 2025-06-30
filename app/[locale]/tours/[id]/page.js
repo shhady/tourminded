@@ -50,7 +50,7 @@ export async function generateMetadata({ params }) {
       : tour.title;
     
     return {
-      title: `${title} | Tourminded`,
+      title: `${title} | Watermelon Tours`,
       description: typeof tour.description === 'object'
         ? (locale === 'en' ? tour.description.en : tour.description.ar) || tour.description.en
         : tour.description,
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }) {
   } catch (error) {
     console.error('Error generating metadata:', error);
     return {
-      title: 'Tour | Tourminded',
+      title: 'Tour | Watermelon Tours',
     };
   }
 }

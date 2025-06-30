@@ -21,7 +21,7 @@ export async function generateMetadata({ params }) {
   }
   
   return {
-    title: `${location.name[locale]} Tours | Tourminded`,
+    title: `${location.name[locale]} Tours | Watermelon Tours`,
     description: locale === 'en' 
       ? `Explore tours in ${location.name[locale]} with expert local guides` 
       : `استكشف الجولات في ${location.name[locale]} مع مرشدين محليين خبراء`

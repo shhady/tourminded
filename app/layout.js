@@ -19,7 +19,7 @@ const tajawal = Tajawal({
 });
 
 export const metadata = {
-  title: "Tourminded - Connect with Expert Local Guides",
+  title: "Watermelon Tours - Connect with Expert Local Guides",
   description: "Find and book personalized tours with expert local guides in the Holy Land",
   keywords: ["tours", "travel", "guides", "Holy Land", "Jerusalem", "Israel", "Palestine"],
 };
@@ -31,6 +31,24 @@ export default function RootLayout({ children, params }) {
         <UserProvider>
           <html lang="en" dir="ltr">
             <body className={`${inter.variable} ${tajawal.variable} font-sans antialiased`}>
+              {process.env.NODE_ENV === 'development' && (
+                <script
+                  dangerouslySetInnerHTML={{
+                    __html: `
+                      if (typeof window !== 'undefined') {
+                        const blocked = ['/__nextjs_original-stack-frames'];
+                        const originalFetch = window.fetch;
+                        window.fetch = async (...args) => {
+                          if (typeof args[0] === 'string' && blocked.some(url => args[0].includes(url))) {
+                            return new Response(null, { status: 204 });
+                          }
+                          return originalFetch(...args);
+                        };
+                      }
+                    `,
+                  }}
+                />
+              )}
               {children}
               <Analytics />
             </body>

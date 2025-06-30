@@ -20,7 +20,7 @@ export default function ShareGuide({ locale, guideId, guideName }) {
       try {
         await navigator.share({
           title: guideName,
-          text: `Check out this guide profile on Tourminded`,
+          text: `Check out this guide profile on Watermelon Tours`,
           url: url,
         });
       } catch (error) {
@@ -44,7 +44,7 @@ VERSION:3.0
 FN:${name}
 TITLE:Tour Guide
 URL:${url}
-NOTE:Professional tour guide on Tourminded
+NOTE:Professional tour guide on Watermelon Tours
 END:VCARD`;
     
     const blob = new Blob([vCard], { type: 'text/vcard' });

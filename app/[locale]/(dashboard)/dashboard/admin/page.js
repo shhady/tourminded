@@ -6,7 +6,7 @@ import Guide from '@/models/Guide';
 import AdminGuidesTable from '@/components/admin/AdminGuidesTable';
 
 export const metadata = {
-  title: 'Admin Dashboard | Tourminded',
+  title: 'Admin Dashboard | Watermelon Tours',
   description: 'Admin panel for managing the platform',
 };
 

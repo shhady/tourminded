@@ -11,7 +11,7 @@ import WishlistButton from '@/components/ui/WishlistButton';
 
 
 export const metadata = {
-  title: 'Guides | Tourminded',
+  title: 'Guides | Watermelon Tours',
   description: 'Meet our expert local guides in the Holy Land',
 };
 
@@ -346,6 +346,7 @@ export default async function GuidesPage({ searchParams, params }) {
                           src={guide.coverImage?.url || '/images/default-cover.jpg'}
                           alt={`${getGuideName(guide, locale)} cover image`}
                           fill
+                          sizes='100vw'
                           className="object-cover"
                         />
                         
@@ -356,6 +357,7 @@ export default async function GuidesPage({ searchParams, params }) {
                               src={guide.profileImage?.url || '/images/default-avatar.png'}
                               alt={getGuideName(guide, locale) || 'Guide profile image'}
                               fill
+                              sizes='100vw'
                               className="object-cover"
                             />
                           </div>

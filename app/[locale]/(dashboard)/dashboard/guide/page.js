@@ -8,7 +8,7 @@ import ConnectCalendarButton from "@/components/guide/ConnectCalendarButton";
 import GuideCalendar from '@/components/guide/GuideCalendar';
 
 export const metadata = {
-  title: 'Guide Dashboard | Tourminded',
+  title: 'Guide Dashboard | Watermelon Tours',
   description: 'Manage your tours, bookings, and profile as a guide',
 };
 

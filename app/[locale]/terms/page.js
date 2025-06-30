@@ -2,8 +2,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import { getCurrentUser } from '@/lib/auth';
 
 export const metadata = {
-  title: 'Terms of Service | Tourminded',
-  description: 'Terms of Service for Tourminded - Connect with expert local guides for personalized tours in the Holy Land.',
+  title: 'Terms of Service | Watermelon Tours',
+  description: 'Terms of Service for Watermelon Tours - Connect with expert local guides for personalized tours in the Holy Land.',
 };
 
 export default async function TermsPage({ params }) {
@@ -30,7 +30,7 @@ export default async function TermsPage({ params }) {
           <div className="prose prose-lg max-w-none">
             <p>
               {locale === 'en' 
-                ? 'Welcome to Tourminded. These Terms of Service govern your use of our website and services.' 
+                ? 'Welcome to Watermelon Tours. These Terms of Service govern your use of our website and services.' 
                 : 'مرحبًا بك في توورمايندد. تحكم شروط الخدمة هذه استخدامك لموقعنا الإلكتروني وخدماتنا.'}
             </p>
             
@@ -73,8 +73,8 @@ export default async function TermsPage({ params }) {
             </h2>
             <p>
               {locale === 'en' 
-                ? 'If you have any questions about these Terms, please contact us at info@tourminded.com.' 
-                : 'إذا كانت لديك أي أسئلة حول هذه الشروط، يرجى الاتصال بنا على info@tourminded.com.'}
+                ? 'If you have any questions about these Terms, please contact us at info@Watermelontours.com.' 
+                : 'إذا كانت لديك أي أسئلة حول هذه الشروط، يرجى الاتصال بنا على info@Watermelontours.com.'}
             </p>
           </div>
         </div>

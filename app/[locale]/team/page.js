@@ -5,8 +5,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Mail, Linkedin, Twitter, Globe } from 'lucide-react';
 
 export const metadata = {
-  title: 'Our Team | Tourminded',
-  description: 'Meet the passionate team behind Tourminded dedicated to connecting travelers with expert local guides',
+  title: 'Our Team | Watermelon Tours',
+  description: 'Meet the passionate team behind Watermelon Tours dedicated to connecting travelers with expert local guides',
 };
 
 // Team member data
@@ -90,8 +90,8 @@ const teamMembers = [
       ar: 'مدير تجربة العملاء'
     },
     bio: {
-      en: 'Layla ensures that every traveler and guide has an exceptional experience with Tourminded. Her attention to detail and commitment to service excellence has helped us maintain our high standards of customer satisfaction.',
-      ar: 'تضمن ليلى أن كل مسافر ومرشد يحظى بتجربة استثنائية مع Tourminded. ساعدها اهتمامها بالتفاصيل والتزامها بالتميز في الخدمة على الحفاظ على معاييرنا العالية لرضا العملاء.'
+      en: 'Layla ensures that every traveler and guide has an exceptional experience with Watermelon Tours. Her attention to detail and commitment to service excellence has helped us maintain our high standards of customer satisfaction.',
+      ar: 'تضمن ليلى أن كل مسافر ومرشد يحظى بتجربة استثنائية مع Watermelon Tours. ساعدها اهتمامها بالتفاصيل والتزامها بالتميز في الخدمة على الحفاظ على معاييرنا العالية لرضا العملاء.'
     },
     image: '/images/team/layla.jpg',
     social: {

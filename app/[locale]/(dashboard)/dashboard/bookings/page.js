@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Eye, Edit, X } from 'lucide-react';
 
 export const metadata = {
-  title: 'Bookings | Tourminded',
+  title: 'Bookings | Watermelon Tours',
   description: 'Manage your bookings',
 };
 

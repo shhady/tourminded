@@ -13,7 +13,7 @@ import TourFilters from '@/components/tours/TourFilters';
 import WishlistButton from '@/components/ui/WishlistButton';
 
 export const metadata = {
-  title: 'Tours | Tourminded',
+  title: 'Tours | Watermelon Tours',
   description: 'Explore our guided tours in the Holy Land',
 };
 
@@ -312,6 +312,7 @@ export default async function ToursPage({ searchParams, params }) {
                         src={tour.images?.cover.url || '/images/default-tour.jpg'}
                         alt={getTourTitle(tour, locale)}
                         fill
+                        sizes='100vw'
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       
@@ -383,6 +384,7 @@ export default async function ToursPage({ searchParams, params }) {
                               src={tour.guide.profileImage?.url || '/images/default-avatar.png'}
                               alt={getGuideName(tour.guide, locale)}
                               fill
+                              sizes='100vw'
                               className="object-cover"
                             />
                           </div>

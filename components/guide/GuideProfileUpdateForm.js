@@ -16,7 +16,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
   });
   
   const [languages, setLanguages] = useState([
-    { language: 'en' }
+    { language: 'en', proficiency: 5 }
   ]);
   
   const [expertiseAreas, setExpertiseAreas] = useState([
@@ -51,7 +51,13 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
       
       // Set languages and related fields
       if (guideData.languages && guideData.languages.length > 0) {
-        setLanguages(guideData.languages);
+        // Ensure each language object has a proficiency (default to 5 if missing)
+        setLanguages(
+          guideData.languages.map(l => ({
+            language: l.language,
+            proficiency: l.proficiency || 5
+          }))
+        );
         
         // Set name and about for each language
         if (guideData.names) {
@@ -157,7 +163,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
   
   // Language functions
   const addLanguage = () => {
-    setLanguages([...languages, { language: '' }]);
+    setLanguages([...languages, { language: '', proficiency: 5 }]);
   };
   
   const removeLanguage = (index) => {
@@ -194,6 +200,10 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
     }
     
     newLanguages[index][field] = value;
+    // Always ensure proficiency is set (default to 5 if missing)
+    if (!newLanguages[index].proficiency) {
+      newLanguages[index].proficiency = 5;
+    }
     setLanguages(newLanguages);
   };
   
@@ -227,19 +237,69 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
     setExpertiseAreas(newExpertiseAreas);
   };
   
+  // Add this helper function to map language names to codes
+  const getLanguageCode = (languageName) => {
+    const languageCodeMap = {
+      'English': 'en',
+      'Arabic': 'ar', 
+      'Hebrew': 'he',
+      'French': 'fr',
+      'Spanish': 'es',
+      'German': 'de',
+      'Italian': 'it',
+      'Russian': 'ru',
+      'Chinese': 'zh',
+      'Japanese': 'ja',
+      'Korean': 'ko',
+      'Portuguese': 'pt',
+      'Dutch': 'nl',
+      'Swedish': 'sv',
+      'Norwegian': 'no',
+      'Danish': 'da',
+      'Turkish': 'tr',
+      'Polish': 'pl',
+      'Romanian': 'ro',
+      'Hungarian': 'hu',
+      'Czech': 'cs',
+      'Slovak': 'sk',
+      'Greek': 'el',
+      'Bulgarian': 'bg',
+      'Croatian': 'hr',
+      'Serbian': 'sr'
+    };
+    
+    return languageCodeMap[languageName] || languageName;
+  };
+  
   // Add this helper function to get the language name
   const getLanguageName = (code) => {
     const languageNames = {
       en: 'English',
       ar: 'العربية',
-      fr: 'Français',
+      he: 'עברית',
+      fr: 'Français', 
       es: 'Español',
       de: 'Deutsch',
       it: 'Italiano',
       ru: 'Русский',
       zh: '中文',
       ja: '日本語',
-      ko: '한국어'
+      ko: '한국어',
+      pt: 'Português',
+      nl: 'Nederlands',
+      sv: 'Svenska',
+      no: 'Norsk',
+      da: 'Dansk',
+      tr: 'Türkçe',
+      pl: 'Polski',
+      ro: 'Română',
+      hu: 'Magyar',
+      cs: 'Čeština',
+      sk: 'Slovenčina',
+      el: 'Ελληνικά',
+      bg: 'Български',
+      hr: 'Hrvatski',
+      sr: 'Српски'
     };
     
     return languageNames[code] || code;
@@ -284,7 +344,12 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
       }
       
       // Validate languages
-      const validLanguages = languages.filter(lang => lang.language.trim() !== '');
+      const validLanguages = languages
+        .filter(lang => lang.language.trim() !== '')
+        .map(lang => ({
+          language: lang.language,
+          proficiency: lang.proficiency || 5
+        }));
       if (validLanguages.length === 0) {
         setError(locale === 'en' ? 'At least one language is required' : 'مطلوبة لغة واحدة على الأقل');
         setIsSaving(false);
@@ -594,9 +659,40 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
               <label className="block text-sm font-medium text-secondary-700 mb-1">
                 {locale === 'en' ? 'Language' : 'اللغة'}*
               </label>
-              <div className="px-3 py-2 border border-secondary-300 rounded-md bg-secondary-50 text-secondary-700">
-                {getLanguageName(lang.language)}
-              </div>
+              <select
+                value={lang.language}
+                onChange={e => updateLanguage(index, 'language', e.target.value)}
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+              >
+                <option value="">{locale === 'en' ? 'Select language' : 'اختر اللغة'}</option>
+                <option value="English">English</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Hebrew">Hebrew</option>
+                <option value="French">French</option>
+                <option value="Spanish">Spanish</option>
+                <option value="German">German</option>
+                <option value="Italian">Italian</option>
+                <option value="Russian">Russian</option>
+                <option value="Chinese">Chinese</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Korean">Korean</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Dutch">Dutch</option>
+                <option value="Swedish">Swedish</option>
+                <option value="Norwegian">Norwegian</option>
+                <option value="Danish">Danish</option>
+                <option value="Turkish">Turkish</option>
+                <option value="Polish">Polish</option>
+                <option value="Romanian">Romanian</option>
+                <option value="Hungarian">Hungarian</option>
+                <option value="Czech">Czech</option>
+                <option value="Slovak">Slovak</option>
+                <option value="Greek">Greek</option>
+                <option value="Bulgarian">Bulgarian</option>
+                <option value="Croatian">Croatian</option>
+                <option value="Serbian">Serbian</option>
+              </select>
             </div>
             
             <div>

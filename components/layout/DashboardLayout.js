@@ -109,7 +109,7 @@ const DashboardLayout = ({ children, user, locale }) => {
           {/* Sidebar Header */}
           <div className="px-4 py-6 border-b border-secondary-800">
             <Link href="/" className="text-2xl font-bold text-black">
-              Tourminded
+            Watermelon Tours
             </Link>
             <p className="text-sm text-secondary-400 mt-1">
               {user?.role === 'admin'

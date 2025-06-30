@@ -147,7 +147,7 @@ const FeaturedGuides = ({ locale }) => {
                 
                 {/* Expertise */}
                 <div className="flex flex-wrap gap-2 mt-3">
-                  {guide.expertise[locale].map((exp, index) => (
+                  {guide.expertise && guide.expertise[locale] && guide.expertise[locale].map((exp, index) => (
                     <span
                       key={index}
                       className="inline-block bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded-full"

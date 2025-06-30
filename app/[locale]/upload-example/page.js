@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth';
 import ImageUploadExample from '@/components/forms/ImageUploadExample';
 
 export const metadata = {
-  title: 'Image Upload Example | Tourminded',
+  title: 'Image Upload Example | Watermelon Tours',
   description: 'Test the image upload functionality',
 };
 

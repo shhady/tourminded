@@ -1,4 +1,4 @@
 export const metadata = {
-  title: 'Authentication | Tourminded',
-  description: 'Login or register to access your Tourminded account',
+  title: 'Authentication | Watermelon tours',
+  description: 'Login or register to access your Watermelon tours account',
 }; 

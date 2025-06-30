@@ -22,8 +22,8 @@ export default function ShareGuideButton({ locale, guideName }) {
         await navigator.share({
           title: guideName,
           text: locale === 'en' 
-            ? `Check out this guide on Tourminded: ${guideName}` 
-            : `تحقق من هذا المرشد على Tourminded: ${guideName}`,
+            ? `Check out this guide on Watermelon Tours: ${guideName}` 
+            : `تحقق من هذا المرشد على Watermelon Tours: ${guideName}`,
           url: url,
         });
       } catch (error) {

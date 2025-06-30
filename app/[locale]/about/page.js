@@ -9,8 +9,8 @@ import ComparisonTable from '@/components/common/ComparisonTable';
 import CallToAction from '@/components/common/CallToAction';
 
 export const metadata = {
-  title: 'About Tourminded | Connecting Travelers with Local Guides',
-  description: 'Learn about Tourminded\'s mission to transform tourism in the Holy Land by connecting travelers with expert local guides',
+  title: 'About Watermelon Tours | Connecting Travelers with Local Guides',
+  description: 'Learn about Watermelon Tours mission to transform tourism in the Holy Land by connecting travelers with expert local guides',
 };
 
 export default async function AboutPage({ params }) {
@@ -49,7 +49,7 @@ export default async function AboutPage({ params }) {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              {locale === 'en' ? 'About Tourminded' : 'عن Tourminded'}
+              {locale === 'en' ? 'About Watermelon Tours' : 'عن Watermelon Tours'}
             </h1>
             <p className="text-xl opacity-90 mb-8">
               {locale === 'en' 
@@ -81,6 +81,7 @@ export default async function AboutPage({ params }) {
                       src="https://res.cloudinary.com/shhady/image/upload/v1741739969/tours/gallery/rcjvzwei0y7xvfl0uvkq.jpg" 
                       alt="Vacation stress"
                       fill
+                      sizes='100vw'
                       className="object-cover"
                     />
                   </div>
@@ -149,8 +150,9 @@ export default async function AboutPage({ params }) {
                 <div className="relative h-80 w-full rounded-xl overflow-hidden shadow-lg">
                   <Image 
                     src="https://res.cloudinary.com/shhady/image/upload/v1741752805/tour-image-2_g7gvby.jpg" 
-                    alt="Tourminded founders"
+                    alt="Watermelon Tours founders"
                     fill
+                    sizes='100vw'
                     className="object-cover"
                   />
                 </div>
@@ -159,8 +161,8 @@ export default async function AboutPage({ params }) {
               <div className="md:w-1/2">
                 <p className="text-gray-700 mb-4">
                   {locale === 'en' 
-                    ? 'Tourminded was born from a simple observation: the Holy Land is filled with incredible stories, but travelers often miss the authentic experiences that make this region so special.' 
-                    : 'ولدت Tourminded من ملاحظة بسيطة: الأرض المقدسة مليئة بالقصص المذهلة، لكن المسافرين غالبًا ما يفوتون التجارب الأصيلة التي تجعل هذه المنطقة مميزة للغاية.'}
+                    ? 'Watermelon Tours was born from a simple observation: the Holy Land is filled with incredible stories, but travelers often miss the authentic experiences that make this region so special.' 
+                    : 'ولدت Watermelon Tours من ملاحظة بسيطة: الأرض المقدسة مليئة بالقصص المذهلة، لكن المسافرين غالبًا ما يفوتون التجارب الأصيلة التي تجعل هذه المنطقة مميزة للغاية.'}
                 </p>
                 <p className="text-gray-700 mb-4">
                   {locale === 'en' 
@@ -279,12 +281,12 @@ export default async function AboutPage({ params }) {
         </div>
       </section>
       
-      {/* Why Tourminded is the Best Choice Section */}
+      {/* Why Watermelon Tours is the Best Choice Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-10 text-center">
-              {locale === 'en' ? 'Why Tourminded is the best choice for your trip to the Holy Land' : 'لماذا Tourminded هو الخيار الأفضل لرحلتك إلى الأرض المقدسة'}
+              {locale === 'en' ? 'Why Watermelon Tours is the best choice for your trip to the Holy Land' : 'لماذا Watermelon Tours هو الخيار الأفضل لرحلتك إلى الأرض المقدسة'}
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -487,8 +489,8 @@ export default async function AboutPage({ params }) {
             </h2>
             <p className="text-gray-600 mb-8">
               {locale === 'en' 
-                ? 'Get to know the passionate people behind Tourminded who are dedicated to transforming tourism in the Holy Land.' 
-                : 'تعرف على الأشخاص المتحمسين وراء Tourminded المكرسين لتحويل السياحة في الأرض المقدسة.'}
+                ? 'Get to know the passionate people behind Watermelon Tours who are dedicated to transforming tourism in the Holy Land.' 
+                : 'تعرف على الأشخاص المتحمسين وراء Watermelon Tours المكرسين لتحويل السياحة في الأرض المقدسة.'}
             </p>
             <Link 
               href={`/${locale}/team`}

@@ -5,7 +5,7 @@ import Button from '@/components/ui/Button';
 import FaqAccordion from '@/components/help/FaqAccordion';
 
 export const metadata = {
-  title: 'Help Center | Tourminded',
+  title: 'Help Center | Watermelon Tours',
   description: 'Find answers to frequently asked questions about tours in the Holy Land',
 };
 
@@ -29,8 +29,8 @@ export default async function HelpCenter({ params }) {
     {
       question: locale === 'en' ? "What does \"Israeli licensed tour guide\" mean?" : "ماذا تعني \"مرشد سياحي مرخص إسرائيلي\"؟",
       answer: locale === 'en' 
-        ? "In Israel, it's a legal requirement for all tour guides to be licensed by the Ministry of Tourism. Guides must renew their license every two years and partake in one training course each year. All guides on Tourminded are fully licensed."
-        : "في إسرائيل، يُشترط قانونًا أن يكون جميع المرشدين السياحيين مرخصين من قبل وزارة السياحة. يجب على المرشدين تجديد ترخيصهم كل عامين والمشاركة في دورة تدريبية واحدة كل عام. جميع المرشدين على Tourminded مرخصون بالكامل."
+        ? "In Israel, it's a legal requirement for all tour guides to be licensed by the Ministry of Tourism. Guides must renew their license every two years and partake in one training course each year. All guides on Watermelon Tours are fully licensed."
+        : "في إسرائيل، يُشترط قانونًا أن يكون جميع المرشدين السياحيين مرخصين من قبل وزارة السياحة. يجب على المرشدين تجديد ترخيصهم كل عامين والمشاركة في دورة تدريبية واحدة كل عام. جميع المرشدين على Watermelon Tours مرخصون بالكامل."
     },
     {
       question: locale === 'en' ? "What is the tipping culture in the Holy Land?" : "ما هي ثقافة البقشيش في الأرض المقدسة؟",
@@ -41,20 +41,20 @@ export default async function HelpCenter({ params }) {
     {
       question: locale === 'en' ? "Are there guides who can give a tour of Israel and Palestine?" : "هل هناك مرشدون يمكنهم تقديم جولة في إسرائيل وفلسطين؟",
       answer: locale === 'en' 
-        ? "Yes! Tourminded has guides that will show you around both Israel and Palestine. You can see the regions each guide visits on their personal guide page."
-        : "نعم! لدى Tourminded مرشدون سيصطحبونك في جولة في كل من إسرائيل وفلسطين. يمكنك رؤية المناطق التي يزورها كل مرشد على صفحة المرشد الشخصية."
+        ? "Yes! Watermelon Tours has guides that will show you around both Israel and Palestine. You can see the regions each guide visits on their personal guide page."
+        : "نعم! لدى Watermelon Tours مرشدون سيصطحبونك في جولة في كل من إسرائيل وفلسطين. يمكنك رؤية المناطق التي يزورها كل مرشد على صفحة المرشد الشخصية."
     },
     {
-      question: locale === 'en' ? "Why should I book through Tourminded?" : "لماذا يجب أن أحجز من خلال Tourminded؟",
+      question: locale === 'en' ? "Why should I book through Watermelon Tours?" : "لماذا يجب أن أحجز من خلال Watermelon Tours؟",
       answer: locale === 'en' 
-        ? "Tourminded tours are more customizable than tours through any other operator. We are the only travel agency that matches you with a perfect-fit guide, ensuring you get exactly the trip you're hoping for, nothing less! Explore our wide range of tours with engaging guides knowledgeable about religion, history, architecture, food, and more. Plus, you pay significantly less than you would when booking through other agencies because we don't charge a premium."
-        : "جولات Tourminded أكثر قابلية للتخصيص من الجولات من خلال أي مشغل آخر. نحن وكالة السفر الوحيدة التي تطابقك مع مرشد مثالي، مما يضمن حصولك على الرحلة التي تأملها بالضبط، لا أقل! استكشف مجموعتنا الواسعة من الجولات مع مرشدين جذابين على دراية بالدين والتاريخ والعمارة والطعام والمزيد. بالإضافة إلى ذلك، فإنك تدفع أقل بكثير مما ستدفعه عند الحجز من خلال وكالات أخرى لأننا لا نفرض رسومًا إضافية."
+        ? "Watermelon Tours tours are more customizable than tours through any other operator. We are the only travel agency that matches you with a perfect-fit guide, ensuring you get exactly the trip you're hoping for, nothing less! Explore our wide range of tours with engaging guides knowledgeable about religion, history, architecture, food, and more. Plus, you pay significantly less than you would when booking through other agencies because we don't charge a premium."
+        : "جولات Watermelon Tours أكثر قابلية للتخصيص من الجولات من خلال أي مشغل آخر. نحن وكالة السفر الوحيدة التي تطابقك مع مرشد مثالي، مما يضمن حصولك على الرحلة التي تأملها بالضبط، لا أقل! استكشف مجموعتنا الواسعة من الجولات مع مرشدين جذابين على دراية بالدين والتاريخ والعمارة والطعام والمزيد. بالإضافة إلى ذلك، فإنك تدفع أقل بكثير مما ستدفعه عند الحجز من خلال وكالات أخرى لأننا لا نفرض رسومًا إضافية."
     },
     {
       question: locale === 'en' ? "How do you choose the guides?" : "كيف تختارون المرشدين؟",
       answer: locale === 'en' 
-        ? "We interview each guide individually to assess their qualifications, areas of expertise, and language proficiency. Additionally, a member of our team goes on their tour before we add them to Tourminded.\n\nSo, you can rest assured that your guided tour meets the highest quality standards and there are no unpleasant surprises on your visit to the Holy Land. Just kick back, relax, and let your guide show you the endless wonders there are to discover!"
-        : "نقوم بمقابلة كل مرشد بشكل فردي لتقييم مؤهلاتهم ومجالات خبرتهم وإتقانهم للغة. بالإضافة إلى ذلك، يذهب أحد أعضاء فريقنا في جولتهم قبل إضافتهم إلى Tourminded.\n\nلذلك، يمكنك أن تطمئن إلى أن جولتك المصحوبة بمرشدين تلبي أعلى معايير الجودة وأنه لا توجد مفاجآت غير سارة في زيارتك للأرض المقدسة. ما عليك سوى الاسترخاء والاستمتاع ودع مرشدك يريك العجائب التي لا نهاية لها للاكتشاف!"
+        ? "We interview each guide individually to assess their qualifications, areas of expertise, and language proficiency. Additionally, a member of our team goes on their tour before we add them to Watermelon Tours.\n\nSo, you can rest assured that your guided tour meets the highest quality standards and there are no unpleasant surprises on your visit to the Holy Land. Just kick back, relax, and let your guide show you the endless wonders there are to discover!"
+        : "نقوم بمقابلة كل مرشد بشكل فردي لتقييم مؤهلاتهم ومجالات خبرتهم وإتقانهم للغة. بالإضافة إلى ذلك، يذهب أحد أعضاء فريقنا في جولتهم قبل إضافتهم إلى Watermelon Tours.\n\nلذلك، يمكنك أن تطمئن إلى أن جولتك المصحوبة بمرشدين تلبي أعلى معايير الجودة وأنه لا توجد مفاجآت غير سارة في زيارتك للأرض المقدسة. ما عليك سوى الاسترخاء والاستمتاع ودع مرشدك يريك العجائب التي لا نهاية لها للاكتشاف!"
     },
     {
       question: locale === 'en' ? "What type of electrical outlets are used in Israel? Should I bring an adapter?" : "ما نوع المنافذ الكهربائية المستخدمة في إسرائيل؟ هل يجب أن أحضر محولًا؟",
@@ -128,8 +128,8 @@ export default async function HelpCenter({ params }) {
                       ? "We'll respond within 24 hours" 
                       : "سنرد خلال 24 ساعة"}
                   </p>
-                  <a href="mailto:support@tourminded.com" className="text-primary-600 hover:text-primary-700 font-medium">
-                    support@tourminded.com
+                  <a href="mailto:support@Watermelontours.com" className="text-primary-600 hover:text-primary-700 font-medium">
+                    support@Watermelontours.com
                   </a>
                 </div>
                 

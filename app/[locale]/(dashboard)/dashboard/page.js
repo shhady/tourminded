@@ -9,7 +9,7 @@ import { Compass } from 'lucide-react';
 import User from '@/models/User';
 
 export const metadata = {
-  title: 'Dashboard | Tourminded',
+  title: 'Dashboard | Watermelon Tours',
   description: 'Manage your tours, bookings, and profile',
 };
 

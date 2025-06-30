@@ -2,8 +2,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import { getCurrentUser } from '@/lib/auth';
 
 export const metadata = {
-  title: 'Privacy Policy | Tourminded',
-  description: 'Privacy Policy for Tourminded - Connect with expert local guides for personalized tours in the Holy Land.',
+  title: 'Privacy Policy | Watermelon Tours',
+  description: 'Privacy Policy for Watermelon Tours - Connect with expert local guides for personalized tours in the Holy Land.',
 };
 
 export default async function PrivacyPage({ params }) {
@@ -30,7 +30,7 @@ export default async function PrivacyPage({ params }) {
           <div className="prose prose-lg max-w-none">
             <p>
               {locale === 'en' 
-                ? 'At Tourminded, we take your privacy seriously. This Privacy Policy explains how we collect, use, and protect your personal information.' 
+                ? 'At Watermelon Tours, we take your privacy seriously. This Privacy Policy explains how we collect, use, and protect your personal information.' 
                 : 'في توورمايندد، نأخذ خصوصيتك على محمل الجد. توضح سياسة الخصوصية هذه كيفية جمع معلوماتك الشخصية واستخدامها وحمايتها.'}
             </p>
             
@@ -82,8 +82,8 @@ export default async function PrivacyPage({ params }) {
             </h2>
             <p>
               {locale === 'en' 
-                ? 'If you have any questions about this Privacy Policy, please contact us at privacy@tourminded.com.' 
-                : 'إذا كانت لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على privacy@tourminded.com.'}
+                ? 'If you have any questions about this Privacy Policy, please contact us at privacy@Watermelontours.com.' 
+                : 'إذا كانت لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على privacy@Watermelontours.com.'}
             </p>
           </div>
         </div>
