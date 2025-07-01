@@ -28,7 +28,7 @@ function getDefaultCoordinates(locationId) {
 }
 
 export async function generateMetadata({ params }) {
-  const { id, locale } = params;
+  const { id, locale } = await params;
   
   // Get location name based on id
   const getLocationName = () => {
@@ -415,7 +415,7 @@ async function fetchToursByLocation(id, locale) {
 
 export default async function LocationDetailsPage({ params }) {
   // Get locale and location id from params
-  const { id, locale } = params;
+  const { id, locale } = await params;
   
   // This would fetch from a database in a real app
   // Location data with detailed information
@@ -426,7 +426,7 @@ export default async function LocationDetailsPage({ params }) {
         name: locale === 'en' ? 'Jerusalem' : 'القدس',
         region: 'Central Israel',
         coordinates: [31.7683, 35.2137],
-        image: '/jerusalem.jpg',
+        image: '/hero-bg-3.jpg',
         gallery: ['/hero-bg-1.jpg', '/hero-bg-2.jpg', '/hero-bg-3.jpg'],
         description: locale === 'en'
           ? 'Jerusalem is a city in the Middle East, located on a plateau in the Judaean Mountains between the Mediterranean and the Dead Sea. It is one of the oldest cities in the world and is considered holy to the three major Abrahamic religions—Judaism, Christianity, and Islam. The city has been destroyed, rebuilt, captured, and recaptured numerous times throughout its history.'
@@ -462,7 +462,7 @@ export default async function LocationDetailsPage({ params }) {
         name: locale === 'en' ? 'Haifa' : 'حيفا',
         region: 'Northern Israel',
         coordinates: [32.7940, 34.9896],
-        image: '/haifa.jpg',
+        image: '/hero-bg-2.jpg',
         gallery: ['/hero-bg-1.jpg', '/hero-bg-2.jpg', '/hero-bg-3.jpg'],
         description: locale === 'en'
           ? 'Haifa is a northern Israeli port city built on the slopes of Mount Carmel facing the Mediterranean Sea. It\'s known for its stunning Bahá\'í Gardens, religious diversity, and vibrant cultural scene. As Israel\'s third-largest city, Haifa is a major industrial and technological center while offering beautiful beaches, historic neighborhoods, and breathtaking views from Mount Carmel.'
@@ -547,7 +547,7 @@ export default async function LocationDetailsPage({ params }) {
         id: 'sea-of-galilee',
         name: locale === 'en' ? 'Sea of Galilee' : 'بحر الجليل',
         region: 'Northern Israel',
-        image: '/sea-of-galilee.jpg',
+        image: '/hero-bg-1.jpg',
         gallery: ['/hero-bg-1.jpg', '/hero-bg-2.jpg', '/hero-bg-3.jpg'],
         description: locale === 'en'
           ? 'The Sea of Galilee, also known as Lake Tiberias or Kinneret, is Israel\'s largest freshwater lake and the lowest freshwater lake on Earth. Located in the northeast of Israel, this heart-shaped lake holds tremendous religious significance as the site where many of Jesus\' miracles are believed to have occurred. Today, the Sea of Galilee serves as Israel\'s primary water reservoir while offering visitors peaceful shores, historic sites, thermal hot springs, and various water activities.'

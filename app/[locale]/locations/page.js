@@ -73,7 +73,7 @@ export default async function LocationsPage({ params }) {
     {
       id: 'sea-of-galilee',
       name: locale === 'en' ? 'Sea of Galilee' : 'بحر الجليل',
-      image: '/hero-bg-2.jpg',
+      image: '/hero-bg-1.jpg',
       description: locale === 'en'
         ? 'Visit the freshwater lake where Jesus performed many miracles'
         : 'زيارة بحيرة المياه العذبة حيث قام يسوع بالعديد من المعجزات',
