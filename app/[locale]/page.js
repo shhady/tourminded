@@ -1,11 +1,11 @@
 import MainLayout from '@/components/layout/MainLayout';
 import dynamic from 'next/dynamic';
+import FeaturedGuides from '@/components/guides/FeaturedGuides';
 
 // Use dynamic imports with ssr: true for components that might cause hydration issues
 const HeroSection = dynamic(() => import('@/components/common/HeroSection'), { ssr: true });
 const TourTypeCarousel = dynamic(() => import('@/components/home/TourTypeCarousel'), { ssr: true });
 const FeaturedLocations = dynamic(() => import('@/components/common/FeaturedLocations'), { ssr: true });
-const FeaturedGuides = dynamic(() => import('@/components/guides/FeaturedGuides'), { ssr: true });
 const Testimonials = dynamic(() => import('@/components/common/Testimonials'), { ssr: true });
 const CallToAction = dynamic(() => import('@/components/common/CallToAction'), { ssr: true });
 
