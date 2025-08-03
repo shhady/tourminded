@@ -4,7 +4,7 @@ import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Star, Languages, MapPin } from 'lucide-react';
+import { Star, Languages, MapPin, MapPinCheck, MapPinCheckIcon } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { getCurrentUser } from '@/lib/auth';
 import WishlistButton from '@/components/ui/WishlistButton';
@@ -343,7 +343,7 @@ export default async function GuidesPage({ searchParams, params }) {
                       {/* Cover Image */}
                       <div className="relative h-32 w-full">
                         <Image 
-                          src={guide.coverImage?.url || '/images/default-cover.jpg'}
+                          src={guide.coverImage?.url || '/no-image-cover.png'}
                           alt={`${getGuideName(guide, locale)} cover image`}
                           fill
                           sizes='100vw'
@@ -354,7 +354,7 @@ export default async function GuidesPage({ searchParams, params }) {
                         <div className="absolute -bottom-10 left-5">
                           <div className="relative w-20 h-20 rounded-full border-4 border-white overflow-hidden">
                             <Image 
-                              src={guide.profileImage?.url || '/images/default-avatar.png'}
+                              src={guide.profileImage?.url || '/no-image-avatar.png'}
                               alt={getGuideName(guide, locale) || 'Guide profile image'}
                               fill
                               sizes='100vw'
@@ -382,7 +382,12 @@ export default async function GuidesPage({ searchParams, params }) {
                             ({guide.reviewCount || 0} {locale === 'en' ? 'reviews' : 'تقييمات'})
                           </span>
                         </div>
-                        
+                        <div className="flex items-center text-gray-600 mb-3">
+                          <MapPinCheckIcon className="w-4 h-4 inline-block mr-1" />
+                          <span className="text-sm">
+                            {guide.address || 'Palestine'}
+                          </span>
+                        </div>
                         <div className="flex items-center text-gray-600 mb-3">
                           <Languages className="w-4 h-4 mr-1" />
                           <span className="text-sm">

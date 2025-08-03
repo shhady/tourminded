@@ -22,10 +22,12 @@ export async function PUT(request) {
     
     // Get update data from request
     const data = await request.json();
-    
+    console.log(data);
     // Update user data
     if (data.firstName !== undefined) user.firstName = data.firstName;
     if (data.lastName !== undefined) user.lastName = data.lastName;
+    if (data.phone !== undefined) user.phone = data.phone;
+    if (data.address !== undefined) user.address = data.address;
     
     // Save updated user
     await user.save();

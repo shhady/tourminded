@@ -161,8 +161,6 @@ export default function ProfilePage({ params }) {
           setFormData(prev => ({
             ...prev,
             nickname: data.guide.nickname || '',
-            phone: data.guide.phone || '',
-            address: data.guide.address || '',
           }));
           
           // Set profile image
@@ -232,7 +230,7 @@ export default function ProfilePage({ params }) {
     
     fetchUserData();
   }, [isSignedIn, clerkLoaded, clerkUser]);
-  
+ 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -382,7 +380,7 @@ export default function ProfilePage({ params }) {
       const userUpdateData = {
         firstName,
         lastName,
-        phone: formData.phone,
+        phone: formData.phone || '',
         address: formData.address,
       };
       
@@ -498,15 +496,16 @@ export default function ProfilePage({ params }) {
                         <input
                           type="tel"
                           name="phone"
-                          value={formData.phone}
+                          value={formData.phone || ''}
                           onChange={handleInputChange}
                           className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         />
                       </div>
                       
-                      <div>
+                      {/* <div>
                         <label className="block text-sm font-medium text-secondary-700 mb-2">
-                          {t.address}
+                          
+                          {locale === 'en' ? 'City you\'re from (shown on profile)' : 'المدينة التي أنت منها (معروضة على الملف الشخصي)'}
                         </label>
                         <input
                           type="text"
@@ -515,7 +514,7 @@ export default function ProfilePage({ params }) {
                           onChange={handleInputChange}
                           className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         />
-                      </div>
+                      </div> */}
                     </div>
                     
                     <div className="flex justify-end">

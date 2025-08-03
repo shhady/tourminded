@@ -463,7 +463,7 @@ export default function WishlistPage({ params }) {
                           <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                             <div className="relative h-32 w-full">
                               <Image 
-                                src={guide.coverImage?.url || '/images/default-cover.jpg'}
+                                src={guide.coverImage?.url || '/no-image-cover.png'}
                                 alt={`${getGuideName(guide)} cover image`}
                                 fill
                                 sizes='100vw'

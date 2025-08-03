@@ -617,7 +617,8 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
         
         <div>
           <label htmlFor="address" className="block text-sm font-medium text-secondary-700 mb-1">
-            {locale === 'en' ? 'Address' : 'العنوان'}*
+            {/* {locale === 'en' ? 'Address' : 'العنوان'} */}
+            {locale === 'en' ? 'City you\'re from (shown on profile)' : 'المدينة التي أنت منها (معروضة على الملف الشخصي)'}*
           </label>
           <input
             id="address"

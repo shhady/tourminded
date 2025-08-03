@@ -176,13 +176,13 @@ export default async function GuideProfilePage({ params }) {
     // Extract guide data
     const name = getGuideName(guide, locale);
     const bio = getGuideBio(guide, locale);
-    const profileImage = guide.profileImage?.url || '/images/default-guide.jpg';
-    const coverImage = guide.coverImage?.url || '/images/default-cover.jpg';
+    const profileImage = guide.profileImage?.url || '/no-image-avatar.png';
+    const coverImage = guide.coverImage?.url || '/no-image-cover.png';
     const rating = guide.rating || 5;
     const reviewCount = guide.reviewCount || 0;
     const languages = guide.languages || [];
     const expertise = guide.expertise || [];
-    const address = guide.address || 'Israel';
+    const address = guide.address || 'Palestine';
     const yearsExperience = calculateYearsOfExperience(guide.expertise[0]?.licenseIssueDate);
     const vehicle = guide.vehicle || {};
     
@@ -225,7 +225,7 @@ export default async function GuideProfilePage({ params }) {
               <div className="flex items-center  gap-2">
                 <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg mr-6">
                   <Image 
-                    src={profileImage}
+                    src={profileImage || '/no-image-avatar.png'}
                     alt={name}
                     fill
                     className="object-cover"
@@ -248,6 +248,9 @@ export default async function GuideProfilePage({ params }) {
                         {rating.toFixed(1)} ({reviewCount} {locale === 'en' ? 'reviews' : 'تقييمات'})
                       </span>
                     </div>
+                  </div>
+                  <div className="text-white/90">
+                    {address}
                   </div>
                 </div>
               </div>
@@ -602,7 +605,7 @@ export default async function GuideProfilePage({ params }) {
                         <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
                           <div className="relative h-48 w-full">
                             <Image 
-                              src={tour.images?.cover?.url || '/images/default-tour.jpg'}
+                              src={tour.images?.cover?.url || '/no-image-cover.png'}
                               alt={tour.title?.[locale] || tour.title?.en || 'Tour'}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-300"
