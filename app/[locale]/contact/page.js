@@ -25,7 +25,7 @@ export default async function ContactPage({ params }) {
               : 'هل لديك أسئلة أو تحتاج إلى مساعدة؟ نحن هنا للمساعدة!'}
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-8 mb-12">
             <div className="bg-white rounded-xl shadow-sm p-6 text-center hover:shadow-md transition-shadow">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Mail className="w-6 h-6 text-primary-600" />
@@ -44,7 +44,7 @@ export default async function ContactPage({ params }) {
               </a>
             </div>
             
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center hover:shadow-md transition-shadow">
+            {/* <div className="bg-white rounded-xl shadow-sm p-6 text-center hover:shadow-md transition-shadow">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Phone className="w-6 h-6 text-primary-600" />
               </div>
@@ -60,9 +60,9 @@ export default async function ContactPage({ params }) {
               >
                 +972 12 345 6789
               </a>
-            </div>
+            </div> */}
             
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center hover:shadow-md transition-shadow">
+            {/* <div className="bg-white rounded-xl shadow-sm p-6 text-center hover:shadow-md transition-shadow">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MapPin className="w-6 h-6 text-primary-600" />
               </div>
@@ -77,7 +77,7 @@ export default async function ContactPage({ params }) {
                   ? '123 Tourism Street, Jerusalem' 
                   : '١٢٣ شارع السياحة، القدس'}
               </address>
-            </div>
+            </div> */}
           </div>
           
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
