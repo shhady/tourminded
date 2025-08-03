@@ -72,24 +72,24 @@ const Footer = ({ locale }) => {
             
             {/* Contact Info */}
             <div className="mt-8 space-y-3">
-              <div className="flex items-start">
+              {/* <div className="flex items-start">
                 <MapPin className="text-primary-500 mt-1 mr-3 flex-shrink-0" />
                 <p className="text-secondary-900">
                   123 Tourism Street, Jerusalem, Holy Land
                 </p>
-              </div>
+              </div> */}
               <div className="flex items-center">
                 <Mail className="text-primary-500 mr-3 flex-shrink-0" />
                 <a href="mailto:info@Watermelontours.com" className="text-secondary-900 hover:text-primary-600 transition-colors">
                   info@Watermelontours.com
                 </a>
               </div>
-              <div className="flex items-center">
+              {/* <div className="flex items-center">
                 <Phone className="text-primary-500 mr-3 flex-shrink-0" />
                 <a href="tel:+972123456789" className="text-secondary-900 hover:text-primary-600 transition-colors">
                   +972 12 345 6789
                 </a>
-              </div>
+              </div> */}
             </div>
             
             {/* Social Media */}
