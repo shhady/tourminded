@@ -518,13 +518,13 @@ export default function GuideRegistrationPage({ params }) {
                       
                       <div className="mb-6">
                         <label htmlFor="address" className="block text-sm font-medium text-secondary-700 mb-1">
-                          {locale === 'en' ? 'Address' : 'العنوان'}*
+                          {locale === 'en' ? 'City you\'re from (shown on profile)' : 'المدينة التي أنت منها (معروضة على الملف الشخصي)'}*
                         </label>
                         <input
                           id="address"
                           type="text"
                           {...register('address', {
-                            required: locale === 'en' ? 'Address is required' : 'العنوان مطلوب',
+                            required: locale === 'en' ? 'City is required' : 'المدينة مطلوبة',
                           })}
                           className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
