@@ -27,22 +27,22 @@ export default async function HelpCenter({ params }) {
         : "تضم الأرض المقدسة العديد من المواقع المسيحية المهمة. من بين أهمها كنيسة القيامة (حيث صُلب يسوع ودُفن)، وكنيسة المهد في بيت لحم (مكان ولادة يسوع)، وجبل الزيتون، وحديقة جثسيماني، وبحر الجليل، والناصرة (موطن طفولة يسوع)، ونهر الأردن (حيث تعمد يسوع)، وطريق الآلام (المسار الذي سار فيه يسوع حاملاً صليبه)."
     },
     {
-      question: locale === 'en' ? "What does \"Israeli licensed tour guide\" mean?" : "ماذا تعني \"مرشد سياحي مرخص إسرائيلي\"؟",
+      question: locale === 'en' ? "What does \" licensed tour guide\" mean?" : "ماذا تعني \"مرشد سياحي مرخص إسرائيلي\"؟",
       answer: locale === 'en' 
-        ? "In Israel, it's a legal requirement for all tour guides to be licensed by the Ministry of Tourism. Guides must renew their license every two years and partake in one training course each year. All guides on Watermelon Tours are fully licensed."
+        ? "In the Holy Land, it's a legal requirement for all tour guides to be licensed by the Ministry of Tourism. Guides must renew their license every two years and partake in one training course each year. All guides on Watermelon Tours are fully licensed."
         : "في إسرائيل، يُشترط قانونًا أن يكون جميع المرشدين السياحيين مرخصين من قبل وزارة السياحة. يجب على المرشدين تجديد ترخيصهم كل عامين والمشاركة في دورة تدريبية واحدة كل عام. جميع المرشدين على Watermelon Tours مرخصون بالكامل."
     },
     {
       question: locale === 'en' ? "What is the tipping culture in the Holy Land?" : "ما هي ثقافة البقشيش في الأرض المقدسة؟",
       answer: locale === 'en' 
-        ? "Tipping in restaurants is expected in Israel (between 10 to 15% depending on the quality of the service).\n\nTipping taxi drivers is not common, nor is tipping when ordering at a cafe counter or getting information from your hotel.\n\nOn guided tours, a tip between $3 and $5 is the minimum, but feel free to tip more if you are really happy with the guide and if the tour lasts multiple days."
+        ? "Tipping in restaurants is expected in the Holy Land (between 10 to 15% depending on the quality of the service).\n\nTipping taxi drivers is not common, nor is tipping when ordering at a cafe counter or getting information from your hotel.\n\nOn guided tours, a tip between $3 and $5 is the minimum, but feel free to tip more if you are really happy with the guide and if the tour lasts multiple days."
         : "البقشيش في المطاعم متوقع في إسرائيل (بين 10 إلى 15٪ اعتمادًا على جودة الخدمة).\n\nإعطاء البقشيش لسائقي سيارات الأجرة ليس شائعًا، وكذلك البقشيش عند الطلب من كاونتر المقهى أو الحصول على معلومات من الفندق الخاص بك.\n\nفي الجولات المصحوبة بمرشدين، يعتبر البقشيش بين 3 و 5 دولارات هو الحد الأدنى، ولكن لا تتردد في إعطاء المزيد إذا كنت سعيدًا حقًا بالمرشد وإذا استمرت الجولة لعدة أيام."
     },
     {
-      question: locale === 'en' ? "Are there guides who can give a tour of Israel and Palestine?" : "هل هناك مرشدون يمكنهم تقديم جولة في إسرائيل وفلسطين؟",
+      question: locale === 'en' ? "Are there guides who can give a tour of the Holy Land?" : "هل هناك مرشدون يمكنهم تقديم جولة في الأرض المقدسة؟",
       answer: locale === 'en' 
-        ? "Yes! Watermelon Tours has guides that will show you around both Israel and Palestine. You can see the regions each guide visits on their personal guide page."
-        : "نعم! لدى Watermelon Tours مرشدون سيصطحبونك في جولة في كل من إسرائيل وفلسطين. يمكنك رؤية المناطق التي يزورها كل مرشد على صفحة المرشد الشخصية."
+        ? "Yes! Watermelon Tours has guides that will show you around the Holy Land. You can see the regions each guide visits on their personal guide page."
+        : "نعم! لدى Watermelon Tours مرشدون سيصطحبونك في جولة في الأرض المقدسة. يمكنك رؤية المناطق التي يزورها كل مرشد على صفحة المرشد الشخصية."
     },
     {
       question: locale === 'en' ? "Why should I book through Watermelon Tours?" : "لماذا يجب أن أحجز من خلال Watermelon Tours؟",
@@ -57,10 +57,10 @@ export default async function HelpCenter({ params }) {
         : "نقوم بمقابلة كل مرشد بشكل فردي لتقييم مؤهلاتهم ومجالات خبرتهم وإتقانهم للغة. بالإضافة إلى ذلك، يذهب أحد أعضاء فريقنا في جولتهم قبل إضافتهم إلى Watermelon Tours.\n\nلذلك، يمكنك أن تطمئن إلى أن جولتك المصحوبة بمرشدين تلبي أعلى معايير الجودة وأنه لا توجد مفاجآت غير سارة في زيارتك للأرض المقدسة. ما عليك سوى الاسترخاء والاستمتاع ودع مرشدك يريك العجائب التي لا نهاية لها للاكتشاف!"
     },
     {
-      question: locale === 'en' ? "What type of electrical outlets are used in Israel? Should I bring an adapter?" : "ما نوع المنافذ الكهربائية المستخدمة في إسرائيل؟ هل يجب أن أحضر محولًا؟",
+      question: locale === 'en' ? "What type of electrical outlets are used in the Holy Land? Should I bring an adapter?" : "ما نوع المنافذ الكهربائية المستخدمة في الأرض المقدسة؟ هل يجب أن أحضر محولًا؟",
       answer: locale === 'en' 
-        ? "Israel has two types of sockets: type C (two prongs) and type H (3 prongs in a triangle). If you are traveling from the U.S., you will need an adaptor and voltage converter. If you are coming from Europe, you don't need an adaptor."
-        : "تستخدم إسرائيل نوعين من المقابس: النوع C (شوكتان) والنوع H (3 شوكات في مثلث). إذا كنت مسافرًا من الولايات المتحدة، فستحتاج إلى محول ومحول جهد. إذا كنت قادمًا من أوروبا، فلن تحتاج إلى محول."
+        ? "The Holy Land has two types of sockets: type C (two prongs) and type H (3 prongs in a triangle). If you are traveling from the U.S., you will need an adaptor and voltage converter. If you are coming from Europe, you don't need an adaptor."
+        : "تستخدم الأرض المقدسة نوعين من المقابس: النوع C (شوكتان) والنوع H (3 شوكات في مثلث). إذا كنت مسافرًا من الولايات المتحدة، فستحتاج إلى محول ومحول جهد. إذا كنت قادمًا من أوروبا، فلن تحتاج إلى محول."
     }
   ];
   
@@ -69,7 +69,7 @@ export default async function HelpCenter({ params }) {
       <div className="bg-gradient-to-b from-primary-50 to-white">
         {/* Hero Section */}
         <div className="container mx-auto px-4 py-12 md:py-20">
-          <div className="text-center max-w-3xl mx-auto">
+          {/* <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold text-secondary-900 mb-4">
               {locale === 'en' ? 'Help Center' : 'مركز المساعدة'}
             </h1>
@@ -78,8 +78,7 @@ export default async function HelpCenter({ params }) {
                 ? 'Questions about our tours? Take a look at our FAQs or reach out to us.' 
                 : 'أسئلة حول جولاتنا؟ ألق نظرة على الأسئلة الشائعة أو تواصل معنا.'}
             </p>
-            
-            {/* Search Bar */}
+         
             <div className="relative max-w-xl mx-auto mb-12">
               <input
                 type="text"
@@ -88,7 +87,7 @@ export default async function HelpCenter({ params }) {
               />
               <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             </div>
-          </div>
+          </div> */}
         </div>
         
         {/* FAQ Accordion */}
@@ -115,7 +114,7 @@ export default async function HelpCenter({ params }) {
                   : "فريقنا هنا للمساعدة. تواصل معنا من خلال أي من هذه القنوات."}
               </p>
               
-              <div className="grid md:grid-cols-3 gap-6 mt-10">
+              <div className="grid md:grid-cols-1 gap-6 mt-10">
                 <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                   <div className="bg-primary-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Mail className="text-primary-600" size={24} />
@@ -129,10 +128,9 @@ export default async function HelpCenter({ params }) {
                       : "سنرد خلال 24 ساعة"}
                   </p>
                   <a href="mailto:support@Watermelontours.com" className="text-primary-600 hover:text-primary-700 font-medium">
-                    support@Watermelontours.com
-                  </a>
+                    info@watermelontours.com                  </a>
                 </div>
-                
+{/*                 
                 <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                   <div className="bg-primary-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Phone className="text-primary-600" size={24} />
@@ -142,15 +140,15 @@ export default async function HelpCenter({ params }) {
                   </h3>
                   <p className="text-secondary-600 mb-4">
                     {locale === 'en' 
-                      ? "Available 9am-5pm (Israel time)" 
-                      : "متاح من 9 صباحًا حتى 5 مساءً (بتوقيت إسرائيل)"}
+                      ? "Available 9am-5pm (Holy Land time)" 
+                      : "متاح من 9 صباحًا حتى 5 مساءً (بتوقيت الأرض المقدسة)"}
                   </p>
                   <a href="tel:+972123456789" className="text-primary-600 hover:text-primary-700 font-medium">
                     +972 12 345 6789
                   </a>
                 </div>
-                
-                <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                 */}
+                {/* <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                   <div className="bg-primary-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                     <MessageCircle className="text-primary-600" size={24} />
                   </div>
@@ -165,7 +163,7 @@ export default async function HelpCenter({ params }) {
                   <Button className="text-white">
                     {locale === 'en' ? "Start Chat" : "ابدأ الدردشة"}
                   </Button>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
