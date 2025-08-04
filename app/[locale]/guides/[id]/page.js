@@ -6,6 +6,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Star, Languages, MapPin, Award, Mail, Phone, Share2, Download, MessageCircle, Camera, Calendar, Car } from 'lucide-react';
 import ContactForm from '@/components/guides/ContactForm';
 import ShareGuide from '@/components/guides/ShareGuide';
+import LanguageStatsSection from '@/components/guides/LanguageStatsSection';
+import ReviewsSection from '@/components/guides/ReviewsSection';
 import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import Tour from '@/models/Tour';
@@ -176,13 +178,13 @@ export default async function GuideProfilePage({ params }) {
     // Extract guide data
     const name = getGuideName(guide, locale);
     const bio = getGuideBio(guide, locale);
-    const profileImage = guide.profileImage?.url || '/no-image-avatar.png';
-    const coverImage = guide.coverImage?.url || '/no-image-cover.png';
+    const profileImage = guide.profileImage?.url || '/images/default-guide.jpg';
+    const coverImage = guide.coverImage?.url || '/images/default-cover.jpg';
     const rating = guide.rating || 5;
     const reviewCount = guide.reviewCount || 0;
     const languages = guide.languages || [];
     const expertise = guide.expertise || [];
-    const address = guide.address || 'Palestine';
+    const address = guide.address || 'Israel';
     const yearsExperience = calculateYearsOfExperience(guide.expertise[0]?.licenseIssueDate);
     const vehicle = guide.vehicle || {};
     
@@ -198,7 +200,7 @@ export default async function GuideProfilePage({ params }) {
           {/* Cover Image */}
           <div className="absolute inset-0">
             <Image 
-              src={coverImage}
+              src={coverImage || '/no-image-cover.png'}
               alt={`${name} cover`}
               fill
               className="object-cover"
@@ -225,7 +227,7 @@ export default async function GuideProfilePage({ params }) {
               <div className="flex items-center  gap-2">
                 <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg mr-6">
                   <Image 
-                    src={profileImage || '/no-image-avatar.png'}
+                    src={profileImage}
                     alt={name}
                     fill
                     className="object-cover"
@@ -249,9 +251,6 @@ export default async function GuideProfilePage({ params }) {
                       </span>
                     </div>
                   </div>
-                  <div className="text-white/90">
-                    {address}
-                  </div>
                 </div>
               </div>
             </div>
@@ -265,31 +264,10 @@ export default async function GuideProfilePage({ params }) {
             <div className="lg:col-span-1 order-2 lg:order-1">
               <div className="hidden lg:block bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
                 {/* Languages */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center">
-                    <Languages className="w-5 h-5 mr-2 text-primary-600" />
-                    {locale === 'en' ? 'Languages' : 'اللغات'}
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    {languages.map((lang, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <span className="font-medium">{getLanguageName(lang.language)}</span>
-                        <div className="flex items-center">
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className={`w-4 h-4 ${i < 5 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
-                              />
-                            ))}
-                          </div>
-                          <span className="text-xs text-gray-500 ml-2">(12)</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <LanguageStatsSection 
+                  guideId={id}
+                  locale={locale}
+                />
                 
                 {/* Experience */}
                 <div className="mb-8 pb-8 border-b border-gray-100">
@@ -418,31 +396,10 @@ export default async function GuideProfilePage({ params }) {
               <div className="lg:hidden">
                 <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
                   {/* Languages */}
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                      <Languages className="w-5 h-5 mr-2 text-primary-600" />
-                      {locale === 'en' ? 'Languages' : 'اللغات'}
-                    </h3>
-                    
-                    <div className="space-y-3">
-                      {languages.map((lang, index) => (
-                        <div key={index} className="flex items-center justify-between">
-                          <span className="font-medium">{getLanguageName(lang.language)}</span>
-                          <div className="flex items-center">
-                            <div className="flex">
-                              {[...Array(5)].map((_, i) => (
-                                <Star 
-                                  key={i} 
-                                  className={`w-4 h-4 ${i < 5 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
-                                />
-                              ))}
-                            </div>
-                            <span className="text-xs text-gray-500 ml-2">(12)</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <LanguageStatsSection 
+                    guideId={id}
+                    locale={locale}
+                  />
                   
                   {/* Experience */}
                   <div className="mb-8 pb-8 border-b border-gray-100">
@@ -656,24 +613,10 @@ export default async function GuideProfilePage({ params }) {
               </div>
               
               {/* Reviews Section */}
-              <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold flex items-center">
-                    <span className="w-8 h-8 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mr-3">
-                      <Star className="w-5 h-5" />
-                    </span>
-                    {locale === 'en' ? 'Reviews' : 'التقييمات'}
-                  </h2>
-                </div>
-                
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">
-                    {locale === 'en' 
-                      ? 'Reviews coming soon!' 
-                      : 'التقييمات قادمة قريبًا!'}
-                  </p>
-                </div>
-              </div>
+              <ReviewsSection 
+                guideId={id}
+                locale={locale}
+              />
               
               {/* Contact Form - Using client component */}
               <ContactForm locale={locale} guideId={id} guideName={name} />

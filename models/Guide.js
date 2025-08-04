@@ -38,12 +38,23 @@ const GuideSchema = new mongoose.Schema({
       type: String,
       required: [true, 'Please provide a language'],
     },
-    proficiency: {
-      type: Number,
-      min: 1,
-      max: 5,
-      required: [true, 'Please provide a proficiency level'],
-    },
+    proficiency: [{
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+      rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        required: true,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    }],
   }],
   expertise: [{
     area: {
@@ -121,6 +132,32 @@ const GuideSchema = new mongoose.Schema({
     calendarId: { type: String }, // usually the user's email
     tokenExpiry: { type: Date },
   },
+  reviews: [{
+    id: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId(),
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'User ID is required'],
+    },
+    review: {
+      type: String,
+      required: [true, 'Please provide a review'],
+      trim: true,
+    },
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: [true, 'Please provide a rating'],
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  }],
   createdAt: {
     type: Date,
     default: Date.now,
@@ -139,14 +176,6 @@ GuideSchema.virtual('yearsOfExperience').get(function() {
   const issueDate = new Date(this.expertise[0].licenseIssueDate);
   const today = new Date();
   return Math.floor((today - issueDate) / (365.25 * 24 * 60 * 60 * 1000));
-});
-
-// Virtual populate reviews
-GuideSchema.virtual('reviews', {
-  ref: 'Review',
-  localField: '_id',
-  foreignField: 'guide',
-  justOne: false,
 });
 
 // Virtual populate tours

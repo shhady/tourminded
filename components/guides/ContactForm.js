@@ -121,7 +121,7 @@ export default function ContactForm({ locale, guideId, guideName }) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 rounded-lg transition-colors ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`w-full border-2 border-black bg-primary-600 hover:bg-primary-700 text-black font-medium py-3 rounded-lg transition-colors ${isSubmitting ? 'opacity-70 cursor-not-allowed border-2 border-black' : ''}`}
           >
             {isSubmitting 
               ? (locale === 'en' ? 'Sending...' : 'جاري الإرسال...') 

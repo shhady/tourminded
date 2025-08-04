@@ -41,10 +41,13 @@ async function getGuides(searchParams) {
   const limit = params.limit ? parseInt(params.limit) : 9;
   const skip = (page - 1) * limit;
   
+  // Add active filter to only show active guides
+  filter.active = true;
+  
   // Find guides with filters
   const guides = await Guide.find(filter)
     .populate('user', 'firstName lastName')
-    .select('names profileImage coverImage rating reviewCount languages expertise aboutSections address')
+    .select('names profileImage coverImage rating reviewCount languages expertise aboutSections address active')
     .skip(skip)
     .limit(limit)
     .sort({ rating: -1, reviewCount: -1 });
