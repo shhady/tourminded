@@ -57,6 +57,14 @@ const ChatPage = ({ params }) => {
                       if (messagesData.success) {
                         // Messages already have correct isCurrentUser flag from API
                         setMessages(messagesData.chat.messages);
+                        
+                        // Mark messages as read and trigger header update
+                        fetch(`/api/chats/${chatData.chat._id}/mark-read`, {
+                          method: 'POST',
+                        }).then(() => {
+                          // Trigger a custom event to refresh header unread count
+                          window.dispatchEvent(new CustomEvent('refreshUnreadCount'));
+                        }).catch(console.error);
                       }
                     }
                   }

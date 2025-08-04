@@ -71,6 +71,7 @@ export async function GET(request) {
         lastMessage: chat.lastMessage,
         lastMessageAt: chat.lastMessageAt,
         messagesCount: chat.messages.length,
+        unreadCount: chat.unreadCount.find(entry => entry.userId.toString() === user._id.toString())?.count || 0,
         createdAt: chat.createdAt,
       };
     }));

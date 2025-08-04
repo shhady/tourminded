@@ -19,6 +19,7 @@ const Header = ({ locale }) => {
   const { user: userClerk } = useUserClerk();
   const [guideStatus, setGuideStatus] = useState(null); // 'active', 'pending', or null
   const [messagesLink, setMessagesLink] = useState(`/${locale}/chat`);
+  const [unreadCount, setUnreadCount] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
   const isHomePage = pathname === `/${locale}`;
@@ -51,6 +52,42 @@ const Header = ({ locale }) => {
     
     fetchGuideStatus();
   }, [user]);
+
+  // Fetch unread messages count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!userClerk || !user) return;
+      
+      try {
+        const response = await fetch('/api/chats/unread-count');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setUnreadCount(data.unreadCount || 0);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching unread count:', error);
+      }
+    };
+
+    fetchUnreadCount();
+    
+    // Poll for unread count every 30 seconds when user is active
+    const interval = setInterval(fetchUnreadCount, 30000);
+    
+    // Listen for custom event to refresh unread count
+    const handleRefreshUnreadCount = () => {
+      fetchUnreadCount();
+    };
+    
+    window.addEventListener('refreshUnreadCount', handleRefreshUnreadCount);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('refreshUnreadCount', handleRefreshUnreadCount);
+    };
+  }, [userClerk, user]);
 
   // Handle scroll effect
   useEffect(() => {
@@ -268,9 +305,11 @@ const Header = ({ locale }) => {
                       : 'text-black hover:text-black hover:bg-white/20'
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                  <div className="relative w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
                     <User className="text-primary-600 h-4 w-4" />
-                   
+                    {unreadCount > 0 && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+                    )}
                   </div>
                   <span>{userClerk?.fullName}</span>
                   <ChevronDown className="ml-1 h-3 w-3" />
@@ -301,11 +340,18 @@ const Header = ({ locale }) => {
                     {/* Messages Link */}
                     <Link
                       href={messagesLink}
-                      className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                      className="flex items-center justify-between w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      {locale === 'en' ? 'Messages' : 'الرسائل'}
+                      <div className="flex items-center">
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        {locale === 'en' ? 'Messages' : 'الرسائل'}
+                      </div>
+                      {unreadCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[18px] h-[18px] flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
                     </Link>
                     
                     {/* Guide-related menu item (dynamic based on status) */}
@@ -356,13 +402,16 @@ const Header = ({ locale }) => {
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
-            className={`md:hidden p-2 rounded-md transition-colors ${
+            className={`md:hidden p-2 rounded-md transition-colors relative ${
               useDarkText
                 ? 'text-secondary-900 hover:text-primary-600 hover:bg-primary-50'
                 : 'text-black hover:text-black hover:bg-white/20'
             }`}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {unreadCount > 0 && user && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+            )}
           </button>
         </div>
 
@@ -405,11 +454,18 @@ const Header = ({ locale }) => {
                   {/* Messages Link - Mobile */}
                   <Link
                     href={messagesLink}
-                    className="flex items-center px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                    className="flex items-center justify-between px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    {locale === 'en' ? 'Messages' : 'الرسائل'}
+                    <div className="flex items-center">
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      {locale === 'en' ? 'Messages' : 'الرسائل'}
+                    </div>
+                    {unreadCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[18px] h-[18px] flex items-center justify-center">
+                        {unreadCount}
+                      </span>
+                    )}
                   </Link>
                   
                   {/* Profile Link - for all users */}

@@ -172,14 +172,21 @@ const UserChatPage = ({ params }) => {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <h3 className="font-medium text-gray-900">
-                            {chat.otherParticipant.fullName || 'User'}
-                          </h3>
+                          <div className="flex items-center">
+                            <h3 className="font-medium text-gray-900">
+                              {chat.otherParticipant.fullName || 'User'}
+                            </h3>
+                            {chat.unreadCount > 0 && (
+                              <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
+                                {chat.unreadCount}
+                              </span>
+                            )}
+                          </div>
                           <span className="text-sm text-gray-500">
                             {chat.lastMessage ? new Date(chat.lastMessageAt).toLocaleString() : ''}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 truncate">
+                        <p className={`text-sm truncate ${chat.unreadCount > 0 ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
                           {chat.lastMessage?.message || 'No messages yet'}
                         </p>
                       </div>

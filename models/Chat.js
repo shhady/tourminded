@@ -8,6 +8,19 @@ const ChatSchema = new mongoose.Schema({
     required: true,
   }],
   
+  // Track unread message count for each participant
+  unreadCount: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    count: {
+      type: Number,
+      default: 0,
+    }
+  }],
+  
   // Array of messages in this conversation
   messages: [{
     message: {
@@ -87,10 +100,41 @@ ChatSchema.methods.addMessage = async function(message, senderId) {
   this.lastMessageAt = new Date();
   this.updatedAt = new Date();
   
+  // Update unread count for the other participant
+  const otherParticipantId = this.participants.find(id => id.toString() !== senderId.toString());
+  if (otherParticipantId) {
+    let unreadEntry = this.unreadCount.find(entry => entry.userId.toString() === otherParticipantId.toString());
+    if (!unreadEntry) {
+      this.unreadCount.push({ userId: otherParticipantId, count: 1 });
+    } else {
+      unreadEntry.count += 1;
+    }
+  }
+  
   const savedChat = await this.save();
   
   // Return the newly added message
   return savedChat.messages[savedChat.messages.length - 1];
+};
+
+// Method to mark messages as read for a user
+ChatSchema.methods.markAsRead = async function(userId) {
+  // Reset unread count for this user
+  let unreadEntry = this.unreadCount.find(entry => entry.userId.toString() === userId.toString());
+  if (unreadEntry) {
+    unreadEntry.count = 0;
+  } else {
+    this.unreadCount.push({ userId: userId, count: 0 });
+  }
+  
+  // Mark all messages from other users as 'read'
+  this.messages.forEach(msg => {
+    if (msg.senderId.toString() !== userId.toString() && msg.status === 'sent') {
+      msg.status = 'read';
+    }
+  });
+  
+  return await this.save();
 };
 
 // Static method to find or create a chat between two users
