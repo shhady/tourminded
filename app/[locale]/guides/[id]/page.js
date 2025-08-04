@@ -260,8 +260,19 @@ export default async function GuideProfilePage({ params }) {
         {/* Main Content */}
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
             {/* Left Column - Sidebar */}
             <div className="lg:col-span-1 order-2 lg:order-1">
+               {/* Contact Button */}
+               <div className='mb-6'>
+                  <Link 
+                    href={`/${locale}/chat/${guide.user._id}`}
+                    className="w-full inline-flex items-center justify-center px-6 py-3 bg-green-300 text-black font-medium rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    {locale === 'en' ? 'Contact Guide' : 'تواصل مع المرشد'}
+                  </Link>
+                </div>
               <div className="hidden lg:block bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
                 {/* Languages */}
                 <LanguageStatsSection 
@@ -348,7 +359,7 @@ export default async function GuideProfilePage({ params }) {
                 )}
                 
                 {/* QR Code */}
-                <div>
+                <div className="mb-6">
                   <h3 className="text-lg font-semibold mb-3">
                     {locale === 'en' ? 'Scan to Share' : 'امسح للمشاركة'}
                   </h3>
@@ -362,6 +373,8 @@ export default async function GuideProfilePage({ params }) {
                     />
                   </div>
                 </div>
+
+               
               </div>
               
               {/* Share Guide Component */}
@@ -395,6 +408,16 @@ export default async function GuideProfilePage({ params }) {
               {/* Mobile Sidebar (visible only on mobile) */}
               <div className="lg:hidden">
                 <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
+                   {/* Contact Button */}
+                   <div className='mb-8'>
+                    <Link 
+                      href={`/${locale}/chat/${guide.user._id}`}
+                      className="w-full inline-flex items-center justify-center px-6 py-3 bg-green-300 text-black font-medium rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      {locale === 'en' ? 'Contact Guide' : 'تواصل مع المرشد'}
+                    </Link>
+                  </div>
                   {/* Languages */}
                   <LanguageStatsSection 
                     guideId={id}
@@ -480,7 +503,7 @@ export default async function GuideProfilePage({ params }) {
                   )}
                   
                   {/* QR Code */}
-                  <div>
+                  <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-3">
                       {locale === 'en' ? 'Scan to Share' : 'امسح للمشاركة'}
                     </h3>
@@ -494,6 +517,8 @@ export default async function GuideProfilePage({ params }) {
                       />
                     </div>
                   </div>
+
+                 
                 </div>
               </div>
               

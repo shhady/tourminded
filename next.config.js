@@ -22,6 +22,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'placekitten.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+      },
     ],
   },
   experimental: {

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Globe, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Clock, Heart } from 'lucide-react';
+import { Globe, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Clock, Heart, MessageCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import { locales } from '@/lib/i18n';
 import Image from 'next/image';
@@ -18,6 +18,7 @@ const Header = ({ locale }) => {
   const { user } = useUser();
   const { user: userClerk } = useUserClerk();
   const [guideStatus, setGuideStatus] = useState(null); // 'active', 'pending', or null
+  const [messagesLink, setMessagesLink] = useState(`/${locale}/chat`);
   const pathname = usePathname();
   const router = useRouter();
   const isHomePage = pathname === `/${locale}`;
@@ -34,9 +35,13 @@ const Header = ({ locale }) => {
           if (data.guide) {
             // Guide exists, check if active
             setGuideStatus(data.guide.active ? 'active' : 'pending');
+            // All users (including guides) go to general chat page
+            setMessagesLink(`/${locale}/chat`);
           } else {
             // No guide profile
             setGuideStatus(null);
+            // Keep default messages link
+            setMessagesLink(`/${locale}/chat`);
           }
         }
       } catch (error) {
@@ -293,6 +298,16 @@ const Header = ({ locale }) => {
                       {locale === 'en' ? 'My Profile' : 'الملف الشخصي'}
                     </Link>
                     
+                    {/* Messages Link */}
+                    <Link
+                      href={messagesLink}
+                      className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      {locale === 'en' ? 'Messages' : 'الرسائل'}
+                    </Link>
+                    
                     {/* Guide-related menu item (dynamic based on status) */}
                     {user && getGuideMenuItem()}
                     
@@ -387,8 +402,15 @@ const Header = ({ locale }) => {
                     {locale === 'en' ? 'My Wishlist' : 'قائمة رغباتي'}
                   </Link>
                   
-                  {/* Guide-related menu item (dynamic based on status) */}
-                  {user && getGuideMenuItem()}
+                  {/* Messages Link - Mobile */}
+                  <Link
+                    href={messagesLink}
+                    className="flex items-center px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    {locale === 'en' ? 'Messages' : 'الرسائل'}
+                  </Link>
                   
                   {/* Profile Link - for all users */}
                   <Link
@@ -399,6 +421,9 @@ const Header = ({ locale }) => {
                     <User className="mr-2 h-4 w-4" />
                     {locale === 'en' ? 'My Profile' : 'الملف الشخصي'}
                   </Link>
+                  
+                  {/* Guide-related menu item (dynamic based on status) */}
+                  {user && getGuideMenuItem()}
                   
                   {/* Logout Button */}
                  

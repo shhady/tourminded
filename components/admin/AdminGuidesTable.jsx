@@ -1,6 +1,7 @@
 "use client";
 import React, { useTransition, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { MessageCircle, Users } from "lucide-react";
 
 export default function AdminGuidesTable({ guides: initialGuides, adminName }) {
   const [guides, setGuides] = React.useState(initialGuides);
@@ -34,11 +35,48 @@ export default function AdminGuidesTable({ guides: initialGuides, adminName }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-12">
+    <div className="max-w-6xl mx-auto py-12">
       <h1 className="text-3xl font-bold mb-4">Admin Dashboard</h1>
       <p className="mb-8 text-secondary-700">Welcome, {adminName}! Here you can manage guides who applied to become a guide.</p>
+      
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center mb-4">
+            <Users className="w-8 h-8 text-blue-600 mr-3" />
+            <h2 className="text-xl font-semibold text-gray-900">Guides Management</h2>
+          </div>
+          <p className="text-gray-600 mb-4">Manage guide applications and status</p>
+          <p className="text-sm text-green-600 font-medium">You're currently viewing this section</p>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center mb-4">
+            <MessageCircle className="w-8 h-8 text-purple-600 mr-3" />
+            <h2 className="text-xl font-semibold text-gray-900">User Messages</h2>
+          </div>
+          <p className="text-gray-600 mb-4">View all conversations between users</p>
+          <button
+            onClick={() => {
+              const locale = params?.locale || 'en';
+              router.push(`/${locale}/dashboard/admin/messages`);
+            }}
+            className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            View Messages
+          </button>
+        </div>
+      </div>
+      
       {error && <div className="mb-4 text-red-600">{error}</div>}
-      <div className="overflow-x-auto">
+      
+      {/* Guides Table */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">Guide Applications</h2>
+        </div>
+        <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -85,6 +123,7 @@ export default function AdminGuidesTable({ guides: initialGuides, adminName }) {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
