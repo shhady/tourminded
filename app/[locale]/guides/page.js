@@ -377,7 +377,7 @@ export default async function GuidesPage({ searchParams, params }) {
                             {[...Array(5)].map((_, i) => (
                               <Star 
                                 key={i} 
-                                className={`w-4 h-4 ${i < Math.floor(guide.rating || 5) ? 'fill-current' : ''}`} 
+                                className={`w-4 h-4 ${(guide.reviewCount > 0 && i < Math.floor(guide.rating)) ? 'fill-current' : ''}`} 
                               />
                             ))}
                           </div>
