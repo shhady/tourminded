@@ -30,6 +30,17 @@ export default function RootLayout({ children, params }) {
       <GuideProvider>
         <UserProvider>
           <html lang="en" dir="ltr">
+          <head>
+        <meta name="robots" content="index, follow" />
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+        <meta name="theme-color" content="#08171f" />
+        <meta property="og:site_name" content="Watermelon Tours - Connect with Expert Local Guides" />
+      </head>
             <body className={`${inter.variable} ${tajawal.variable} font-sans antialiased`}>
               {process.env.NODE_ENV === 'development' && (
                 <script

@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import Tour from './Tour';
+import Guide from './Guide';
 
 const UserSchema = new mongoose.Schema({
   name: {
