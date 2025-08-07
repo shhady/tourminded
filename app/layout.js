@@ -19,9 +19,91 @@ const tajawal = Tajawal({
 });
 
 export const metadata = {
-  title: "Watermelon Tours - Connect with Expert Local Guides",
-  description: "Find and book personalized tours with expert local guides in the Holy Land",
-  keywords: ["tours", "travel", "guides", "Holy Land", "Jerusalem", "Israel", "Palestine"],
+  title: {
+    default: "Watermelon Tours - Connect with Expert Local Guides",
+    template: "%s | Watermelon Tours"
+  },
+  description: "Discover the Holy Land through the eyes of expert local guides. Book personalized tours, explore hidden gems, and create unforgettable memories in Jerusalem, Bethlehem, and beyond.",
+  keywords: [
+    "tours",
+    "travel",
+    "guides",
+    "Holy Land",
+    "Jerusalem",
+    "Holy Land",
+    "Palestine",
+    "Bethlehem",
+    "local guides",
+    "cultural tours",
+    "religious tours",
+    "historical tours",
+    "personalized tours",
+    "travel experiences",
+    "tour booking",
+    "Middle East travel"
+  ],
+  authors: [{ name: "Watermelon Tours Team" }],
+  creator: "Watermelon Tours",
+  publisher: "Watermelon Tours",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://watermelontours.com'),
+  alternates: {
+    canonical: '/',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' }
+    ],
+    shortcut: '/favicon.ico',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
+    ],
+  },
+  manifest: '/site.webmanifest',
+  openGraph: {
+    title: "Watermelon Tours - Connect with Expert Local Guides",
+    description: "Discover the Holy Land through the eyes of expert local guides. Book personalized tours, explore hidden gems, and create unforgettable memories in Jerusalem, Bethlehem, and beyond.",
+    url: 'https://watermelontours.com',
+    siteName: 'Watermelon Tours',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Watermelon Tours - Expert Local Guides in the Holy Land',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Watermelon Tours - Connect with Expert Local Guides",
+    description: "Discover the Holy Land through the eyes of expert local guides. Book personalized tours and create unforgettable memories.",
+    images: ['/og-image.jpg'],
+    creator: '@watermelontours',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'your-google-verification-code',
+    yandex: 'your-yandex-verification-code',
+  },
 };
 
 export default function RootLayout({ children, params }) {
