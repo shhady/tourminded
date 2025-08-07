@@ -1,6 +1,14 @@
 import { clerkMiddleware } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
-export default clerkMiddleware()
+export default clerkMiddleware((auth, req) => {
+  const { pathname } = req.nextUrl
+  
+  // If user is on root path, redirect to /en immediately
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL('/en', req.url))
+  }
+})
 
 export const config = {
   matcher: [
