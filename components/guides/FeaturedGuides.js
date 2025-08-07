@@ -110,7 +110,7 @@ const FeaturedGuides = async ({ locale }) => {
                   {/* Rating */}
                   <div className="flex items-center mb-3">
                     <Star className="text-yellow-500 mr-1" size={16} />
-                    <span className="font-medium">{guide.rating || 0}</span>
+                    <span className="font-medium">{guide.rating.toFixed(1) || 0}</span>
                     <span className="text-secondary-500 ml-1">
                       ({guide.reviewCount || 0} {locale === 'en' ? 'reviews' : 'تقييمات'})
                     </span>
