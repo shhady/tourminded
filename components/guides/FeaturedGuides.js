@@ -21,6 +21,7 @@ const getGuideName = (guide, locale) => {
   
   // Find name in current locale
   const nameObj = guide.names?.find(n => n.language === languageToFind);
+  
   return nameObj?.value || guide.names?.[0]?.value || '';
 };
 
@@ -105,7 +106,7 @@ const FeaturedGuides = async ({ locale }) => {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2">{guideName}</h3>
+                  <h3 className="text-xl font-semibold mb-2">{guideName.split(' ')[0]}</h3>
                   
                   {/* Rating */}
                   <div className="flex items-center mb-3">
