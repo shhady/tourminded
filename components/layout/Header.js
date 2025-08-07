@@ -229,14 +229,14 @@ const Header = ({ locale }) => {
   };
 
   return (
-    <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-soft py-2' : 'bg-transparent py-4'}`}>
+    <header className={`fixed w-full flex items-center justify-center z-50 transition-all duration-300 h-24 bg-white shadow-soft py-2`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href={getLocalizedHref('/')} className="text-2xl font-bold flex items-center">
             {/* Replace with your actual logo */}
             <span className={`transition-colors duration-300 ${useDarkText ? 'text-secondary-900' : 'text-black'}`}>
-              Watermelon Tours
+             <Image src="/logo.png" alt="Watermelon Tours" width={100} height={100} className='w-32 h-10 md:w-52 md:h-16' />
             </span>
           </Link>
 
