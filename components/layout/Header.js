@@ -480,7 +480,17 @@ const Header = ({ locale }) => {
                   
                   {/* Guide-related menu item (dynamic based on status) */}
                   {user && getGuideMenuItem()}
-                  
+                   {/* Admin Dashboard - only for admins */}
+                    {user && user.role === 'admin' && (
+                      <Link
+                        href={`/${locale}/dashboard/admin`}
+                        className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        {locale === 'en' ? 'Admin Dashboard' : 'لوحة المسؤول'}
+                      </Link>
+                    )}
                   {/* Logout Button */}
                  
                   <div

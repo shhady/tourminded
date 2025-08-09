@@ -71,58 +71,91 @@ export default function AdminGuidesTable({ guides: initialGuides, adminName }) {
       
       {error && <div className="mb-4 text-red-600">{error}</div>}
       
-      {/* Guides Table */}
+      {/* Guides: Mobile Cards */}
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Guide Applications</h2>
         </div>
-        <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {guides.map(guide => (
-              <tr key={guide._id}>
-                <td className="px-4 py-2">{guide.names?.[0]?.value || 'N/A'}</td>
-                <td className="px-4 py-2">{guide.user?.email || 'N/A'}</td>
-                <td className="px-4 py-2">
-                  {guide.active ? (
-                    <span className="px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-semibold">Active</span>
-                  ) : (
-                    <span className="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold">Pending</span>
-                  )}
-                </td>
-                <td className="px-4 py-2">
-                  <div className="flex gap-2">
-                    <button
-                      className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 font-bold text-xs"
-                      onClick={() => handleViewDetails(guide._id.toString())}
-                    >
-                      View Details
-                    </button>
-                    <button
-                      className={`px-3 py-1 rounded font-bold text-xs ${
-                        guide.active 
-                          ? 'bg-red-600 text-white hover:bg-red-700' 
-                          : 'bg-blue-600 text-white hover:bg-blue-700'
-                      }`}
-                      disabled={pending}
-                      onClick={() => handleToggleActive(guide._id.toString(), guide.active)}
-                    >
-                      {pending ? 'Updating...' : (guide.active ? 'Deactivate' : 'Activate')}
-                    </button>
-                  </div>
-                </td>
+        {/* Mobile view */}
+        <div className="px-6 py-4 space-y-4 md:hidden">
+          {guides.map((guide) => (
+            <div key={guide._id} className="border border-gray-200 rounded-lg p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">{guide.names?.[0]?.value || 'N/A'}</h3>
+                  <p className="text-sm text-gray-600">{guide.user?.email || 'N/A'}</p>
+                </div>
+                <span className={`px-2 py-1 rounded text-xs font-semibold ${guide.active ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                  {guide.active ? 'Active' : 'Pending'}
+                </span>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  className="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm font-medium"
+                  onClick={() => handleViewDetails(guide._id.toString())}
+                >
+                  View Details
+                </button>
+                <button
+                  className={`px-3 py-2 rounded text-white text-sm font-medium ${guide.active ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                  disabled={pending}
+                  onClick={() => handleToggleActive(guide._id.toString(), guide.active)}
+                >
+                  {pending ? 'Updating...' : (guide.active ? 'Deactivate' : 'Activate')}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop view */}
+        <div className="overflow-x-auto hidden md:block">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {guides.map(guide => (
+                <tr key={guide._id}>
+                  <td className="px-4 py-2">{guide.names?.[0]?.value || 'N/A'}</td>
+                  <td className="px-4 py-2">{guide.user?.email || 'N/A'}</td>
+                  <td className="px-4 py-2">
+                    {guide.active ? (
+                      <span className="px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-semibold">Active</span>
+                    ) : (
+                      <span className="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold">Pending</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2">
+                    <div className="flex gap-2">
+                      <button
+                        className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 font-bold text-xs"
+                        onClick={() => handleViewDetails(guide._id.toString())}
+                      >
+                        View Details
+                      </button>
+                      <button
+                        className={`px-3 py-1 rounded font-bold text-xs ${
+                          guide.active 
+                            ? 'bg-red-600 text-white hover:bg-red-700' 
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                        disabled={pending}
+                        onClick={() => handleToggleActive(guide._id.toString(), guide.active)}
+                      >
+                        {pending ? 'Updating...' : (guide.active ? 'Deactivate' : 'Activate')}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
