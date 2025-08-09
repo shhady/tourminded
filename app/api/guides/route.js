@@ -62,6 +62,11 @@ export async function POST(request) {
     
     const data = await request.json();
     
+    // Normalize languages to expected shape
+    const normalizedLanguages = Array.isArray(data.languages)
+      ? data.languages.map(lang => ({ language: lang.language }))
+      : [];
+
     // Create guide data with user reference
     const guideData = {
       user: user._id,
@@ -69,7 +74,7 @@ export async function POST(request) {
       nickname: data.nickname,
       address: data.address,
       phone: data.phone,
-      languages: data.languages,
+      languages: normalizedLanguages,
       expertise: data.expertise,
       aboutSections: data.aboutSections,
       profileImage: data.profileImage,
@@ -90,6 +95,13 @@ export async function POST(request) {
     
   } catch (error) {
     console.error('Error creating guide:', error);
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(e => e.message);
+      return NextResponse.json({ 
+        message: 'Validation error', 
+        errors 
+      }, { status: 400 });
+    }
     return NextResponse.json({ 
       message: 'Failed to register as guide', 
       error: error.message 

@@ -268,7 +268,8 @@ export default function GuideRegistrationPage({ params }) {
             url: vehicleImage,
           },
         },
-        languages: validLanguages,
+        // Only send language codes, not numeric proficiency (server computes ratings later)
+        languages: validLanguages.map(l => ({ language: l.language })),
         expertise: expertise,
         aboutSections: aboutSections
       };
