@@ -107,7 +107,8 @@ async function getTourData(id) {
             languages: guide.languages || [],
             expertise: guide.expertise || [],
             certifications: guide.certifications || [],
-            experience: guide.experience || null
+            experience: guide.experience || null,
+            reviews: guide.reviews || []
           };
         }
       } catch (error) {
@@ -464,7 +465,12 @@ export default async function TourPage({ params }) {
                         <h4 className="font-semibold text-secondary-900">{tourData.guide.name || ''}</h4>
                         <div className="flex items-center">
                           <Star className="text-yellow-400 w-4 h-4" />
-                          <span className="ml-1 text-secondary-700">{tourData.guide.rating.toFixed(1) || 0} ({tourData.guide.reviewCount || 0})</span>
+                          <span className="ml-1 text-secondary-700">
+                            {tourData.guide.reviews ? 
+                              `${(tourData.guide.reviews.reduce((acc, review) => acc + review.rating, 0) / tourData.guide.reviews.length).toFixed(1)} (${tourData.guide.reviews.length})`
+                              : '0 (0)'}
+                          </span>
+                          {/* <span className="ml-1 text-secondary-700">{tourData.guide.rating.toFixed(1) || 0} ({tourData.guide.reviewCount || 0})</span> */}
                         </div>
                         <Link 
                           href={`/${locale}/guides/${tourData.guide._id}`}
