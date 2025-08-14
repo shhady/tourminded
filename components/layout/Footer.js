@@ -140,6 +140,15 @@ const Footer = ({ locale }) => {
           <p>
             &copy; {currentYear} Watermelon Tours. {locale === 'en' ? 'All rights reserved.' : 'جميع الحقوق محفوظة.'}
           </p>
+          <div>
+          <Link 
+  href="https://fikranova.com" 
+  target="_blank" 
+  rel="noopener noreferrer"
+>
+  Website by Fikranova
+</Link>
+          </div>
         </div>
       </div>
     </footer>
