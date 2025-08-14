@@ -146,7 +146,7 @@ const Footer = ({ locale }) => {
   target="_blank" 
   rel="noopener noreferrer"
 >
-  Website by Fikranova
+  Website by <span className="text-blue-500">Fikranova</span>
 </Link>
           </div>
         </div>
