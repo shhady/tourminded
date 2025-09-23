@@ -222,6 +222,27 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
+// Helper to format location slugs (e.g., 'deadsea', 'kufrKana', 'akko-town') to Title Case
+const formatLocationName = (raw) => {
+  if (!raw || typeof raw !== 'string') return '';
+  // Replace underscores and hyphens with spaces, add space before camelCase capitals
+  const withSpaces = raw
+    .replace(/_/g, ' ')
+    .replace(/-/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2');
+  // Title-case each word
+  return withSpaces
+    .split(' ')
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+const formatLocationList = (locations) => {
+  if (!Array.isArray(locations)) return '';
+  return locations.map(formatLocationName).join(', ');
+};
+
 // Helper function to check if any filters are applied
 const hasActiveFilters = (params) => {
   return !!(params.location || params.duration || params.minPrice || 
@@ -319,7 +340,7 @@ export default async function ToursPage({ searchParams, params }) {
                       {/* Price Badge - moved to left side */}
                       <div className="absolute top-4 left-4 bg-white px-3 py-1 rounded-full shadow-md">
                         <span className="font-bold text-primary-600">
-                          {formatPrice(tour.price)}
+                          {formatPrice(tour.price)} {locale === 'en' ? (tour.pricePer === 'person' ? '/ person' : '/ group') : (tour.pricePer === 'person' ? '/ للشخص' : '/ للمجموعة')}
                         </span>
                       </div>
                     </div>
@@ -366,7 +387,7 @@ export default async function ToursPage({ searchParams, params }) {
                         <div className="flex items-center text-gray-600 w-full">
                           <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
                           <span className="text-sm truncate">
-                            {tour.locationNames?.join(', ') || 'Multiple locations'}
+                            {tour.locationNames?.length ? formatLocationList(tour.locationNames) : 'Multiple locations'}
                           </span>
                         </div>
                       </div>

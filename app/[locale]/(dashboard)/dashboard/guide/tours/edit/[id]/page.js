@@ -28,34 +28,34 @@ export default function EditTourPage({ params }) {
   
   // Hardcoded locations in Palestine and Israel
   const locations = [
-    { _id: 'jerusalem', name: { en: 'Jerusalem', ar: 'القدس' } },
-    { _id: 'jaffa', name: { en: 'Jaffa (Tel Aviv)', ar: 'يافا (تل أبيب)' } },
-    { _id: 'deadsea', name: { en: 'Dead Sea', ar: 'البحر الميت' } },
-    { _id: 'tiberias', name: { en: 'Tiberias and Lake of Galilee', ar: 'طبريا وبحيرة الجليل' } },
-    { _id: 'eilat', name: { en: 'Umm al-Rashrash (Eilat)', ar: 'أم الرشراش (إيلات)' } },
-    { _id: 'masada', name: { en: 'Masada', ar: 'مسادا' } },
-    { _id: 'haifa', name: { en: 'Haifa', ar: 'حيفا' } },
-    { _id: 'nazareth', name: { en: 'Nazareth', ar: 'الناصرة' } },
-    { _id: 'akko', name: { en: 'Akka (Acre/Akko)', ar: 'عكا' } },
-    { _id: 'eingedi', name: { en: 'Ein Gedi', ar: 'عين جدي' } },
-    { _id: 'jordanriver', name: { en: 'Jordan River', ar: 'نهر الأردن' } },
-    { _id: 'qumran', name: { en: 'Qumran', ar: 'قمران' } },
-    { _id: 'banias', name: { en: 'Banias', ar: 'بانياس' } },
-    { _id: 'caesarea', name: { en: 'Caesarea', ar: 'قيسارية' } },
-    { _id: 'golan', name: { en: 'Golan', ar: 'الجولان' } },
-    { _id: 'negev', name: { en: 'Naqab (Negev Desert)', ar: 'النقب' } },
-    { _id: 'beersheba', name: { en: 'Beersheba', ar: 'بئر السبع' } },
-    { _id: 'ashkelon', name: { en: 'Ascalon (Ashkelon)', ar: 'عسقلان' } },
-    { _id: 'safed', name: { en: 'Safed', ar: 'صفد' } },
-    { _id: 'kufrKana', name: { en: 'Kufr Kana', ar: 'كفر كنا' } },
+    { _id: 'Jerusalem', name: { en: 'Jerusalem', ar: 'القدس' } },
+    { _id: 'Jaffa', name: { en: 'Jaffa (Tel Aviv)', ar: 'يافا (تل أبيب)' } },
+    { _id: 'Deadsea', name: { en: 'Dead Sea', ar: 'البحر الميت' } },
+    { _id: 'Tiberias', name: { en: 'Tiberias and Lake of Galilee', ar: 'طبريا وبحيرة الجليل' } },
+    { _id: 'Eilat', name: { en: 'Umm al-Rashrash (Eilat)', ar: 'أم الرشراش (إيلات)' } },
+    { _id: 'Masada', name: { en: 'Masada', ar: 'مسادا' } },
+    { _id: 'Haifa', name: { en: 'Haifa', ar: 'حيفا' } },
+      { _id: 'Nazareth', name: { en: 'Nazareth', ar: 'الناصرة' } },
+    { _id: 'Akko', name: { en: 'Akka (Acre/Akko)', ar: 'عكا' } },
+    { _id: 'EinGedi', name: { en: 'Ein Gedi', ar: 'عين جدي' } },
+    { _id: 'Jordanriver', name: { en: 'Jordan River', ar: 'نهر الأردن' } },
+    { _id: 'Qumran', name: { en: 'Qumran', ar: 'قمران' } },
+    { _id: 'Banias', name: { en: 'Banias', ar: 'بانياس' } },
+    { _id: 'Caesarea', name: { en: 'Caesarea', ar: 'قيسارية' } },
+    { _id: 'Golan', name: { en: 'Golan', ar: 'الجولان' } },
+    { _id: 'Negev', name: { en: 'Naqab (Negev Desert)', ar: 'النقب' } },
+    { _id: 'Beersheba', name: { en: 'Beersheba', ar: 'بئر السبع' } },
+    { _id: 'Ashkelon', name: { en: 'Ascalon (Ashkelon)', ar: 'عسقلان' } },
+    { _id: 'Safed', name: { en: 'Safed', ar: 'صفد' } },
+    { _id: 'KufrKana', name: { en: 'Kufr Kana', ar: 'كفر كنا' } },
     // West Bank Cities
-    { _id: 'bethlehem', name: { en: 'Bethlehem', ar: 'بيت لحم' } },
-    { _id: 'hebron', name: { en: 'Hebron', ar: 'الخليل' } },
-    { _id: 'jericho', name: { en: 'Jericho', ar: 'أريحا' } },
-    { _id: 'ramallah', name: { en: 'Ramallah', ar: 'رام الله' } },
-    { _id: 'nablus', name: { en: 'Nablus', ar: 'نابلس' } },
-    { _id: 'jenin', name: { en: 'Jenin', ar: 'جنين' } },
-    { _id: 'taybeh', name: { en: 'Taybeh', ar: 'الطيبة' } },
+    { _id: 'Bethlehem', name: { en: 'Bethlehem', ar: 'بيت لحم' } },
+    { _id: 'Hebron', name: { en: 'Hebron', ar: 'الخليل' } },
+    { _id: 'Jericho', name: { en: 'Jericho', ar: 'أريحا' } },
+    { _id: 'Ramallah', name: { en: 'Ramallah', ar: 'رام الله' } },
+    { _id: 'Nablus', name: { en: 'Nablus', ar: 'نابلس' } },
+    { _id: 'Jenin', name: { en: 'Jenin', ar: 'جنين' } },
+    { _id: 'Taybeh', name: { en: 'Taybeh', ar: 'الطيبة' } },
   ];
   
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm();
@@ -482,7 +482,7 @@ export default function EditTourPage({ params }) {
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
                     />
                     <label htmlFor="pricePerPerson" className="ml-2 block text-sm text-secondary-700">
-                      {locale === 'en' ? 'Per person' : 'لكل شخص'}
+                      {locale === 'en' ? 'Per person' : 'للشخص'}
                     </label>
                   </div>
                   <div className="flex items-center">
@@ -494,7 +494,7 @@ export default function EditTourPage({ params }) {
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
                     />
                     <label htmlFor="pricePerGroup" className="ml-2 block text-sm text-secondary-700">
-                      {locale === 'en' ? 'Per group' : 'لكل مجموعة'}
+                      {locale === 'en' ? 'Per group' : 'للمجموعة'}
                     </label>
                   </div>
                 </div>

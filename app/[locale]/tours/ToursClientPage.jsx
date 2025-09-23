@@ -484,7 +484,7 @@ export default function ToursClientPage({ initialTours, filterOptions, locale, i
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <span className="text-xl font-bold text-primary-600">${tour.price}</span>
+                      <span className="text-xl font-bold text-primary-600">${tour.price} {locale === 'en' ? (tour.pricePer === 'person' ? '/ person' : '/ group') : (tour.pricePer === 'person' ? '/ للشخص' : '/ للمجموعة')}</span>
                       <Link 
                         href={`/${locale}/tours/${tour._id}`}
                         className="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium"

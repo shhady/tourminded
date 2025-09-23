@@ -199,6 +199,20 @@ export default async function TourPage({ params }) {
       };
       return transportMap[transport] || transport;
     };
+
+    // Helper to title-case location slugs for display
+    const formatLocationName = (raw) => {
+      if (!raw || typeof raw !== 'string') return '';
+      const withSpaces = raw
+        .replace(/_/g, ' ')
+        .replace(/-/g, ' ')
+        .replace(/([a-z])([A-Z])/g, '$1 $2');
+      return withSpaces
+        .split(' ')
+        .filter(Boolean)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+    };
     
     return (
       <MainLayout locale={locale}>
@@ -209,7 +223,7 @@ export default async function TourPage({ params }) {
               src={tourData.images.cover.url}
               alt={title}
               fill
-              className="object-cover"
+              className="object-contain"
               priority
             />
           ) : (
@@ -250,7 +264,7 @@ export default async function TourPage({ params }) {
                 {tourData.locationNames && tourData.locationNames.length > 0 && (
                   <div className="flex items-center">
                     <MapPin className="text-primary-400 w-5 h-5 mr-2" />
-                    <span>{tourData.locationNames.join(', ')}</span>
+                    <span>{tourData.locationNames.map(formatLocationName).join(', ')}</span>
                   </div>
                 )}
                 <div className="flex items-center">
@@ -417,7 +431,7 @@ export default async function TourPage({ params }) {
               <div className="bg-white rounded-lg shadow-md p-6 mb-8 sticky top-24">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-3xl font-bold text-primary-600">${tourData.price}</span>
-                  <span className="text-secondary-600">{locale === 'en' ? 'per person' : 'للشخص الواحد'}</span>
+                  <span className="text-secondary-600">{locale === 'en' ? (tourData.pricePer === 'person' ? 'per person' : 'per group') : (tourData.pricePer === 'person' ? 'للشخص' : 'للمجموعة')}</span>
                 </div>
                 
                 <button className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-4 rounded-lg mb-4 transition duration-300">
@@ -553,7 +567,7 @@ export default async function TourPage({ params }) {
                           href={`/${locale}/locations/${encodeURIComponent(location.toLowerCase())}`}
                           className="bg-secondary-100 text-secondary-800 text-sm px-2.5 py-0.5 rounded hover:bg-secondary-200 transition-colors"
                         >
-                          {location}
+                          {formatLocationName(location)}
                         </Link>
                       ))}
                     </div>

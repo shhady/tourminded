@@ -378,7 +378,7 @@ export default async function LocationToursPage({ params }) {
                   </div>
                   <div className="flex justify-between items-center mt-4">
                     <span className="text-xl font-bold text-primary-600">
-                      ${tour.price}
+                      ${tour.price} {locale === 'en' ? (tour.pricePer === 'person' ? '/ person' : '/ group') : (tour.pricePer === 'person' ? '/ للشخص' : '/ للمجموعة')}
                     </span>
                     <Link 
                       href={`/${locale}/tours/${tour._id}`}
