@@ -135,6 +135,17 @@ export async function POST(request) {
     
     // Get tour data from request body
     const tourData = await request.json();
+
+    // Normalize and validate pricePer if provided
+    if (tourData.pricePer !== undefined) {
+      const allowed = ['person', 'group'];
+      if (typeof tourData.pricePer !== 'string' || !allowed.includes(tourData.pricePer)) {
+        return NextResponse.json(
+          { success: false, message: 'pricePer must be either "person" or "group"' },
+          { status: 400 }
+        );
+      }
+    }
     
     // Validate required fields
     if (!tourData.title || !tourData.title.en || !tourData.description || !tourData.description.en) {
@@ -217,6 +228,8 @@ export async function POST(request) {
     // Create tour with guide ID
     const tour = await Tour.create({
       ...tourData,
+      // Default pricePer to 'group' if not provided (model also defaults, but we make it explicit)
+      pricePer: tourData.pricePer || 'group',
       guide: guide._id, // Use guide profile ID
       rating: 5, // Default rating
       reviewCount: 0

@@ -222,7 +222,7 @@ const ChatPage = ({ params }) => {
               </div>
               <div>
                 <h1 className="text-xl font-bold">
-                  {getUserName(targetGuide)}
+                  {getUserName(targetGuide).split(' ')[0]}
                 </h1>
                 {/* <div className="flex items-center mt-1">
                   <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>

@@ -7,9 +7,15 @@ const ConnectCalendarButton = () => {
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
       redirect_uri: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI,
       response_type: "code",
-      scope: "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email",
+      scope: [
+        'openid',
+        'email',
+        'profile',
+        'https://www.googleapis.com/auth/calendar.readonly'
+      ].join(' '),
       access_type: "offline",
       prompt: "consent",
+      include_granted_scopes: "true",
     });
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   };

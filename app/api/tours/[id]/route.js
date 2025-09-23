@@ -7,7 +7,7 @@ import User from '@/models/User';
 // GET a single tour by ID
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Connect to database
     await connectDB();
@@ -39,7 +39,7 @@ export async function GET(request, { params }) {
 // PUT update a tour (requires authentication as the guide who created it or admin)
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Get current user from Clerk
     const clerkUser = await currentUser();
@@ -53,6 +53,17 @@ export async function PUT(request, { params }) {
     
     // Parse request body
     const tourData = await request.json();
+
+  // Validate pricePer if provided
+  if (tourData.pricePer !== undefined) {
+    const allowed = ['person', 'group'];
+    if (typeof tourData.pricePer !== 'string' || !allowed.includes(tourData.pricePer)) {
+      return NextResponse.json(
+        { success: false, message: 'pricePer must be either "person" or "group"' },
+        { status: 400 }
+      );
+    }
+  }
     
     // Connect to database
     await connectDB();
@@ -209,7 +220,7 @@ export async function PUT(request, { params }) {
 // DELETE a tour (requires authentication as the tour owner or admin)
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Get current user from Clerk
     const clerkUser = await currentUser();

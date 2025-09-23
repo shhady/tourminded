@@ -59,6 +59,11 @@ const TourSchema = new mongoose.Schema({
   price: {
     type: Number,
     required: [true, 'Tour must have a price'],
+  }, 
+  pricePer:{
+    type: String,
+    enum: ['person', 'group'],
+    default: 'group',
   },
   images: {
     cover: {

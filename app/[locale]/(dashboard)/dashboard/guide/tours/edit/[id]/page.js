@@ -58,11 +58,17 @@ export default function EditTourPage({ params }) {
     { _id: 'taybeh', name: { en: 'Taybeh', ar: 'الطيبة' } },
   ];
   
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm();
+  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm();
   
+  // Initialize pricePer default
+  useEffect(() => {
+    setValue('pricePer', 'group');
+  }, [setValue]);
+
   // Watch duration and durationUnit to update tour plan
   const duration = watch('duration');
   const durationUnit = watch('durationUnit');
+  const pricePer = watch('pricePer');
   
   // Update tour plan when duration or unit changes
   useEffect(() => {
@@ -144,6 +150,7 @@ export default function EditTourPage({ params }) {
           expertise: data.data.expertise || '',
           isActive: data.data.isActive !== undefined ? data.data.isActive : true,
         });
+        setValue('pricePer', data.data.pricePer || 'group');
       } catch (error) {
         console.error('Error fetching tour:', error);
         setError('Failed to load tour data');
@@ -270,11 +277,12 @@ export default function EditTourPage({ params }) {
         // Add tour plan for multi-day tours
         tourPlan: data.durationUnit === 'days' && Math.floor(data.duration) > 0 ? tourPlan : [],
         price: parseFloat(data.price),
+        pricePer: pricePer,
         duration: parseInt(data.duration),
         durationUnit: data.durationUnit,
         maxGroupSize: parseInt(data.maxGroupSize),
         activityLevel: data.activityLevel,
-        languages: Array.isArray(data.languages) ? data.languages : [data.languages],
+        languages: Array.isArray(data.languages) ? data.languages : (data.languages ? [data.languages] : []),
         transportation: data.transportation,
         handicappedFriendly: data.handicappedFriendly,
         kidFriendly: data.kidFriendly,
@@ -458,6 +466,39 @@ export default function EditTourPage({ params }) {
                   </p>
                 )}
               </div>
+
+              {/* Price applies to */}
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-1">
+                  {locale === 'en' ? 'Price applies to' : 'السعر ينطبق على'}*
+                </label>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center">
+                    <input
+                      id="pricePerPerson"
+                      type="checkbox"
+                      checked={pricePer === 'person'}
+                      onChange={() => setValue('pricePer', 'person', { shouldValidate: true })}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                    />
+                    <label htmlFor="pricePerPerson" className="ml-2 block text-sm text-secondary-700">
+                      {locale === 'en' ? 'Per person' : 'لكل شخص'}
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="pricePerGroup"
+                      type="checkbox"
+                      checked={pricePer === 'group'}
+                      onChange={() => setValue('pricePer', 'group', { shouldValidate: true })}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                    />
+                    <label htmlFor="pricePerGroup" className="ml-2 block text-sm text-secondary-700">
+                      {locale === 'en' ? 'Per group' : 'لكل مجموعة'}
+                    </label>
+                  </div>
+                </div>
+              </div>
               
               <div>
                 <label htmlFor="duration" className="block text-sm font-medium text-secondary-700 mb-1">
@@ -557,9 +598,9 @@ export default function EditTourPage({ params }) {
                     <input
                       id="language-en"
                       type="checkbox"
-                      value="en"
+                      value="English"
                       {...register('languages', { required: true })}
-                      defaultChecked={tour?.languages?.includes('en')}
+                      defaultChecked={tour?.languages?.includes('English')}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
                     />
                     <label htmlFor="language-en" className="ml-2 block text-sm text-secondary-700">
@@ -570,9 +611,9 @@ export default function EditTourPage({ params }) {
                     <input
                       id="language-ar"
                       type="checkbox"
-                      value="ar"
+                      value="Arabic"
                       {...register('languages', { required: true })}
-                      defaultChecked={tour?.languages?.includes('ar')}
+                      defaultChecked={tour?.languages?.includes('Arabic')}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
                     />
                     <label htmlFor="language-ar" className="ml-2 block text-sm text-secondary-700">
@@ -583,9 +624,9 @@ export default function EditTourPage({ params }) {
                     <input
                       id="language-he"
                       type="checkbox"
-                      value="he"
+                      value="Hebrew"
                       {...register('languages', { required: true })}
-                      defaultChecked={tour?.languages?.includes('he')}
+                      defaultChecked={tour?.languages?.includes('Hebrew')}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
                     />
                     <label htmlFor="language-he" className="ml-2 block text-sm text-secondary-700">

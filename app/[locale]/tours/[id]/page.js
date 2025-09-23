@@ -108,7 +108,8 @@ async function getTourData(id) {
             expertise: guide.expertise || [],
             certifications: guide.certifications || [],
             experience: guide.experience || null,
-            reviews: guide.reviews || []
+            reviews: guide.reviews || [],
+            userId: guide.user?._id?.toString() || null
           };
         }
       } catch (error) {
@@ -432,10 +433,20 @@ export default async function TourPage({ params }) {
                     locale={locale} 
                     tourTitle={tourData.title[locale] || tourData.title.en}
                   />
-                  <button className="flex items-center text-secondary-700 hover:text-primary-600">
-                    <MessageCircle className="w-5 h-5 mr-1" />
-                    <span>{locale === 'en' ? 'Message' : 'رسالة'}</span>
-                  </button>
+                  {tourData.guide?.userId ? (
+                    <Link 
+                      href={`/${locale}/chat/${tourData.guide.userId}`}
+                      className="flex items-center text-secondary-700 hover:text-primary-600"
+                    >
+                      <MessageCircle className="w-5 h-5 mr-1" />
+                      <span>{locale === 'en' ? 'Message' : 'رسالة'}</span>
+                    </Link>
+                  ) : (
+                    <button className="flex items-center text-secondary-400 cursor-not-allowed opacity-60" disabled>
+                      <MessageCircle className="w-5 h-5 mr-1" />
+                      <span>{locale === 'en' ? 'Message' : 'رسالة'}</span>
+                    </button>
+                  )}
                 </div>
                 
                 <hr className="my-4 border-secondary-200" />

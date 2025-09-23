@@ -61,9 +61,15 @@ export default function NewTourPage({ params }) {
   
   const { register, handleSubmit, setValue, formState: { errors }, watch } = useForm();
   
+  // Set default pricePer
+  useEffect(() => {
+    setValue('pricePer', 'group');
+  }, [setValue]);
+
   // Watch duration and durationUnit to update tour plan
   const duration = watch('duration');
   const durationUnit = watch('durationUnit');
+  const pricePer = watch('pricePer');
   
   // Update tour plan when duration or unit changes
   useEffect(() => {
@@ -253,6 +259,8 @@ export default function NewTourPage({ params }) {
           en: data.descriptionEn,
           ar: data.descriptionAr || data.descriptionEn // Fallback to English if Arabic not provided
         },
+        // Price unit selection
+        pricePer: data.pricePer,
         // Add tour plan for multi-day tours
         tourPlan: data.durationUnit === 'days' && Math.floor(data.duration) > 0 ? tourPlan : [],
         // Convert numeric fields
@@ -512,6 +520,39 @@ export default function NewTourPage({ params }) {
               )}
             </div>
             
+          {/* Price Per - selection */}
+          <div>
+            <label className="block text-sm font-medium text-secondary-700 mb-1">
+              {locale === 'en' ? 'Price applies to' : 'السعر ينطبق على'}*
+            </label>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center">
+                <input
+                  id="pricePerPerson"
+                  type="checkbox"
+                  checked={pricePer === 'person'}
+                  onChange={() => setValue('pricePer', 'person', { shouldValidate: true })}
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                />
+                <label htmlFor="pricePerPerson" className="ml-2 block text-sm text-secondary-700">
+                  {locale === 'en' ? 'Per person' : 'لكل شخص'}
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  id="pricePerGroup"
+                  type="checkbox"
+                  checked={pricePer === 'group'}
+                  onChange={() => setValue('pricePer', 'group', { shouldValidate: true })}
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                />
+                <label htmlFor="pricePerGroup" className="ml-2 block text-sm text-secondary-700">
+                  {locale === 'en' ? 'Per group' : 'لكل مجموعة'}
+                </label>
+              </div>
+            </div>
+          </div>
+
             <div>
               <label htmlFor="duration" className="block text-sm font-medium text-secondary-700 mb-1">
                 {locale === 'en' ? 'Duration' : 'المدة'}*

@@ -51,34 +51,18 @@ export async function GET(req) {
     const guide = await Guide.findOne({ user: user._id });
     if (!guide) throw new Error('Guide not found');
 
-    // Save tokens and calendarId
-    guide.googleCalendar = {
-      accessToken: access_token,
-      refreshToken: refresh_token,
-      calendarId: email,
-      tokenExpiry: new Date(Date.now() + expires_in * 1000),
-    };
+    // Save tokens and calendarId (avoid overwriting an existing refresh token if Google didn't return a new one)
+    if (!guide.googleCalendar) guide.googleCalendar = {};
+    guide.googleCalendar.accessToken = access_token;
+    guide.googleCalendar.calendarId = email;
+    guide.googleCalendar.tokenExpiry = new Date(Date.now() + expires_in * 1000);
+    if (refresh_token) {
+      guide.googleCalendar.refreshToken = refresh_token;
+    }
     await guide.save();
 
-    const res = await axios.post(
-      'https://www.googleapis.com/calendar/v3/freeBusy',
-      {
-        timeMin: start.toISOString(),
-        timeMax: end.toISOString(),
-        items: [{ id: guide.googleCalendar.calendarId }],
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${guide.googleCalendar.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    console.log('Google Calendar API response:', JSON.stringify(res.data, null, 2));
-    const busy = res.data.calendars[guide.googleCalendar.calendarId]?.busy || [];
-    // Get unique days with events
-    const busyDates = [...new Set(busy.map(b => b.start.slice(0, 10)))];
-    return NextResponse.json({ busyDates });
+    // Redirect back to dashboard success state; calendar fetching will be handled by the dashboard API
+    return NextResponse.redirect(`${BASE_URL}/en/dashboard/guide?calendar=connected`);
   } catch (err) {
     if (err.response) {
       console.error('Google OAuth error:', err.response.data);
