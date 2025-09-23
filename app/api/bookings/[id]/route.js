@@ -1,8 +1,66 @@
 import { NextResponse } from 'next/server';
+import { currentUser } from '@clerk/nextjs/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
-import { currentUser } from '@clerk/nextjs/server';
+import Tour from '@/models/Tour';
+import Guide from '@/models/Guide';
 import User from '@/models/User';
+
+export async function PUT(request, { params }) {
+  try {
+    const { id } = await params;
+    const clerkUser = await currentUser();
+    if (!clerkUser) return NextResponse.json({ success: false, message: 'Not authenticated' }, { status: 401 });
+
+    await connectDB();
+    const user = await User.findOne({ clerkId: clerkUser.id });
+    if (!user) return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
+
+    const booking = await Booking.findById(id);
+    if (!booking) return NextResponse.json({ success: false, message: 'Booking not found' }, { status: 404 });
+
+    // Only the guide of the booking (or admin) can update special requests
+    const isAdmin = user.role === 'admin';
+    const guide = await Guide.findOne({ user: user._id });
+    const isGuideOwner = guide && booking.guide.toString() === guide._id.toString();
+    if (!isAdmin && !isGuideOwner) {
+      return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const items = Array.isArray(body?.specialRequestsCheckBoxes) ? body.specialRequestsCheckBoxes : null;
+    if (!items) return NextResponse.json({ success: false, message: 'specialRequestsCheckBoxes is required' }, { status: 400 });
+
+    // Normalize items
+    const normalized = items
+      .filter(it => it && typeof it.specialRequest === 'string')
+      .map(it => ({ specialRequest: it.specialRequest, specialRequestPrice: Number(it.specialRequestPrice) || 0 }));
+
+    booking.specialRequestsCheckBoxes = normalized;
+
+    // Recalculate total as (base tour price) + (extras), where base recalculated from tour & travelers
+    const extra = normalized.reduce((sum, it) => sum + (Number(it.specialRequestPrice) || 0), 0);
+    if (typeof body.recalculateTotal === 'boolean' ? body.recalculateTotal : true) {
+      const tour = await Tour.findById(booking.tour);
+      const travelers = Number(booking.travelers) || 1;
+      let base = 0;
+      if (tour) {
+        const pricePer = tour.pricePer || 'group';
+        base = pricePer === 'person' ? (Number(tour.price) || 0) * travelers : (Number(tour.price) || 0);
+      } else {
+        // Fallback to previous total without extras if tour missing
+        base = Math.max(0, Number(booking.totalPrice) || 0);
+      }
+      booking.totalPrice = base + extra;
+    }
+
+    await booking.save();
+    return NextResponse.json({ success: true, data: booking });
+  } catch (error) {
+    console.error('Error updating booking:', error);
+    return NextResponse.json({ success: false, message: error.message || 'Server error' }, { status: 500 });
+  }
+}
 
 // GET a single booking by ID (requires authentication)
 export async function GET(request, { params }) {
@@ -95,123 +153,7 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT update a booking status (requires authentication as guide, admin, or booking owner)
-export async function PUT(request, { params }) {
-  try {
-    const { id } = params;
-    
-    // Get current user from Clerk
-    const clerkUser = await currentUser();
-    
-    if (!clerkUser) {
-      return NextResponse.json(
-        { success: false, message: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-    
-    // Parse request body
-    const bookingData = await request.json();
-    
-    // Connect to database
-    await connectDB();
-    
-    // Find user in our database
-    const user = await User.findOne({ clerkId: clerkUser.id });
-    
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: 'User not found' },
-        { status: 404 }
-      );
-    }
-    
-    // Find booking
-    const booking = await Booking.findById(id);
-    
-    if (!booking) {
-      return NextResponse.json(
-        { success: false, message: 'Booking not found' },
-        { status: 404 }
-      );
-    }
-    
-    // Admin can update any booking
-    if (user.role === 'admin') {
-      const updatedBooking = await Booking.findByIdAndUpdate(
-        id,
-        bookingData,
-        { new: true, runValidators: true }
-      );
-      
-      return NextResponse.json({
-        success: true,
-        data: updatedBooking,
-      });
-    }
-    
-    // Guide can update status of bookings for their tours
-    if (user.role === 'guide') {
-      const Guide = (await import('@/models/Guide')).default;
-      const guide = await Guide.findOne({ user: user._id });
-      
-      if (!guide) {
-        return NextResponse.json(
-          { success: false, message: 'Guide profile not found' },
-          { status: 404 }
-        );
-      }
-      
-      if (booking.guide.toString() === guide._id.toString()) {
-        // Guide can only update status
-        const updatedBooking = await Booking.findByIdAndUpdate(
-          id,
-          { status: bookingData.status },
-          { new: true, runValidators: true }
-        );
-        
-        return NextResponse.json({
-          success: true,
-          data: updatedBooking,
-        });
-      }
-    }
-    
-    // User can cancel their own bookings
-    if (booking.user.toString() === user._id.toString()) {
-      // User can only cancel booking
-      if (bookingData.status === 'cancelled') {
-        const updatedBooking = await Booking.findByIdAndUpdate(
-          id,
-          { status: 'cancelled' },
-          { new: true, runValidators: true }
-        );
-        
-        return NextResponse.json({
-          success: true,
-          data: updatedBooking,
-        });
-      } else {
-        return NextResponse.json(
-          { success: false, message: 'Users can only cancel bookings' },
-          { status: 403 }
-        );
-      }
-    }
-    
-    // Not authorized
-    return NextResponse.json(
-      { success: false, message: 'Not authorized to update this booking' },
-      { status: 403 }
-    );
-  } catch (error) {
-    console.error('Error updating booking:', error);
-    return NextResponse.json(
-      { success: false, message: error.message || 'Server error' },
-      { status: 500 }
-    );
-  }
-}
+// Note: Status update logic removed to avoid duplicate exports; special requests PUT is supported above.
 
 // DELETE a booking (requires authentication as admin)
 export async function DELETE(request, { params }) {
