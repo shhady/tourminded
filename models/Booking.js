@@ -47,6 +47,17 @@ const BookingSchema = new mongoose.Schema({
   specialRequests: {
     type: String,
   },
+  specialRequestsCheckBoxes: {
+    type: [{
+      specialRequest: {
+        type: String,
+      },
+      specialRequestPrice: {
+        type: Number,
+        default: false,
+      },
+    }],
+  },
   createdAt: {
     type: Date,
     default: Date.now,

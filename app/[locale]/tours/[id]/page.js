@@ -27,6 +27,7 @@ import User from '@/models/User';
 import Guide from '@/models/Guide';
 import dynamic from 'next/dynamic';
 import GalleryLightbox from './GalleryLightbox';
+import BookTourModal from '@/components/tours/BookTourModal';
 
 // Dynamically import the ShareTourButton component with no SSR
 const ShareTourButton = dynamic(() => import('./ShareTourButton'));
@@ -92,6 +93,14 @@ async function getTourData(id) {
           let guideName = guide.user?.name || 'Tour Guide';
           // Split the name and take only the first part
           guideName = guideName.split(' ')[0];
+          // Serialize notAvailable to plain ISO strings
+          const notAvailablePlain = Array.isArray(guide.notAvailable)
+            ? guide.notAvailable.map(r => ({
+                start: r.start ? new Date(r.start).toISOString() : undefined,
+                end: r.end ? new Date(r.end).toISOString() : (r.start ? new Date(r.start).toISOString() : undefined),
+                note: r.note || undefined,
+              }))
+            : [];
           
           // Combine user and guide data
           guideData = {
@@ -109,7 +118,8 @@ async function getTourData(id) {
             certifications: guide.certifications || [],
             experience: guide.experience || null,
             reviews: guide.reviews || [],
-            userId: guide.user?._id?.toString() || null
+            userId: guide.user?._id?.toString() || null,
+            notAvailable: notAvailablePlain
           };
         }
       } catch (error) {
@@ -292,6 +302,10 @@ export default async function TourPage({ params }) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">
+              {/* Mobile Book Tour Button */}
+              <div className="mb-4 lg:hidden">
+                <BookTourModal locale={locale} tourId={tourData._id} maxGroupSize={tourData.maxGroupSize || 10} pricePer={tourData.pricePer || 'group'} guideNotAvailable={tourData.guide?.notAvailable || []} />
+              </div>
               {/* Description */}
               <div className="bg-white rounded-lg shadow-md p-6 mb-8">
                 <h2 className="text-2xl font-bold mb-4 text-secondary-900">
@@ -434,9 +448,9 @@ export default async function TourPage({ params }) {
                   <span className="text-secondary-600">{locale === 'en' ? (tourData.pricePer === 'person' ? 'per person' : 'per group') : (tourData.pricePer === 'person' ? 'للشخص' : 'للمجموعة')}</span>
                 </div>
                 
-                <button className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-4 rounded-lg mb-4 transition duration-300">
-                  {locale === 'en' ? 'Book Now' : 'احجز الآن'}
-                </button>
+                <div className="mb-4 hidden lg:block">
+                  <BookTourModal locale={locale} tourId={tourData._id} maxGroupSize={tourData.maxGroupSize || 10} pricePer={tourData.pricePer || 'group'} guideNotAvailable={tourData.guide?.notAvailable || []} />
+                </div>
                 
                 <div className="flex justify-between mb-4">
                   <button className="flex items-center text-secondary-700 hover:text-primary-600">
