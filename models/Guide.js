@@ -140,6 +140,14 @@ const GuideSchema = new mongoose.Schema({
     calendarId: { type: String }, // usually the user's email
     tokenExpiry: { type: Date },
   },
+  // Guide-defined unavailable date ranges (inclusive, UTC-normalized)
+  notAvailable: [
+    {
+      start: { type: Date, required: true },
+      end: { type: Date, required: true },
+      note: { type: String },
+    }
+  ],
   reviews: [{
     id: {
       type: mongoose.Schema.Types.ObjectId,

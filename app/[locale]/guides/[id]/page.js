@@ -11,6 +11,7 @@ import ReviewsSection from '@/components/guides/ReviewsSection';
 import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import Tour from '@/models/Tour';
+import AvailabilityCalendar from '@/components/guides/AvailabilityCalendar';
 
 // Generate QR code URL
 const generateQRCode = (url) => {
@@ -187,6 +188,48 @@ export default async function GuideProfilePage({ params }) {
     const address = guide.address || 'Israel';
     const yearsExperience = calculateYearsOfExperience(guide.licenseIssueDate);
     const vehicle = guide.vehicle || {};
+    const notAvailableRanges = Array.isArray(guide.notAvailable) ? guide.notAvailable : [];
+    // Serialize ranges to plain objects with ISO strings to avoid serializing Mongoose docs
+    const notAvailablePlain = notAvailableRanges.map(r => ({
+      start: r.start ? new Date(r.start).toISOString() : undefined,
+      end: r.end ? new Date(r.end).toISOString() : (r.start ? new Date(r.start).toISOString() : undefined),
+      note: r.note || undefined,
+    }));
+    
+    // Helpers for calendar
+    const toUtcMidnight = (d) => {
+      const x = new Date(d);
+      return new Date(Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate()));
+    };
+    const dateInRanges = (d, ranges) => {
+      const target = toUtcMidnight(d).getTime();
+      for (const r of ranges) {
+        const start = toUtcMidnight(r.start).getTime();
+        const end = toUtcMidnight(r.end || r.start).getTime();
+        if (target >= start && target <= end) return true;
+      }
+      return false;
+    };
+    const buildMonthMatrix = (baseDate) => {
+      const year = baseDate.getUTCFullYear();
+      const month = baseDate.getUTCMonth();
+      const first = new Date(Date.UTC(year, month, 1));
+      const startWeekday = first.getUTCDay(); // 0-6 Sun-Sat
+      const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+      const matrix = [];
+      let current = new Date(Date.UTC(year, month, 1 - startWeekday));
+      for (let week = 0; week < 6; week++) {
+        const row = [];
+        for (let day = 0; day < 7; day++) {
+          row.push(new Date(current));
+          current.setUTCDate(current.getUTCDate() + 1);
+        }
+        matrix.push(row);
+      }
+      return { matrix, month, year };
+    };
+    const now = new Date();
+    const calendar = buildMonthMatrix(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)));
     
     // Generate QR code URL
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://watermelontours.com';
@@ -302,6 +345,18 @@ export default async function GuideProfilePage({ params }) {
                       </p>
                     </div>
                   </div>
+                </div>
+                {/* Availability Calendar */}
+                <div className="mb-8 pb-8 border-b border-gray-100">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <Calendar className="w-5 h-5 mr-2 text-primary-600" />
+                    {locale === 'en' ? 'Availability' : 'التوفر'}
+                  </h3>
+                  <div className="text-sm text-gray-600 mb-2">
+                    <span className="inline-flex items-center mr-4"><span className="inline-block w-3 h-3 bg-red-400 rounded-sm mr-2"></span>{locale === 'en' ? 'Unavailable' : 'غير متاح'}</span>
+                    <span className="inline-flex items-center"><span className="inline-block w-3 h-3 bg-white border border-secondary-300 rounded-sm mr-2"></span>{locale === 'en' ? 'Available' : 'متاح'}</span>
+                  </div>
+                  <AvailabilityCalendar locale={locale} ranges={notAvailablePlain} />
                 </div>
                 
                 {/* Vehicle Information (if available) */}
@@ -446,6 +501,18 @@ export default async function GuideProfilePage({ params }) {
                         </p>
                       </div>
                     </div>
+                  </div>
+                  {/* Availability (Mobile) */}
+                  <div className="mb-8 pb-8 border-b border-gray-100">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center">
+                      <Calendar className="w-5 h-5 mr-2 text-primary-600" />
+                      {locale === 'en' ? 'Availability' : 'التوفر'}
+                    </h3>
+                    <div className="text-sm text-gray-600 mb-2">
+                      <span className="inline-flex items-center mr-4"><span className="inline-block w-3 h-3 bg-red-400 rounded-sm mr-2"></span>{locale === 'en' ? 'Unavailable' : 'غير متاح'}</span>
+                      <span className="inline-flex items-center"><span className="inline-block w-3 h-3 bg-white border border-secondary-300 rounded-sm mr-2"></span>{locale === 'en' ? 'Available' : 'متاح'}</span>
+                    </div>
+                    <AvailabilityCalendar locale={locale} ranges={notAvailablePlain} />
                   </div>
                   
                   {/* Vehicle Information (if available) */}

@@ -117,23 +117,58 @@ async function getTours(searchParams) {
     const limit = params.limit ? parseInt(params.limit) : 9;
     const skip = (page - 1) * limit;
     
+    // Parse travelDates range (format: YYYY-MM-DD_to_YYYY-MM-DD)
+    let requestedStart = null;
+    let requestedEnd = null;
+    const normalizeUtcMidnight = (d) => {
+      const x = new Date(d);
+      return new Date(Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate()));
+    };
+    if (params.travelDates) {
+      try {
+        const [s, e] = String(params.travelDates).split('_to_');
+        if (s) requestedStart = normalizeUtcMidnight(new Date(s));
+        requestedEnd = normalizeUtcMidnight(new Date(e || s));
+        if (requestedStart && requestedEnd && requestedEnd < requestedStart) {
+          const tmp = requestedStart; requestedStart = requestedEnd; requestedEnd = tmp;
+        }
+      } catch (e) {
+        console.warn('Invalid travelDates format', params.travelDates);
+      }
+    }
+
     // Find tours with filters, but don't populate locations
-    const tours = await Tour.find(filter)
-      .populate('guide', 'names profileImage rating reviewCount')
+    const toursAll = await Tour.find(filter)
+      .populate('guide', 'names profileImage rating reviewCount notAvailable')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
-    
-    // Count total tours for pagination
-    const total = await Tour.countDocuments(filter);
+
+    // Filter by guide availability if travelDates provided
+    const tours = requestedStart && requestedEnd
+      ? toursAll.filter(t => {
+          const ranges = Array.isArray(t.guide?.notAvailable) ? t.guide.notAvailable : [];
+          // exclude if ANY overlap between requested [start,end] and an unavailable range
+          for (const r of ranges) {
+            const rStart = normalizeUtcMidnight(r.start);
+            const rEnd = normalizeUtcMidnight(r.end || r.start);
+            const overlap = !(rEnd < requestedStart || rStart > requestedEnd);
+            if (overlap) return false; // guide unavailable → exclude
+          }
+          return true; // no overlaps → include
+        })
+      : toursAll;
+
+    // Count total tours for pagination (after availability filtering)
+    const total = tours.length + Math.max(0, (await Tour.countDocuments(filter)) - toursAll.length);
     
     return {
       tours,
       pagination: {
         page,
         limit,
-        total,
-        pages: Math.ceil(total / limit),
+        total: tours.length, // reflect filtered count on this page
+        pages: Math.ceil(tours.length / limit),
       },
     };
   } catch (error) {

@@ -25,6 +25,11 @@ export default function DashboardSidebar({ locale, userRole }) {
       label: locale === 'en' ? 'My Tours' : 'جولاتي',
     },
     {
+      href: `/${locale}/dashboard/guide/availability`,
+      icon: <Calendar className="w-5 h-5" />,
+      label: locale === 'en' ? 'Availability' : 'التوفر',
+    },
+    {
       href: `/${locale}/dashboard/guide/bookings`,
       icon: <Calendar className="w-5 h-5" />,
       label: locale === 'en' ? 'Bookings' : 'الحجوزات',
