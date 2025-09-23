@@ -59,8 +59,56 @@ export async function PUT(request, { params }) {
       );
     }
     
-    const { id } = params;
+    const { id } = await params;
     const updateData = await request.json();
+
+    // Normalize incoming fields to match Guide model
+    const normalized = { ...updateData };
+
+    // licenseIssueDate: parse if provided
+    if (normalized.licenseIssueDate !== undefined) {
+      const d = new Date(normalized.licenseIssueDate);
+      if (isNaN(d.getTime())) {
+        return NextResponse.json(
+          { success: false, message: 'licenseIssueDate must be a valid date' },
+          { status: 400 }
+        );
+      }
+      normalized.licenseIssueDate = d;
+    }
+
+    // languages: accept strings or objects -> { language }
+    if (normalized.languages !== undefined) {
+      if (!Array.isArray(normalized.languages)) normalized.languages = [];
+      normalized.languages = normalized.languages
+        .map((lang) => {
+          if (typeof lang === 'string') return { language: lang };
+          if (lang && typeof lang === 'object' && lang.language) return { language: lang.language };
+          return null;
+        })
+        .filter(Boolean);
+    }
+
+    // expertise: ensure area and at least one description
+    if (normalized.expertise !== undefined) {
+      if (!Array.isArray(normalized.expertise)) normalized.expertise = [];
+      try {
+        normalized.expertise = normalized.expertise.map((item, idx) => {
+          const area = item?.area;
+          const descEn = item?.expertiseAreaDescriptionEn ?? item?.descriptionEn ?? '';
+          const descAr = item?.expertiseAreaDescriptionAr ?? item?.descriptionAr ?? '';
+          if (!area) throw new Error(`Expertise item #${idx + 1} missing area`);
+          // Descriptions optional
+          return {
+            area,
+            expertiseAreaDescriptionEn: descEn,
+            expertiseAreaDescriptionAr: descAr,
+          };
+        });
+      } catch (e) {
+        return NextResponse.json({ success: false, message: e.message }, { status: 400 });
+      }
+    }
     
     const guide = await Guide.findById(id);
     
@@ -74,7 +122,7 @@ export async function PUT(request, { params }) {
     // Update guide
     const updatedGuide = await Guide.findByIdAndUpdate(
       id,
-      updateData,
+      normalized,
       { new: true, runValidators: true }
     );
     

@@ -185,7 +185,7 @@ export default async function GuideProfilePage({ params }) {
     const languages = guide.languages || [];
     const expertise = guide.expertise || [];
     const address = guide.address || 'Israel';
-    const yearsExperience = calculateYearsOfExperience(guide.expertise[0]?.licenseIssueDate);
+    const yearsExperience = calculateYearsOfExperience(guide.licenseIssueDate);
     const vehicle = guide.vehicle || {};
     
     // Generate QR code URL
@@ -556,11 +556,14 @@ export default async function GuideProfilePage({ params }) {
                           </span>
                         </div> */}
                         
-                        <p className="text-sm text-gray-500">
-                          {locale === 'en'
-                            ? `Specialized knowledge and expertise in ${exp.area} topics and sites.`
-                            : `معرفة وخبرة متخصصة في مواضيع ومواقع ${getArabicExpertiseArea(exp.area)}.`}
-                        </p>
+                        {(() => {
+                          const desc = locale === 'en' 
+                            ? (exp.expertiseAreaDescriptionEn || '')
+                            : (exp.expertiseAreaDescriptionAr || '');
+                          return desc && desc.trim() !== '' ? (
+                            <p className="text-sm text-gray-500 whitespace-pre-line">{desc}</p>
+                          ) : null;
+                        })()}
                       </div>
                     );
                   })}

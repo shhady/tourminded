@@ -71,11 +71,10 @@ export default function GuideProfilePage({ params }) {
   
   // Calculate years of experience
   const calculateYearsOfExperience = () => {
-    if (!guide || !guide.expertise || guide.expertise.length === 0 || !guide.expertise[0].licenseIssueDate) {
+    if (!guide || !guide.licenseIssueDate) {
       return 0;
     }
-    
-    const issueDate = new Date(guide.expertise[0].licenseIssueDate);
+    const issueDate = new Date(guide.licenseIssueDate);
     const today = new Date();
     return Math.floor((today - issueDate) / (365.25 * 24 * 60 * 60 * 1000));
   };
@@ -272,9 +271,11 @@ export default function GuideProfilePage({ params }) {
                       {calculateYearsOfExperience()} {locale === 'en' ? 'years' : 'سنوات'}
                     </p>
                     <p className="text-sm text-secondary-500">
-                      {locale === 'en' 
-                        ? `Since ${new Date(guide.expertise[0].licenseIssueDate).getFullYear()}`
-                        : `منذ ${new Date(guide.expertise[0].licenseIssueDate).getFullYear()}`}
+                      {guide.licenseIssueDate && (
+                        locale === 'en' 
+                          ? `Since ${new Date(guide.licenseIssueDate).getFullYear()}`
+                          : `منذ ${new Date(guide.licenseIssueDate).getFullYear()}`
+                      )}
                     </p>
                   </div>
                   

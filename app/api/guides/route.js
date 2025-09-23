@@ -61,10 +61,47 @@ export async function POST(request) {
     }
     
     const data = await request.json();
-    
-    // Normalize languages to expected shape
+
+    // Validate licenseIssueDate (now top-level in the model)
+    if (!data.licenseIssueDate) {
+      return NextResponse.json(
+        { message: 'licenseIssueDate is required' },
+        { status: 400 }
+      );
+    }
+    const licenseIssueDate = new Date(data.licenseIssueDate);
+    if (isNaN(licenseIssueDate.getTime())) {
+      return NextResponse.json(
+        { message: 'licenseIssueDate must be a valid date' },
+        { status: 400 }
+      );
+    }
+
+    // Normalize languages to expected shape: accept array of strings or objects
     const normalizedLanguages = Array.isArray(data.languages)
-      ? data.languages.map(lang => ({ language: lang.language }))
+      ? data.languages.map((lang) => {
+          if (typeof lang === 'string') return { language: lang };
+          if (lang && typeof lang === 'object' && lang.language) return { language: lang.language };
+          return null;
+        }).filter(Boolean)
+      : [];
+
+    // Normalize expertise: require area and at least one description (en or ar)
+    const normalizedExpertise = Array.isArray(data.expertise)
+      ? data.expertise.map((item, idx) => {
+          const area = item?.area;
+          const descEn = item?.expertiseAreaDescriptionEn ?? item?.descriptionEn ?? '';
+          const descAr = item?.expertiseAreaDescriptionAr ?? item?.descriptionAr ?? '';
+          if (!area) {
+            throw new Error(`Expertise item #${idx + 1} missing area`);
+          }
+          // Descriptions are optional; allow empty strings
+          return {
+            area,
+            expertiseAreaDescriptionEn: descEn,
+            expertiseAreaDescriptionAr: descAr,
+          };
+        })
       : [];
 
     // Create guide data with user reference
@@ -75,7 +112,8 @@ export async function POST(request) {
       address: data.address,
       phone: data.phone,
       languages: normalizedLanguages,
-      expertise: data.expertise,
+      licenseIssueDate,
+      expertise: normalizedExpertise,
       aboutSections: data.aboutSections,
       profileImage: data.profileImage,
       coverImage: data.coverImage,
@@ -101,6 +139,9 @@ export async function POST(request) {
         message: 'Validation error', 
         errors 
       }, { status: 400 });
+    }
+    if (error.message && /Expertise item/.test(error.message)) {
+      return NextResponse.json({ message: error.message }, { status: 400 });
     }
     return NextResponse.json({ 
       message: 'Failed to register as guide', 

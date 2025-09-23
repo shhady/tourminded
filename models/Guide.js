@@ -56,15 +56,23 @@ const GuideSchema = new mongoose.Schema({
       },
     }],
   }],
+  licenseIssueDate: {
+    type: Date,
+    required: [true, 'Please provide a license issue date'],
+  },
   expertise: [{
     area: {
       type: String,
       required: [true, 'Please provide an expertise area'],
     },
-    licenseIssueDate: {
-      type: Date,
-      required: [true, 'Please provide a license issue date'],
-    }
+   expertiseAreaDescriptionEn: {
+    type: String,
+    // required: [true, 'Please provide an expertise area description'],
+   },
+   expertiseAreaDescriptionAr: {
+    type: String,
+    // required: [true, 'Please provide an expertise area description'],
+   },
   }],
   aboutSections: [{
     language: {

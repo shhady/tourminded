@@ -47,7 +47,7 @@ async function getGuides(searchParams) {
   // Find guides with filters
   const guides = await Guide.find(filter)
     .populate('user', 'firstName lastName')
-    .select('names profileImage coverImage rating reviewCount languages expertise aboutSections address active')
+    .select('names profileImage coverImage rating reviewCount languages expertise aboutSections address active licenseIssueDate')
     .skip(skip)
     .limit(limit)
     .sort({ rating: -1, reviewCount: -1 });
@@ -161,13 +161,13 @@ const getGuideExcerpt = (guide, locale) => {
   return '';
 };
 
-// Add this helper function
+// Add this helper function (uses top-level licenseIssueDate per new schema)
 const calculateYearsOfExperience = (guide) => {
-  if (!guide || !guide.expertise || guide.expertise.length === 0 || !guide.expertise[0].licenseIssueDate) {
+  if (!guide || !guide.licenseIssueDate) {
     return 0;
   }
-  
-  const licenseYear = new Date(guide.expertise[0].licenseIssueDate).getFullYear();
+  const licenseYear = new Date(guide.licenseIssueDate).getFullYear();
+  if (isNaN(licenseYear)) return 0;
   const currentYear = new Date().getFullYear();
   return Math.max(0, currentYear - licenseYear);
 };

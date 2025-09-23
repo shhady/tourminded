@@ -32,6 +32,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
     year: '',
     capacity: ''
   });
+  const [licenseIssueDate, setLicenseIssueDate] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(loading);
   const [error, setError] = useState('');
@@ -103,6 +104,23 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
         });
         
         setExpertiseAreas(formattedExpertise);
+      }
+
+      // Apply top-level licenseIssueDate (new schema)
+      if (guideData.licenseIssueDate) {
+        try {
+          const d = new Date(guideData.licenseIssueDate);
+          if (!isNaN(d.getTime())) {
+            const iso = d.toISOString().split('T')[0];
+            setLicenseIssueDate(iso);
+            setExpertiseAreas(prev => (prev.length > 0
+              ? prev.map((e) => ({ ...e, licenseIssueDate: iso }))
+              : [{ area: '', licenseIssueDate: iso }]
+            ));
+          }
+        } catch (err) {
+          console.error('Error formatting top-level licenseIssueDate:', err);
+        }
       }
       
       // Set profile image
@@ -357,7 +375,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
       }
       
       // Validate license issue date
-      if (!expertiseAreas[0]?.licenseIssueDate) {
+      if (!licenseIssueDate) {
         setError(locale === 'en' ? 'License issue date is required' : 'تاريخ إصدار الرخصة مطلوب');
         setIsSaving(false);
         return;
@@ -380,7 +398,8 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
         .filter(exp => exp.area.trim() !== '')
         .map(exp => ({
           area: exp.area,
-          licenseIssueDate: exp.licenseIssueDate
+          expertiseAreaDescriptionEn: exp.expertiseAreaDescriptionEn || '',
+          expertiseAreaDescriptionAr: exp.expertiseAreaDescriptionAr || ''
         }));
       
       const guideData = {
@@ -405,6 +424,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
         },
         languages: validLanguages,
         expertise: expertise,
+        licenseIssueDate: licenseIssueDate,
         aboutSections: aboutSections
       };
       
@@ -747,6 +767,38 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
         </Button>
       </div>
       
+      {/* License Issue Date (separate section) */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <h2 className="text-xl font-semibold mb-4">
+          {locale === 'en' ? 'License Issue Date' : 'تاريخ إصدار الرخصة'}
+        </h2>
+        <div>
+          <label className="block text-sm font-medium text-secondary-700 mb-1">
+            {locale === 'en' ? 'License Issue Date' : 'تاريخ إصدار الرخصة'}*
+          </label>
+          <input
+            type="date"
+            value={licenseIssueDate || ''}
+            onChange={(e) => setLicenseIssueDate(e.target.value)}
+            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            max={new Date().toISOString().split('T')[0]}
+            required
+          />
+          {licenseIssueDate && (
+            <p className="mt-1 text-xs text-secondary-500">
+              {locale === 'en' 
+                ? `Years of experience: ${calculateYearsOfExperience(licenseIssueDate)}`
+                : `سنوات الخبرة: ${calculateYearsOfExperience(licenseIssueDate)}`}
+            </p>
+          )}
+          <p className="mt-1 text-xs text-secondary-500">
+            {locale === 'en' 
+              ? 'Years of experience will be calculated from this date' 
+              : 'سيتم احتساب سنوات الخبرة من هذا التاريخ'}
+          </p>
+        </div>
+      </div>
+
       {/* Expertise */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">
@@ -799,34 +851,36 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
                 </select>
               </div>
               
-              {index === 0 && (
-                <div>
-                  <label htmlFor="licenseIssueDate" className="block text-sm font-medium text-secondary-700 mb-1">
-                    {locale === 'en' ? 'License Issue Date' : 'تاريخ إصدار الرخصة'}*
-                  </label>
-                  <input
-                    id="licenseIssueDate"
-                    type="date"
-                    value={exp.licenseIssueDate || ''}
-                    onChange={(e) => updateExpertiseArea(index, 'licenseIssueDate', e.target.value)}
-                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    max={new Date().toISOString().split('T')[0]} // Set max date to today
-                    required
-                  />
-                  {exp.licenseIssueDate && (
-                    <p className="mt-1 text-xs text-secondary-500">
-                      {locale === 'en' 
-                        ? `Years of experience: ${calculateYearsOfExperience(exp.licenseIssueDate)}`
-                        : `سنوات الخبرة: ${calculateYearsOfExperience(exp.licenseIssueDate)}`}
-                    </p>
-                  )}
-                  <p className="mt-1 text-xs text-secondary-500">
-                    {locale === 'en' 
-                      ? 'Years of experience will be calculated from this date' 
-                      : 'سيتم احتساب سنوات الخبرة من هذا التاريخ'}
-                  </p>
-                </div>
-              )}
+              {/* License date removed from per-expertise; controlled above */}
+            </div>
+
+            {/* Optional descriptions per expertise area */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-1">
+                  {locale === 'en' ? 'Description (English) - optional' : 'الوصف (بالإنجليزية) - اختياري'}
+                </label>
+                <textarea
+                  rows="3"
+                  value={exp.expertiseAreaDescriptionEn || ''}
+                  onChange={(e) => updateExpertiseArea(index, 'expertiseAreaDescriptionEn', e.target.value)}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder={locale === 'en' ? 'Describe this expertise (optional)...' : 'صف مجال الخبرة (اختياري)...'}
+                ></textarea>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-1">
+                  {locale === 'en' ? 'Description (Arabic) - optional' : 'الوصف (بالعربية) - اختياري'}
+                </label>
+                <textarea
+                  rows="3"
+                  dir="rtl"
+                  value={exp.expertiseAreaDescriptionAr || ''}
+                  onChange={(e) => updateExpertiseArea(index, 'expertiseAreaDescriptionAr', e.target.value)}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder={locale === 'en' ? 'Optional Arabic description...' : 'وصف اختياري بالعربية...'}
+                ></textarea>
+              </div>
             </div>
           </div>
         ))}

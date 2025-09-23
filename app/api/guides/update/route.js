@@ -36,14 +36,39 @@ export async function PUT(request) {
     // Get update data from request
     const data = await request.json();
     
-    // Update guide data
-    if (data.names) guide.names = data.names;
-    if (data.nickname) guide.nickname = data.nickname;
-    if (data.address) guide.address = data.address;
-    if (data.phone) guide.phone = data.phone;
-    if (data.languages) guide.languages = data.languages;
-    if (data.expertise) guide.expertise = data.expertise;
-    if (data.aboutSections) guide.aboutSections = data.aboutSections;
+    // Normalize and update fields to match schema
+    if (data.names !== undefined) guide.names = data.names;
+    if (data.nickname !== undefined) guide.nickname = data.nickname;
+    if (data.address !== undefined) guide.address = data.address;
+    if (data.phone !== undefined) guide.phone = data.phone;
+    if (data.licenseIssueDate !== undefined) {
+      const d = new Date(data.licenseIssueDate);
+      if (isNaN(d.getTime())) {
+        return NextResponse.json({ error: 'licenseIssueDate must be a valid date' }, { status: 400 });
+      }
+      guide.licenseIssueDate = d;
+    }
+    if (data.languages !== undefined) {
+      guide.languages = Array.isArray(data.languages)
+        ? data.languages
+            .map((lang) => (typeof lang === 'string' ? { language: lang } : (lang && lang.language ? { language: lang.language } : null)))
+            .filter(Boolean)
+        : [];
+    }
+    if (data.expertise !== undefined) {
+      if (!Array.isArray(data.expertise)) {
+        return NextResponse.json({ error: 'expertise must be an array' }, { status: 400 });
+      }
+      const normalizedExpertise = data.expertise.map((item, idx) => {
+        const area = item?.area;
+        const descEn = item?.expertiseAreaDescriptionEn ?? item?.descriptionEn ?? '';
+        const descAr = item?.expertiseAreaDescriptionAr ?? item?.descriptionAr ?? '';
+        if (!area) throw new Error(`Expertise item #${idx + 1} missing area`);
+        return { area, expertiseAreaDescriptionEn: descEn, expertiseAreaDescriptionAr: descAr };
+      });
+      guide.expertise = normalizedExpertise;
+    }
+    if (data.aboutSections !== undefined) guide.aboutSections = data.aboutSections;
     
     // Update profile image
     if (data.profileImage) {
@@ -70,6 +95,9 @@ export async function PUT(request) {
     
   } catch (error) {
     console.error('Error updating guide profile:', error);
+    if (error.message && /Expertise item/.test(error.message)) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Failed to update guide profile' }, { status: 500 });
   }
 } 

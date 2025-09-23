@@ -37,8 +37,9 @@ export default function GuideRegistrationPage({ params }) {
   
   // Add this state for multiple expertise areas
   const [expertiseAreas, setExpertiseAreas] = useState([
-    { area: '', licenseIssueDate: '' }
+    { area: '' }
   ]);
+  const [licenseIssueDate, setLicenseIssueDate] = useState('');
   
   const { register, handleSubmit, formState: { errors }, trigger, getValues } = useForm();
   
@@ -99,12 +100,9 @@ export default function GuideRegistrationPage({ params }) {
       }
     } else if (currentStep === 3) {
       // Validate expertise fields for all expertise areas
-      const fieldsToValidate = expertiseAreas.flatMap((_, index) => {
-        if (index === 0) {
-          return [`expertise_${index}_area`, `expertise_${index}_licenseIssueDate`];
-        }
-        return [`expertise_${index}_area`];
-      });
+      const fieldsToValidate = expertiseAreas.flatMap((_, index) => [`expertise_${index}_area`]);
+      // Also validate licenseIssueDate field
+      fieldsToValidate.push('licenseIssueDate');
       
       isValid = await trigger(fieldsToValidate);
       
@@ -193,7 +191,7 @@ export default function GuideRegistrationPage({ params }) {
   
   // Add functions to manage expertise areas
   const addExpertiseArea = () => {
-    setExpertiseAreas([...expertiseAreas, { area: '', licenseIssueDate: '' }]);
+    setExpertiseAreas([...expertiseAreas, { area: '' }]);
   };
   
   const removeExpertiseArea = (index) => {
@@ -241,11 +239,11 @@ export default function GuideRegistrationPage({ params }) {
         content: data[`about_${lang.language}`]
       }));
       
-      // Create expertise array from expertise fields
-      const licenseIssueDate = data[`expertise_0_licenseIssueDate`];
-      const expertise = expertiseAreas.map((_, index) => ({
-        area: data[`expertise_${index}_area`],
-        licenseIssueDate: licenseIssueDate // Use the same license date for all expertise areas
+      // Create expertise array from state (areas and optional descriptions)
+      const expertise = expertiseAreas.map((exp) => ({
+        area: exp.area,
+        expertiseAreaDescriptionEn: exp.expertiseAreaDescriptionEn || '',
+        expertiseAreaDescriptionAr: exp.expertiseAreaDescriptionAr || ''
       }));
       
       const guideData = {
@@ -271,6 +269,7 @@ export default function GuideRegistrationPage({ params }) {
         // Only send language codes, not numeric proficiency (server computes ratings later)
         languages: validLanguages.map(l => ({ language: l.language })),
         expertise: expertise,
+        licenseIssueDate: data['licenseIssueDate'],
         aboutSections: aboutSections
       };
       
@@ -614,6 +613,38 @@ export default function GuideRegistrationPage({ params }) {
                       <h2 className="text-xl font-semibold mb-4">
                         {locale === 'en' ? 'Expertise & Experience' : 'الخبرة والتجربة'}
                       </h2>
+
+                      {/* License Issue Date (separate) */}
+                      <div className="mb-6 p-4 border border-secondary-200 rounded-md">
+                        <label htmlFor="licenseIssueDate" className="block text-sm font-medium text-secondary-700 mb-1">
+                          {locale === 'en' ? 'License Issue Date' : 'تاريخ إصدار الرخصة'}*
+                        </label>
+                        <input
+                          id="licenseIssueDate"
+                          type="date"
+                          {...register('licenseIssueDate', {
+                            required: locale === 'en' ? 'License issue date is required' : 'تاريخ إصدار الرخصة مطلوب',
+                            validate: value => {
+                              const issueDate = new Date(value);
+                              const today = new Date();
+                              return issueDate <= today || 
+                                (locale === 'en' ? 'Issue date cannot be in the future' : 'لا يمكن أن يكون تاريخ الإصدار في المستقبل');
+                            }
+                          })}
+                          value={licenseIssueDate}
+                          onChange={(e) => setLicenseIssueDate(e.target.value)}
+                          className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          max={new Date().toISOString().split('T')[0]}
+                        />
+                        {errors['licenseIssueDate'] && (
+                          <p className="mt-1 text-sm text-red-600">{errors['licenseIssueDate'].message}</p>
+                        )}
+                        <p className="mt-1 text-xs text-secondary-500">
+                          {locale === 'en' 
+                            ? 'Years of experience will be calculated from this date' 
+                            : 'سيتم احتساب سنوات الخبرة من هذا التاريخ'}
+                        </p>
+                      </div>
                       
                       {/* Multiple Expertise Areas */}
                       {expertiseAreas.map((expertise, index) => (
@@ -668,38 +699,32 @@ export default function GuideRegistrationPage({ params }) {
                               )}
                             </div>
                             
-                            {index === 0 && (
-                              <div>
-                                <label htmlFor={`expertise_${index}_licenseIssueDate`} className="block text-sm font-medium text-secondary-700 mb-1">
-                                  {locale === 'en' ? 'License Issue Date' : 'تاريخ إصدار الرخصة'}*
-                                </label>
-                                <input
-                                  id={`expertise_${index}_licenseIssueDate`}
-                                  type="date"
-                                  {...register(`expertise_${index}_licenseIssueDate`, {
-                                    required: locale === 'en' ? 'License issue date is required' : 'تاريخ إصدار الرخصة مطلوب',
-                                    validate: value => {
-                                      const issueDate = new Date(value);
-                                      const today = new Date();
-                                      return issueDate <= today || 
-                                        (locale === 'en' ? 'Issue date cannot be in the future' : 'لا يمكن أن يكون تاريخ الإصدار في المستقبل');
-                                    }
-                                  })}
-                                  value={expertise.licenseIssueDate}
-                                  onChange={(e) => updateExpertiseArea(index, 'licenseIssueDate', e.target.value)}
-                                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                  max={new Date().toISOString().split('T')[0]} // Set max date to today
-                                />
-                                {errors[`expertise_${index}_licenseIssueDate`] && (
-                                  <p className="mt-1 text-sm text-red-600">{errors[`expertise_${index}_licenseIssueDate`].message}</p>
-                                )}
-                                <p className="mt-1 text-xs text-secondary-500">
-                                  {locale === 'en' 
-                                    ? 'Years of experience will be calculated from this date' 
-                                    : 'سيتم احتساب سنوات الخبرة من هذا التاريخ'}
-                                </p>
-                              </div>
-                            )}
+                            {/* Optional descriptions per expertise area */}
+                            <div>
+                              <label className="block text-sm font-medium text-secondary-700 mb-1">
+                                {locale === 'en' ? 'Description (English) - optional' : 'الوصف (بالإنجليزية) - اختياري'}
+                              </label>
+                              <textarea
+                                rows="3"
+                                value={expertise.expertiseAreaDescriptionEn || ''}
+                                onChange={(e) => updateExpertiseArea(index, 'expertiseAreaDescriptionEn', e.target.value)}
+                                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder={locale === 'en' ? 'Describe this expertise (optional)...' : 'صف مجال الخبرة (اختياري)...'}
+                              ></textarea>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-secondary-700 mb-1">
+                                {locale === 'en' ? 'Description (Arabic) - optional' : 'الوصف (بالعربية) - اختياري'}
+                              </label>
+                              <textarea
+                                rows="3"
+                                dir="rtl"
+                                value={expertise.expertiseAreaDescriptionAr || ''}
+                                onChange={(e) => updateExpertiseArea(index, 'expertiseAreaDescriptionAr', e.target.value)}
+                                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder={locale === 'en' ? 'Optional Arabic description...' : 'وصف اختياري بالعربية...'}
+                              ></textarea>
+                            </div>
                           </div>
                         </div>
                       ))}
