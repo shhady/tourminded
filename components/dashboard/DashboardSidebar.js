@@ -55,12 +55,22 @@ export default function DashboardSidebar({ locale, userRole }) {
     {
       href: `/${locale}/dashboard/admin`,
       icon: <Users className="w-5 h-5" />,
-      label: locale === 'en' ? 'Guide Applications' : 'طلبات المرشدين',
+      label: locale === 'en' ? 'Guides' : 'المرشدون',
+    },
+    {
+      href: `/${locale}/dashboard/admin/bookings`,
+      icon: <Calendar className="w-5 h-5" />,
+      label: locale === 'en' ? 'Bookings' : 'الحجوزات',
     },
     {
       href: `/${locale}/dashboard/admin/tours`,
       icon: <Compass className="w-5 h-5" />,
       label: locale === 'en' ? 'Tours' : 'الجولات',
+    },
+    {
+      href: `/${locale}/dashboard/admin/users`,
+      icon: <Users className="w-5 h-5" />,
+      label: locale === 'en' ? 'Users' : 'المستخدمون',
     },
     {
       href: `/${locale}/dashboard/admin/messages`,
