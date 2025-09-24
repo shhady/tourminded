@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Calendar, Map, MessageSquare, Settings, Home, Menu, X, HomeIcon } from 'lucide-react';
+import { User, Calendar, Map, MessageSquare, Settings, Home, Menu, X, HomeIcon, Compass, Users } from 'lucide-react';
 
 export default function DashboardSidebar({ locale, userRole }) {
   const pathname = usePathname();
@@ -52,7 +52,26 @@ export default function DashboardSidebar({ locale, userRole }) {
   ];
   
   const adminLinks = [
-    // Admin links would go here
+    {
+      href: `/${locale}/dashboard/admin`,
+      icon: <Users className="w-5 h-5" />,
+      label: locale === 'en' ? 'Guide Applications' : 'طلبات المرشدين',
+    },
+    {
+      href: `/${locale}/dashboard/admin/tours`,
+      icon: <Compass className="w-5 h-5" />,
+      label: locale === 'en' ? 'Tours' : 'الجولات',
+    },
+    {
+      href: `/${locale}/dashboard/admin/messages`,
+      icon: <MessageSquare className="w-5 h-5" />,
+      label: locale === 'en' ? 'User Messages' : 'رسائل المستخدمين',
+    },
+    {
+      href: `/`,
+      icon: <HomeIcon className="w-5 h-5" />,
+      label: locale === 'en' ? 'Home Page' : 'الرئيسية',
+    },
   ];
   
   const links = userRole === 'guide' ? guideLinks : adminLinks;

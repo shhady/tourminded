@@ -27,19 +27,19 @@ export default async function GuideDashboardLayout({ children, params }) {
     return;
   }
   
-  // Redirect if not a guide
-  if (user.role !== 'guide') {
+  // Allow both guides and admins to access routes under /dashboard/guide
+  if (user.role !== 'guide' && user.role !== 'admin') {
     redirect(`/${locale}/dashboard`);
     return;
   }
   
-  // Get guide data
-  const guide = await Guide.findOne({ user: user._id });
-  
-  // Redirect if guide profile doesn't exist
-  if (!guide) {
-    redirect(`/${locale}/dashboard/guide/profile`);
-    return;
+  // Only enforce guide profile presence for actual guides
+  if (user.role === 'guide') {
+    const guide = await Guide.findOne({ user: user._id });
+    if (!guide) {
+      redirect(`/${locale}/dashboard/guide/profile`);
+      return;
+    }
   }
   
   return children;

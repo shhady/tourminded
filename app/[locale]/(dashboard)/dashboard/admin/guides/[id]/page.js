@@ -104,7 +104,11 @@ export default async function GuideDetailsPage({ params }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600">Years of Experience</label>
-                <p className="text-gray-900">{guide.yearsOfExperience || 'N/A'}</p>
+                <p className="text-gray-900">{guide.licenseIssueDate ? Math.floor((new Date() - new Date(guide.licenseIssueDate)) / (365.25 * 24 * 60 * 60 * 1000)) : 'N/A'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">License Issue Date</label>
+                <p className="text-gray-900">{guide.licenseIssueDate ? new Date(guide.licenseIssueDate).toLocaleDateString() : 'N/A'}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600">Created</label>
@@ -178,9 +182,12 @@ export default async function GuideDetailsPage({ params }) {
               {guide.expertise?.map((exp, index) => (
                 <div key={index} className="border rounded p-3">
                   <label className="block text-sm font-medium text-gray-600">{exp.area}</label>
-                  <p className="text-gray-900 text-sm">
-                    License: {exp.licenseIssueDate ? new Date(exp.licenseIssueDate).toLocaleDateString() : 'N/A'}
-                  </p>
+                  {exp.expertiseAreaDescriptionEn && (
+                    <p className="text-gray-900 text-sm mt-1">{exp.expertiseAreaDescriptionEn}</p>
+                  )}
+                  {exp.expertiseAreaDescriptionAr && (
+                    <p className="text-gray-900 text-sm mt-1">{exp.expertiseAreaDescriptionAr}</p>
+                  )}
                 </div>
               ))}
             </div>
