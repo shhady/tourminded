@@ -26,7 +26,11 @@ export default function GuideBookingsPage({ params }) {
       // initialize editing map
       const map = {};
       (data.data || []).forEach(b => {
-        map[b._id] = (b.specialRequestsCheckBoxes || []).map(it => ({ specialRequest: it.specialRequest || '', specialRequestPrice: it.specialRequestPrice || 0 }));
+        map[b._id] = (b.specialRequestsCheckBoxes || []).map(it => ({
+          specialRequest: it.specialRequest || '',
+          specialRequestPrice: it.specialRequestPrice || 0,
+          specialRequestPricePerGroupOrPerson: it.specialRequestPricePerGroupOrPerson || 'group',
+        }));
       });
       setEditing(map);
     } catch (e) {
@@ -39,7 +43,7 @@ export default function GuideBookingsPage({ params }) {
   useEffect(() => { fetchBookings(); }, []);
 
   const addItem = (id) => {
-    setEditing(prev => ({ ...prev, [id]: [...(prev[id] || []), { specialRequest: '', specialRequestPrice: 0 }] }));
+    setEditing(prev => ({ ...prev, [id]: [...(prev[id] || []), { specialRequest: '', specialRequestPrice: 0, specialRequestPricePerGroupOrPerson: 'group' }] }));
   };
   const removeItem = (id, idx) => {
     setEditing(prev => ({ ...prev, [id]: (prev[id] || []).filter((_, i) => i !== idx) }));
@@ -48,11 +52,44 @@ export default function GuideBookingsPage({ params }) {
     setEditing(prev => ({ ...prev, [id]: (prev[id] || []).map((it, i) => i === idx ? { ...it, [field]: field === 'specialRequestPrice' ? Number(value) : value } : it) }));
   };
 
-  const saveBooking = async (id) => {
+  const hasChanges = (b) => {
+    const current = editing[b._id] || [];
+    const original = (b.specialRequestsCheckBoxes || []).map(it => ({
+      specialRequest: it.specialRequest || '',
+      specialRequestPrice: Number(it.specialRequestPrice) || 0,
+      specialRequestPricePerGroupOrPerson: it.specialRequestPricePerGroupOrPerson || 'group',
+    }));
+    if (current.length !== original.length) return true;
+    for (let i = 0; i < current.length; i++) {
+      const a = current[i];
+      const o = original[i];
+      if ((a.specialRequest || '') !== (o.specialRequest || '')) return true;
+      if (Number(a.specialRequestPrice) !== Number(o.specialRequestPrice)) return true;
+      if ((a.specialRequestPricePerGroupOrPerson || 'group') !== (o.specialRequestPricePerGroupOrPerson || 'group')) return true;
+    }
+    return false;
+  };
+
+  const approveBooking = async (id) => {
     setSavingId(id);
     setError('');
     try {
-      const payload = { specialRequestsCheckBoxes: (editing[id] || []) };
+      const res = await fetch(`/api/bookings/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ approvedOfferGuide: true }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to approve booking');
+      await fetchBookings();
+    } catch (e) {
+      setError(e.message || 'Failed to approve booking');
+    } finally {
+      setSavingId('');
+    }
+  };
+
+  const updateBooking = async (id) => {
+    setSavingId(id);
+    setError('');
+    try {
+      const payload = { specialRequestsCheckBoxes: (editing[id] || []), approvedOfferUser: false };
       const res = await fetch(`/api/bookings/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to update booking');
@@ -101,7 +138,22 @@ export default function GuideBookingsPage({ params }) {
                     <td className="px-4 py-3 text-sm text-secondary-900">{b.tour?.title?.en || b.tour?.title?.ar || 'Tour'}</td>
                     <td className="px-4 py-3 text-sm text-secondary-700">{new Date(b.dates?.startDate).toLocaleDateString()} {b.dates?.endDate ? `→ ${new Date(b.dates.endDate).toLocaleDateString()}` : ''}</td>
                     <td className="px-4 py-3 text-sm text-secondary-700">{b.travelers}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-primary-600">${b.totalPrice}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <div className="font-semibold text-primary-600">${b.totalPrice}</div>
+                      {b.approvedOfferGuide && b.approvedOfferUser ? (
+                        <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs">
+                          {locale === 'en' ? 'Both approved' : 'تمت موافقة الطرفين'}
+                        </div>
+                      ) : b.approvedOfferGuide ? (
+                        <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs">
+                          {locale === 'en' ? 'Guide approved' : 'تمت موافقة المرشد'}
+                        </div>
+                      ) : b.approvedOfferUser ? (
+                        <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 text-xs">
+                          {locale === 'en' ? 'User approved' : 'تمت موافقة المستخدم'}
+                        </div>
+                      ) : null}
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <button className="text-primary-600 hover:text-primary-800" onClick={() => setExpandedId(expandedId === b._id ? '' : b._id)}>
                         {expandedId === b._id ? (locale === 'en' ? 'Hide' : 'إخفاء') : (locale === 'en' ? 'View' : 'عرض')}
@@ -125,24 +177,33 @@ export default function GuideBookingsPage({ params }) {
                           <div className="mb-2 text-sm font-medium text-secondary-700">{locale === 'en' ? 'Special Requests (editable)' : 'الطلبات الخاصة (قابلة للتعديل)'}</div>
                           <div className="space-y-2">
                             {(editing[b._id] || []).map((it, idx) => (
-                              <div key={idx} className="grid grid-cols-6 gap-2 items-center">
+                              <div key={idx} className="grid grid-cols-8 gap-2 items-center">
                                 <input type="text" value={it.specialRequest} onChange={e => updateItem(b._id, idx, 'specialRequest', e.target.value)} placeholder={locale === 'en' ? 'Request' : 'طلب'} className="col-span-4 px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
                     <div className="col-span-2 relative">
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-secondary-500">$</span>
                       <input type="number" min="0" step="0.01" value={it.specialRequestPrice} onChange={e => updateItem(b._id, idx, 'specialRequestPrice', e.target.value)} placeholder={locale === 'en' ? 'Price' : 'السعر'} className="w-full pl-6 pr-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
                     </div>
+                    <select value={it.specialRequestPricePerGroupOrPerson} onChange={e => updateItem(b._id, idx, 'specialRequestPricePerGroupOrPerson', e.target.value)} className="col-span-2 px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                      <option value="group">{locale === 'en' ? 'Per group' : 'للمجموعة'}</option>
+                      <option value="person">{locale === 'en' ? 'Per person' : 'للشخص'}</option>
+                    </select>
                                 {(editing[b._id] || []).length > 0 && (
                                   <button type="button" onClick={() => removeItem(b._id, idx)} className="text-red-600 hover:text-red-800"><X className="w-4 h-4" /></button>
                                 )}
                               </div>
                             ))}
                           </div>
-                          <div className="flex justify-between mt-3">
+                          <div className="flex justify-between items-center mt-3 gap-2">
                             <button type="button" onClick={() => addItem(b._id)} className="text-primary-600 hover:text-primary-700 flex items-center gap-1"><Plus className="w-4 h-4" />{locale === 'en' ? 'Add item' : 'إضافة عنصر'}</button>
-                            <button type="button" onClick={() => saveBooking(b._id)} disabled={savingId === b._id} className="px-4 py-2 rounded-md bg-black text-white hover:bg-black/90 flex items-center gap-2">
-                              {savingId === b._id ? <Loader className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                              {locale === 'en' ? 'Save' : 'حفظ'}
-                            </button>
+                            <div className="flex gap-2">
+                              <button type="button" onClick={() => approveBooking(b._id)} disabled={savingId === b._id || hasChanges(b) || !b.approvedOfferUser} className="px-4 py-2 rounded-md bg-secondary-100 text-secondary-900 hover:bg-secondary-200 disabled:opacity-60">
+                                {locale === 'en' ? 'Approve' : 'موافقة'}
+                              </button>
+                              <button type="button" onClick={() => updateBooking(b._id)} disabled={savingId === b._id || !hasChanges(b)} className="px-4 py-2 rounded-md bg-black text-white hover:bg-black/90 disabled:opacity-60 flex items-center gap-2">
+                                {savingId === b._id ? <Loader className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                {locale === 'en' ? 'Update' : 'تحديث'}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -168,6 +229,19 @@ export default function GuideBookingsPage({ params }) {
                 <div className="text-right">
                   <div className="text-xs text-secondary-600">{locale === 'en' ? 'Total' : 'الإجمالي'}</div>
                   <div className="text-lg font-bold text-primary-600">${b.totalPrice}</div>
+                  {b.approvedOfferGuide && b.approvedOfferUser ? (
+                    <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs">
+                      {locale === 'en' ? 'Both approved' : 'تمت موافقة الطرفين'}
+                    </div>
+                  ) : b.approvedOfferGuide ? (
+                    <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs">
+                      {locale === 'en' ? 'Guide approved' : 'تمت موافقة المرشد'}
+                    </div>
+                  ) : b.approvedOfferUser ? (
+                    <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 text-xs">
+                      {locale === 'en' ? 'User approved' : 'تمت موافقة المستخدم'}
+                    </div>
+                  ) : null}
                 </div>
               </div>
               <div className="mt-3">
@@ -188,12 +262,16 @@ export default function GuideBookingsPage({ params }) {
                   <div className="mb-2 text-sm font-medium text-secondary-700">{locale === 'en' ? 'Special Requests (editable)' : 'الطلبات الخاصة (قابلة للتعديل)'}</div>
                   <div className="space-y-2">
                     {(editing[b._id] || []).map((it, idx) => (
-                      <div key={idx} className="space-y-2">
-                        <input type="text" value={it.specialRequest} onChange={e => updateItem(b._id, idx, 'specialRequest', e.target.value)} placeholder={locale === 'en' ? 'Request' : 'طلب'} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                        <div className="relative">
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-8 gap-2">
+                        <input type="text" value={it.specialRequest} onChange={e => updateItem(b._id, idx, 'specialRequest', e.target.value)} placeholder={locale === 'en' ? 'Request' : 'طلب'} className="sm:col-span-4 px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                        <div className="relative sm:col-span-2">
                           <span className="absolute left-2 top-1/2 -translate-y-1/2 text-secondary-500">$</span>
                           <input type="number" min="0" step="0.01" value={it.specialRequestPrice} onChange={e => updateItem(b._id, idx, 'specialRequestPrice', e.target.value)} placeholder={locale === 'en' ? 'Price' : 'السعر'} className="w-full pl-6 pr-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
                         </div>
+                        <select value={it.specialRequestPricePerGroupOrPerson} onChange={e => updateItem(b._id, idx, 'specialRequestPricePerGroupOrPerson', e.target.value)} className="sm:col-span-2 px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                          <option value="group">{locale === 'en' ? 'Per group' : 'للمجموعة'}</option>
+                          <option value="person">{locale === 'en' ? 'Per person' : 'للشخص'}</option>
+                        </select>
                         {(editing[b._id] || []).length > 0 && (
                           <button type="button" onClick={() => removeItem(b._id, idx)} className="text-red-600 hover:text-red-800"><X className="w-4 h-4" /></button>
                         )}
@@ -202,10 +280,15 @@ export default function GuideBookingsPage({ params }) {
                   </div>
                   <div className="flex flex-col sm:flex-row justify-between gap-2 mt-3">
                     <button type="button" onClick={() => addItem(b._id)} className="text-primary-600 hover:text-primary-700 flex items-center gap-1"><Plus className="w-4 h-4" />{locale === 'en' ? 'Add item' : 'إضافة عنصر'}</button>
-                    <button type="button" onClick={() => saveBooking(b._id)} disabled={savingId === b._id} className="w-full sm:w-auto px-4 py-2 rounded-md bg-black text-white hover:bg-black/90 flex items-center gap-2 justify-center">
-                      {savingId === b._id ? <Loader className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                      {locale === 'en' ? 'Save' : 'حفظ'}
-                    </button>
+                    <div className="flex gap-2 w-full sm:w-auto justify-end">
+                      <button type="button" onClick={() => approveBooking(b._id)} disabled={savingId === b._id || hasChanges(b) || !b.approvedOfferUser} className="px-4 py-2 rounded-md bg-secondary-500 text-secondary-900 hover:bg-secondary-200 disabled:opacity-60">
+                        {locale === 'en' ? 'Approve' : 'موافقة'}
+                      </button>
+                      <button type="button" onClick={() => updateBooking(b._id)} disabled={savingId === b._id || !hasChanges(b)} className="px-4 py-2 rounded-md bg-black text-white hover:bg-black/90 disabled:opacity-60 flex items-center gap-2 justify-center">
+                        {savingId === b._id ? <Loader className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        {locale === 'en' ? 'Update' : 'تحديث'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

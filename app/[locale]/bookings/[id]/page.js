@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { currentUser } from '@clerk/nextjs/server';
 import Link from 'next/link';
+import ApproveButton from './ApproveButton';
+import SpecialRequestsClient from './SpecialRequestsClient';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Booking from '@/models/Booking';
@@ -50,7 +52,13 @@ export default async function BookingDetailsPage({ params }) {
   const guideName = booking.guide?.nickname || booking.guide?.names?.[0]?.value || '-';
   const tourTitle = booking.tour?.title?.en || booking.tour?.title?.ar || '-';
   const extras = Array.isArray(booking.specialRequestsCheckBoxes) ? booking.specialRequestsCheckBoxes : [];
-  const extrasTotal = extras.reduce((sum, it) => sum + (Number(it?.specialRequestPrice) || 0), 0);
+  const extrasPlain = extras.map((it) => ({
+    specialRequest: it?.specialRequest || '',
+    specialRequestPrice: Number(it?.specialRequestPrice) || 0,
+    specialRequestPricePerGroupOrPerson: it?.specialRequestPricePerGroupOrPerson === 'person' ? 'person' : 'group',
+  }));
+  const extrasTotal = extrasPlain.reduce((sum, it) => sum + (Number(it?.specialRequestPrice) || 0), 0);
+  const canApprove = !booking.approvedOfferUser;
 
   return (
     <div className="max-w-4xl mx-auto py-12">
@@ -85,6 +93,15 @@ export default async function BookingDetailsPage({ params }) {
               <span className={`px-2 py-1 rounded text-xs font-semibold ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : booking.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
                 {booking.status}
               </span>
+              <div className="mt-2">
+                {booking.approvedOfferGuide && booking.approvedOfferUser ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs">{t('Both approved', 'تمت موافقة الطرفين')}</span>
+                ) : booking.approvedOfferGuide ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs">{t('Guide approved', 'تمت موافقة المرشد')}</span>
+                ) : booking.approvedOfferUser ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 text-xs">{t('You approved', 'لقد وافقت')}</span>
+                ) : null}
+              </div>
             </div>
           </div>
           <div>
@@ -94,7 +111,7 @@ export default async function BookingDetailsPage({ params }) {
         </div>
 
         <div className="p-6">
-          <div className="text-sm text-secondary-600 mb-1">{t('Notes / Special Requests', 'ملاحظات / طلبات خاصة')}</div>
+          <div className="text-sm text-secondary-600 mb-1">{t('Notes', 'ملاحظات')}</div>
           <div className="text-secondary-800 whitespace-pre-line">{booking.specialRequests || t('None', 'لا يوجد')}</div>
         </div>
 
@@ -132,6 +149,17 @@ export default async function BookingDetailsPage({ params }) {
             </table>
           </div>
         </div>
+
+        <SpecialRequestsClient
+          locale={locale}
+          bookingId={String(booking._id)}
+          travelers={booking.travelers}
+          tourPrice={booking.tour?.price}
+          tourPricePer={booking.tour?.pricePer || 'group'}
+          items={extrasPlain}
+          userAlreadyApproved={!!booking.approvedOfferUser}
+          otherApproved={!!booking.approvedOfferGuide}
+        />
       </div>
     </div>
   );

@@ -19,30 +19,53 @@ export async function PUT(request, { params }) {
     const booking = await Booking.findById(id);
     if (!booking) return NextResponse.json({ success: false, message: 'Booking not found' }, { status: 404 });
 
-    // Only the guide of the booking (or admin) can update special requests
+    // Identify actor permissions
     const isAdmin = user.role === 'admin';
     const guide = await Guide.findOne({ user: user._id });
-    const isGuideOwner = guide && booking.guide.toString() === guide._id.toString();
-    if (!isAdmin && !isGuideOwner) {
+    const isGuideOwner = !!guide && booking.guide.toString() === guide._id.toString();
+    const isBookingUser = booking.user.toString() === user._id.toString();
+
+    const body = await request.json();
+    const hasItemsInPayload = Array.isArray(body?.specialRequestsCheckBoxes);
+    const items = hasItemsInPayload ? body.specialRequestsCheckBoxes : null;
+
+    // Authorization: allow
+    // - Admin or guide owner to change items and approvals
+    // - Booking user to change items (propose) or set approvedOfferUser
+    if (hasItemsInPayload && !(isAdmin || isGuideOwner || isBookingUser)) {
+      return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+    }
+    if (!hasItemsInPayload && !(isAdmin || isGuideOwner || isBookingUser)) {
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await request.json();
-    const items = Array.isArray(body?.specialRequestsCheckBoxes) ? body.specialRequestsCheckBoxes : null;
-    if (!items) return NextResponse.json({ success: false, message: 'specialRequestsCheckBoxes is required' }, { status: 400 });
-
-    // Normalize items
-    const normalized = items
+    let normalized = Array.isArray(items) ? items
       .filter(it => it && typeof it.specialRequest === 'string')
-      .map(it => ({ specialRequest: it.specialRequest, specialRequestPrice: Number(it.specialRequestPrice) || 0 }));
+      .map(it => {
+        const price = Number(it.specialRequestPrice) || 0;
+        const unit = (typeof it.specialRequestPricePerGroupOrPerson === 'string' && ['group','person'].includes(it.specialRequestPricePerGroupOrPerson)) ? it.specialRequestPricePerGroupOrPerson : 'group';
+        return {
+          specialRequest: it.specialRequest,
+          specialRequestPrice: price,
+          specialRequestPricePerGroupOrPerson: unit,
+        };
+      }) : null;
 
-    booking.specialRequestsCheckBoxes = normalized;
+    if (normalized) {
+      booking.specialRequestsCheckBoxes = normalized;
+    } else {
+      normalized = booking.specialRequestsCheckBoxes || [];
+    }
 
     // Recalculate total as (base tour price) + (extras), where base recalculated from tour & travelers
-    const extra = normalized.reduce((sum, it) => sum + (Number(it.specialRequestPrice) || 0), 0);
+    const travelers = Number(booking.travelers) || 1;
+    const extra = normalized.reduce((sum, it) => {
+      const price = Number(it.specialRequestPrice) || 0;
+      const multiplier = it.specialRequestPricePerGroupOrPerson === 'person' ? travelers : 1;
+      return sum + price * multiplier;
+    }, 0);
     if (typeof body.recalculateTotal === 'boolean' ? body.recalculateTotal : true) {
       const tour = await Tour.findById(booking.tour);
-      const travelers = Number(booking.travelers) || 1;
       let base = 0;
       if (tour) {
         const pricePer = tour.pricePer || 'group';
@@ -52,6 +75,55 @@ export async function PUT(request, { params }) {
         base = Math.max(0, Number(booking.totalPrice) || 0);
       }
       booking.totalPrice = base + extra;
+    }
+
+    // Handle approvals
+    // If body explicitly sets approvals and actor permitted, apply them
+    if (typeof body.approvedOfferUser === 'boolean' && (isBookingUser || isAdmin)) {
+      booking.approvedOfferUser = body.approvedOfferUser;
+    }
+    if (typeof body.approvedOfferGuide === 'boolean' && (isGuideOwner || isAdmin)) {
+      booking.approvedOfferGuide = body.approvedOfferGuide;
+    }
+
+    // Auto-flow depending on actor and item changes
+    const actorIsGuideOrAdmin = isGuideOwner || isAdmin;
+    const actorIsUserOrAdmin = isBookingUser || isAdmin;
+
+    if (hasItemsInPayload) {
+      if (actorIsGuideOrAdmin) {
+        // Guide proposed changes: mark guide approved, user pending unless no extras
+        const noExtras = (normalized?.length || 0) === 0;
+        if (noExtras) {
+          booking.approvedOfferGuide = true;
+          booking.approvedOfferUser = true;
+          booking.status = 'completed';
+        } else {
+          booking.approvedOfferGuide = true;
+          booking.approvedOfferUser = false;
+        }
+      } else if (actorIsUserOrAdmin) {
+        // User proposed changes: mark user approved, guide pending
+        booking.approvedOfferUser = true;
+        booking.approvedOfferGuide = false;
+      }
+    } else {
+      // No item changes: approvals can finalize
+      if (body.approvedOfferGuide === true && actorIsGuideOrAdmin) {
+        booking.approvedOfferGuide = true;
+        booking.approvedOfferUser = true;
+        booking.status = 'completed';
+      }
+      if (body.approvedOfferUser === true && actorIsUserOrAdmin) {
+        booking.approvedOfferUser = true;
+        booking.approvedOfferGuide = true;
+        booking.status = 'completed';
+      }
+    }
+
+    // If both approved, mark completed
+    if (booking.approvedOfferGuide && booking.approvedOfferUser) {
+      booking.status = 'completed';
     }
 
     await booking.save();

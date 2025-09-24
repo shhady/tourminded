@@ -37,8 +37,11 @@ export default async function MyBookingsPage({ params }) {
   const formatDate = (date) => new Date(date).toLocaleDateString(locale === 'en' ? 'en-US' : 'ar-SA', { year: 'numeric', month: 'short', day: 'numeric' });
 
   return (
-    <div className="max-w-6xl mx-auto py-12">
-      <h1 className="text-3xl font-bold mb-6">{t('My Bookings', 'حجوزاتي')}</h1>
+    <div className="max-w-6xl mx-auto py-12 px-2">
+      <Link href={`/${locale}`} className="text-primary-600 hover:text-primary-800 mb-10">
+        {t('← Back', '← رجوع')}
+      </Link>
+      <h1 className="text-3xl font-bold my-6">{t('My Bookings', 'حجوزاتي')}</h1>
 
       {/* Desktop table */}
       <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">

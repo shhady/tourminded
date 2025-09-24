@@ -39,6 +39,14 @@ const BookingSchema = new mongoose.Schema({
     enum: ['pending', 'confirmed', 'completed', 'cancelled'],
     default: 'pending',
   },
+  approvedOfferGuide: {
+    type: Boolean,
+    default: false,
+  },
+  approvedOfferUser: {
+    type: Boolean,
+    default: false,
+  },
   paymentStatus: {
     type: String,
     enum: ['pending', 'paid', 'refunded'],
@@ -55,6 +63,11 @@ const BookingSchema = new mongoose.Schema({
       specialRequestPrice: {
         type: Number,
         default: false,
+      },
+      specialRequestPricePerGroupOrPerson: {
+        type: String,
+        enum: ['group', 'person'],
+        default: 'group',
       },
     }],
   },
