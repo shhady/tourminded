@@ -2,43 +2,30 @@ import { redirect } from 'next/navigation';
 import { currentUser } from '@clerk/nextjs/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-import Guide from '@/models/Guide';
 
-export default async function GuideDashboardLayout({ children, params }) {
+export default async function AdminDashboardLayout({ children, params }) {
   const localeParams = await params;
   const locale = localeParams?.locale || 'en';
-  
-  // Get current user with Clerk
+
   const clerkUser = await currentUser();
-  
   if (!clerkUser) {
     redirect(`/${locale}/sign-in`);
-    return;
+    return null;
   }
-  
-  // Connect to database
+
   await connectDB();
-  
-  // Find user in our database
   const user = await User.findOne({ clerkId: clerkUser.id });
-  
   if (!user) {
     redirect(`/${locale}/sign-in`);
-    return;
+    return null;
   }
-  
-  // Restrict to guides only
-  if (user.role !== 'guide') {
+
+  if (user.role !== 'admin') {
     redirect(`/${locale}/dashboard`);
-    return;
+    return null;
   }
-  
-  // Ensure guide profile exists
-  const guide = await Guide.findOne({ user: user._id });
-  if (!guide) {
-    redirect(`/${locale}/dashboard/guide/profile`);
-    return;
-  }
-  
+
   return children;
-} 
+}
+
+

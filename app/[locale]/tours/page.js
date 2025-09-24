@@ -309,7 +309,7 @@ export default async function ToursPage({ searchParams, params }) {
     { value: 'nazareth', label: locale === 'en' ? 'Nazareth' : 'الناصرة' },
     { value: 'bethlehem', label: locale === 'en' ? 'Bethlehem' : 'بيت لحم' },
     { value: 'jerusalem', label: locale === 'en' ? 'Jerusalem' : 'القدس' },
-    { value: 'deadsea', label: locale === 'en' ? 'Dead Sea' : 'البحر الميت' },
+    { value: 'Dead Sea', label: locale === 'en' ? 'Dead Sea' : 'البحر الميت' },
   ];
   
   // Get duration options for filter

@@ -96,7 +96,7 @@ export default async function GuideDashboardPage({ params }) {
   
   return (
     <>
-      <ConnectCalendarButton />
+      {/* <ConnectCalendarButton /> */}
       <div className="space-y-6 overflow-auto">
         <div>
           <h1 className="text-xl md:text-2xl font-bold mb-2">
@@ -149,7 +149,7 @@ export default async function GuideDashboardPage({ params }) {
         </div>
         
         {/* Calendar UI */}
-        <GuideCalendar email={user.email} />
+        {/* <GuideCalendar email={user.email} /> */}
         
         {/* Upcoming Bookings */}
         <div className="bg-white border border-secondary-200 rounded-lg shadow-sm overflow-hidden">

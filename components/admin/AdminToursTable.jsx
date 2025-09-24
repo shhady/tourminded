@@ -16,7 +16,7 @@ export default function AdminToursTable({ tours: initialTours }) {
   };
 
   const handleEdit = (tourId) => {
-    router.push(`/${locale}/dashboard/guide/tours/edit/${tourId}`);
+    router.push(`/${locale}/dashboard/admin/tours/edit/${tourId}`);
   };
 
   const handleDelete = async (tourId) => {

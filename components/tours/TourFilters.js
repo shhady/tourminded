@@ -34,7 +34,7 @@ export default function TourFilters({ locale, initialFilters = {} }) {
     { value: '', label: locale === 'en' ? 'All Locations' : 'جميع المواقع' },
     { value: 'jerusalem', label: locale === 'en' ? 'Jerusalem' : 'القدس' },
     { value: 'jaffa', label: locale === 'en' ? 'Jaffa (Tel Aviv)' : 'يافا (تل أبيب)' },
-    { value: 'deadsea', label: locale === 'en' ? 'Dead Sea' : 'البحر الميت' },
+    { value: 'Dead Sea', label: locale === 'en' ? 'Dead Sea' : 'البحر الميت' },
     { value: 'tiberias', label: locale === 'en' ? 'Tiberias and Lake of Galilee' : 'طبريا وبحيرة الجليل' },
     { value: 'eilat', label: locale === 'en' ? 'Umm al-Rashrash (Eilat)' : 'أم الرشراش (إيلات)' },
     { value: 'masada', label: locale === 'en' ? 'Masada' : 'مسادا' },

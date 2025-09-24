@@ -31,7 +31,7 @@ export default function NewTourPage({ params }) {
   const locations = [
     { _id: 'Jerusalem', name: { en: 'Jerusalem', ar: 'القدس' } },
     { _id: 'Jaffa', name: { en: 'Jaffa (Tel Aviv)', ar: 'يافا (تل أبيب)' } },
-    { _id: 'Deadsea', name: { en: 'Dead Sea', ar: 'البحر الميت' } },
+    { _id: 'Dead Sea', name: { en: 'Dead Sea', ar: 'البحر الميت' } },
     { _id: 'Tiberias', name: { en: 'Tiberias and Lake of Galilee', ar: 'طبريا وبحيرة الجليل' } },
     { _id: 'Eilat', name: { en: 'Umm al-Rashrash (Eilat)', ar: 'أم الرشراش (إيلات)' } },
     { _id: 'Masada', name: { en: 'Masada', ar: 'مسادا' } },

@@ -360,7 +360,7 @@ const Header = ({ locale }) => {
                     {/* Admin Dashboard - only for admins */}
                     {user && user.role === 'admin' && (
                       <Link
-                        href={`/${locale}/dashboard/admin`}
+                        href={`/${locale}/dashboard`}
                         className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
@@ -483,7 +483,7 @@ const Header = ({ locale }) => {
                    {/* Admin Dashboard - only for admins */}
                     {user && user.role === 'admin' && (
                       <Link
-                        href={`/${locale}/dashboard/admin`}
+                        href={`/${locale}/dashboard`}
                         className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >

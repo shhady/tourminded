@@ -28,6 +28,12 @@ export default async function DashboardLayout({ children, params }) {
     return;
   }
   
+  // Security: allow only admins and guides to access dashboard
+  if (user.role !== 'admin' && user.role !== 'guide') {
+    redirect(`/${locale}`);
+    return;
+  }
+  
   return (
     <div className="min-h-screen bg-secondary-50">
       <header className="bg-white shadow-sm py-4 px-6 mb-6">

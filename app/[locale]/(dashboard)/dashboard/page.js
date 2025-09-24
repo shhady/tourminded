@@ -7,13 +7,16 @@ import Review from '@/models/Review';
 import { Calendar, Star, Map, Users } from 'lucide-react';
 import { Compass } from 'lucide-react';
 import User from '@/models/User';
+import Location from '@/models/Location';
+import Guide from '@/models/Guide';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'Dashboard | Watermelon Tours',
   description: 'Manage your tours, bookings, and profile',
 };
 
-async function getStats(userId, role) {
+async function getStats({ role, userId, guideId }) {
   await connectDB();
   
   let stats = {
@@ -21,6 +24,7 @@ async function getStats(userId, role) {
     tours: 0,
     reviews: 0,
     upcomingBookings: [],
+    recentBookings: [],
   };
   
   if (role === 'admin') {
@@ -28,48 +32,71 @@ async function getStats(userId, role) {
     stats.bookings = await Booking.countDocuments();
     stats.tours = await Tour.countDocuments();
     stats.reviews = await Review.countDocuments();
-    stats.users = await (await import('@/models/User')).default.countDocuments();
-    stats.guides = await (await import('@/models/User')).default.countDocuments({ role: 'guide' });
-    stats.locations = await (await import('@/models/Location')).default.countDocuments();
+    stats.users = await User.countDocuments();
+    stats.guides = await User.countDocuments({ role: 'guide' });
+    stats.locations = await Location.countDocuments();
     
-    // Get recent bookings
-    stats.upcomingBookings = await Booking.find({ status: 'confirmed' })
-      .populate('user', 'name')
+    // Upcoming confirmed bookings
+    stats.upcomingBookings = await Booking.find({ status: 'confirmed', 'dates.startDate': { $gte: new Date() } })
+      .populate('user', 'name email')
       .populate('tour', 'title')
-      .populate('guide', 'name')
+      .populate('guide', 'names nickname')
       .sort({ 'dates.startDate': 1 })
       .limit(5);
+
+    // Recent bookings (latest)
+    stats.recentBookings = await Booking.find({})
+      .populate('user', 'name email')
+      .populate('tour', 'title')
+      .populate('guide', 'names nickname')
+      .sort({ createdAt: -1 })
+      .limit(10);
   } else if (role === 'guide') {
     // Guide sees stats for their tours - use userId directly as guide
-    stats.bookings = await Booking.countDocuments({ guide: userId });
-    stats.tours = await Tour.countDocuments({ guide: userId });
-    stats.reviews = await Review.countDocuments({ guide: userId });
+    stats.bookings = await Booking.countDocuments({ guide: guideId });
+    stats.tours = await Tour.countDocuments({ guide: guideId });
+    stats.reviews = await Review.countDocuments({ guide: guideId });
     
-    // Get upcoming bookings
+    // Upcoming bookings
     stats.upcomingBookings = await Booking.find({ 
-      guide: userId,
+      guide: guideId,
       status: 'confirmed',
       'dates.startDate': { $gte: new Date() }
     })
-      .populate('user', 'name')
+      .populate('user', 'name email')
       .populate('tour', 'title')
       .sort({ 'dates.startDate': 1 })
       .limit(5);
+
+    // Recent bookings
+    stats.recentBookings = await Booking.find({ guide: guideId })
+      .populate('user', 'name email')
+      .populate('tour', 'title')
+      .populate('guide', 'names nickname')
+      .sort({ createdAt: -1 })
+      .limit(10);
   } else {
     // Regular user sees their bookings
     stats.bookings = await Booking.countDocuments({ user: userId });
     stats.reviews = await Review.countDocuments({ user: userId });
     
-    // Get upcoming bookings
+    // Upcoming bookings
     stats.upcomingBookings = await Booking.find({ 
       user: userId,
       status: 'confirmed',
       'dates.startDate': { $gte: new Date() }
     })
-      .populate('guide', 'name')
+      .populate('guide', 'names nickname')
       .populate('tour', 'title')
       .sort({ 'dates.startDate': 1 })
       .limit(5);
+
+    // Recent bookings
+    stats.recentBookings = await Booking.find({ user: userId })
+      .populate('guide', 'names nickname')
+      .populate('tour', 'title')
+      .sort({ createdAt: -1 })
+      .limit(10);
   }
   
   return stats;
@@ -78,10 +105,21 @@ async function getStats(userId, role) {
 export default async function DashboardPage({ params }) {
   const localeParams = await params;
   const locale = localeParams?.locale || 'en';
-  const user = await currentUser();
-  const stats = await getStats(user._id, user.role);
-  
-  const userData = await User.findOne({ clerkId: user.id });
+  const clerk = await currentUser();
+  if (!clerk) {
+    return null;
+  }
+  await connectDB();
+  const userData = await User.findOne({ clerkId: clerk.id });
+  if (!userData) {
+    return null;
+  }
+  let guideId = null;
+  if (userData.role === 'guide') {
+    const guide = await Guide.findOne({ user: userData._id });
+    guideId = guide ? guide._id : null;
+  }
+  const stats = await getStats({ role: userData.role, userId: userData._id, guideId });
   // Format date based on locale
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString(locale === 'en' ? 'en-US' : 'ar-SA', {
@@ -99,6 +137,7 @@ export default async function DashboardPage({ params }) {
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+      {userData.role === 'admin' ? ( <Link href={`/${locale}/dashboard/admin/bookings`}>
         <div className="bg-white rounded-lg shadow p-6 flex items-center">
           <div className="rounded-full bg-primary-100 p-3 mr-4">
             <Calendar className="text-primary-600 text-xl" />
@@ -110,9 +149,10 @@ export default async function DashboardPage({ params }) {
             <p className="text-2xl font-bold">{stats.bookings}</p>
           </div>
         </div>
-        
-        {userData.role === 'admin' || user.role === 'guide' ? (
-          <div className="bg-white rounded-lg shadow p-6 flex items-center">
+        </Link>) : null}
+        {userData.role === 'admin' || userData.role === 'guide' ? (
+        <Link href={`/${locale}/dashboard/admin/tours`}>
+        <div className="bg-white rounded-lg shadow p-6 flex items-center">
             <div className="rounded-full bg-primary-100 p-3 mr-4">
               <Compass className="text-primary-600 text-xl" />
             </div>
@@ -123,22 +163,13 @@ export default async function DashboardPage({ params }) {
               <p className="text-2xl font-bold">{stats.tours}</p>
             </div>
           </div>
+          </Link>
         ) : null}
         
-        <div className="bg-white rounded-lg shadow p-6 flex items-center">
-          <div className="rounded-full bg-primary-100 p-3 mr-4">
-            <Star className="text-primary-600 text-xl" />
-          </div>
-          <div>
-            <h3 className="text-secondary-500 text-sm font-medium">
-              {locale === 'en' ? 'Reviews' : 'التقييمات'}
-            </h3>
-            <p className="text-2xl font-bold">{stats.reviews}</p>
-          </div>
-        </div>
-        
+       
         {userData.role === 'admin' && (
           <>
+          <Link href={`/${locale}/dashboard/admin/users`}>
             <div className="bg-white rounded-lg shadow p-6 flex items-center">
               <div className="rounded-full bg-primary-100 p-3 mr-4">
                 <Users className="text-primary-600 text-xl" />
@@ -150,7 +181,8 @@ export default async function DashboardPage({ params }) {
                 <p className="text-2xl font-bold">{stats.users}</p>
               </div>
             </div>
-            
+            </Link>            
+            <Link href={`/${locale}/dashboard/admin/guides`}>
             <div className="bg-white rounded-lg shadow p-6 flex items-center">
               <div className="rounded-full bg-primary-100 p-3 mr-4">
                 <Users className="text-primary-600 text-xl" />
@@ -162,18 +194,8 @@ export default async function DashboardPage({ params }) {
                 <p className="text-2xl font-bold">{stats.guides}</p>
               </div>
             </div>
+            </Link>
             
-            <div className="bg-white rounded-lg shadow p-6 flex items-center">
-              <div className="rounded-full bg-primary-100 p-3 mr-4">
-                <Map className="text-primary-600 text-xl" />
-              </div>
-              <div>
-                <h3 className="text-secondary-500 text-sm font-medium">
-                  {locale === 'en' ? 'Locations' : 'المواقع'}
-                </h3>
-                <p className="text-2xl font-bold">{stats.locations}</p>
-              </div>
-            </div>
           </>
         )}
       </div>
@@ -194,7 +216,7 @@ export default async function DashboardPage({ params }) {
                   <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
                     {locale === 'en' ? 'Tour' : 'الجولة'}
                   </th>
-                  {user.role === 'admin' || user.role === 'guide' ? (
+                  {userData.role === 'admin' || userData.role === 'guide' ? (
                     <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
                       {locale === 'en' ? 'User' : 'المستخدم'}
                     </th>
@@ -219,16 +241,16 @@ export default async function DashboardPage({ params }) {
                         {booking.tour.title?.en || booking.tour.title}
                       </div>
                     </td>
-                    {userData.role === 'admin' || user.role === 'guide' ? (
+                    {userData.role === 'admin' || userData.role === 'guide' ? (
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-secondary-500">
-                          {booking.user.name}
+                          {booking.user?.name || booking.user?.email || '-'}
                         </div>
                       </td>
                     ) : (
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-secondary-500">
-                          {booking.guide.name?.en || booking.guide.name}
+                          {booking.guide?.nickname || booking.guide?.names?.[0]?.value || '-'}
                         </div>
                       </td>
                     )}
@@ -249,6 +271,71 @@ export default async function DashboardPage({ params }) {
           ) : (
             <div className="px-6 py-4 text-center text-secondary-500">
               {locale === 'en' ? 'No upcoming bookings' : 'لا توجد حجوزات قادمة'}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Recent Bookings */}
+      <div className="bg-white rounded-lg shadow overflow-hidden mt-8">
+        <div className="px-6 py-4 border-b border-secondary-200">
+          <h2 className="font-bold text-lg">
+            {locale === 'en' ? 'Recent Bookings' : 'أحدث الحجوزات'}
+          </h2>
+        </div>
+        <div className="overflow-x-auto">
+          {stats.recentBookings.length > 0 ? (
+            <table className="min-w-full divide-y divide-secondary-200">
+              <thead className="bg-secondary-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">{locale === 'en' ? 'Tour' : 'الجولة'}</th>
+                  {userData.role === 'admin' || userData.role === 'guide' ? (
+                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">{locale === 'en' ? 'User' : 'المستخدم'}</th>
+                  ) : (
+                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">{locale === 'en' ? 'Guide' : 'المرشد'}</th>
+                  )}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">{locale === 'en' ? 'Created' : 'تاريخ الإنشاء'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">{locale === 'en' ? 'Travelers' : 'المسافرون'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">{locale === 'en' ? 'Total' : 'الإجمالي'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">{locale === 'en' ? 'Status' : 'الحالة'}</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-secondary-200">
+                {stats.recentBookings.map((b) => (
+                  <tr key={b._id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-secondary-900">{b.tour?.title?.en || b.tour?.title?.ar || '-'}</div>
+                    </td>
+                    {userData.role === 'admin' || userData.role === 'guide' ? (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-secondary-500">{b.user?.name || b.user?.email || '-'}</div>
+                      </td>
+                    ) : (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-secondary-500">{b.guide?.nickname || b.guide?.names?.[0]?.value || '-'}</div>
+                      </td>
+                    )}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-secondary-500">{formatDate(b.createdAt)}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-secondary-500">{b.travelers}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-secondary-900">${b.totalPrice}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${b.status === 'confirmed' ? 'bg-green-100 text-green-800' : b.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : b.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                        {b.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="px-6 py-4 text-center text-secondary-500">
+              {locale === 'en' ? 'No recent bookings' : 'لا توجد حجوزات حديثة'}
             </div>
           )}
         </div>
