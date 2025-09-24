@@ -326,6 +326,16 @@ const Header = ({ locale }) => {
                       <Heart className="mr-2 h-4 w-4" />
                       {locale === 'en' ? 'My Wishlist' : 'قائمة رغباتي'}
                     </Link>
+
+                  {/* Bookings Link */}
+                  <Link
+                    href={`/${locale}/bookings`}
+                    className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    <Clock className="mr-2 h-4 w-4" />
+                    {locale === 'en' ? 'My Bookings' : 'حجوزاتي'}
+                  </Link>
                     
                     {/* Profile Link */}
                     <Link
@@ -449,6 +459,16 @@ const Header = ({ locale }) => {
                   >
                     <Heart className="mr-2 h-4 w-4" />
                     {locale === 'en' ? 'My Wishlist' : 'قائمة رغباتي'}
+                  </Link>
+
+                  {/* Bookings Link - Mobile */}
+                  <Link
+                    href={`/${locale}/bookings`}
+                    className="flex items-center px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Clock className="mr-2 h-4 w-4" />
+                    {locale === 'en' ? 'My Bookings' : 'حجوزاتي'}
                   </Link>
                   
                   {/* Messages Link - Mobile */}
