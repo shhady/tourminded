@@ -804,6 +804,8 @@ export default function EditTourPage({ params }) {
                 <input
                   id="handicappedFriendly"
                   type="checkbox"
+                  key={`handicappedFriendly-${tour?._id}`}
+                  defaultChecked={tour?.handicappedFriendly}
                   {...register('handicappedFriendly')}
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
                 />
@@ -816,6 +818,8 @@ export default function EditTourPage({ params }) {
                 <input
                   id="kidFriendly"
                   type="checkbox"
+                  key={`kidFriendly-${tour?._id}`}
+                  defaultChecked={tour?.kidFriendly}
                   {...register('kidFriendly')}
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
                 />

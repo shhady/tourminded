@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Tour from '@/models/Tour';
 import { currentUser } from '@clerk/nextjs/server';
 import User from '@/models/User';
+import Guide from '@/models/Guide';
 
 // GET a single tour by ID
 export async function GET(request, { params }) {
@@ -263,8 +264,24 @@ export async function DELETE(request, { params }) {
       );
     }
     
+    // Find the guide profile for this user
+    const guide = await Guide.findOne({ user: user._id });
+    
     // Check if user is the tour owner or an admin
-    if (tour.guide.toString() !== user._id.toString() && user.role !== 'admin') {
+    // Allow if: user is admin, OR guide exists and tour.guide matches guide._id, OR tour.guide matches user._id (legacy)
+    const isAdmin = user.role === 'admin';
+    const isGuideOwner = guide && tour.guide.toString() === guide._id.toString();
+    const isLegacyOwner = tour.guide.toString() === user._id.toString();
+    
+    if (!isAdmin && !isGuideOwner && !isLegacyOwner) {
+      console.log('Delete authorization failed:', {
+        userId: user._id.toString(),
+        guideId: guide?._id?.toString(),
+        tourGuideId: tour.guide.toString(),
+        isAdmin,
+        isGuideOwner,
+        isLegacyOwner
+      });
       return NextResponse.json(
         { success: false, message: 'Not authorized to delete this tour' },
         { status: 403 }
