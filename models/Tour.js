@@ -152,6 +152,24 @@ const TourSchema = new mongoose.Schema({
       trim: true,
     },
   ],
+  excluded: [
+    {
+      type: String,
+      trim: true,
+    },
+  ],
+  itinerary: [
+    {
+      title: {
+        type: String,
+        trim: true,
+      },
+      description: {
+        type: String,
+        trim: true,
+      },
+    },
+  ],
   averageTemperature: {
     type: Number,
   },

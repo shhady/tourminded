@@ -53,6 +53,8 @@ export async function PUT(request, { params }) {
     
     // Parse request body
     const tourData = await request.json();
+    
+    console.log('API received tourData:', JSON.stringify(tourData, null, 2));
 
   // Validate pricePer if provided
   if (tourData.pricePer !== undefined) {
@@ -91,8 +93,11 @@ export async function PUT(request, { params }) {
     // Check if user is authorized (admin or the guide who created the tour)
     const Guide = (await import('@/models/Guide')).default;
     const guide = await Guide.findOne({ user: user._id });
-    
-    if (user.role !== 'admin' && (!guide || tour.guide.toString() !== guide._id.toString())) {
+    const isAdmin = user.role === 'admin';
+    const isOwnerByGuide = !!guide && tour.guide?.toString() === guide._id.toString();
+    const isOwnerByLegacyUserId = tour.guide?.toString() === user._id.toString();
+
+    if (!(isAdmin || isOwnerByGuide || isOwnerByLegacyUserId)) {
       return NextResponse.json(
         { success: false, message: 'Not authorized to update this tour' },
         { status: 403 }
@@ -191,8 +196,11 @@ export async function PUT(request, { params }) {
     const updatedTour = await Tour.findByIdAndUpdate(
       id,
       tourData,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true, overwrite: false }
     );
+    
+    console.log('Updated tour title:', updatedTour.title);
+    console.log('Updated tour description:', updatedTour.description);
     
     return NextResponse.json({
       success: true,

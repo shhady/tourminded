@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import Button from '@/components/ui/Button';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Loader, Plus, Minus } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
 
 export default function EditTourPage({ params }) {
   const router = useRouter();
@@ -18,7 +17,6 @@ export default function EditTourPage({ params }) {
   const [error, setError] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [galleryImages, setGalleryImages] = useState([]);
-  const [activeTab, setActiveTab] = useState('basic');
   const [includedItems, setIncludedItems] = useState(['']);
   const [excludedItems, setExcludedItems] = useState(['']);
   const [itineraryItems, setItineraryItems] = useState([{ title: '', description: '' }]);
@@ -59,16 +57,18 @@ export default function EditTourPage({ params }) {
   ];
   
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm();
-  
-  // Initialize pricePer default
-  useEffect(() => {
-    setValue('pricePer', 'group');
-  }, [setValue]);
 
   // Watch duration and durationUnit to update tour plan
   const duration = watch('duration');
   const durationUnit = watch('durationUnit');
   const pricePer = watch('pricePer');
+  
+  // Initialize pricePer when tour data loads
+  useEffect(() => {
+    if (tour?.pricePer) {
+      setValue('pricePer', tour.pricePer);
+    }
+  }, [tour, setValue]);
   
   // Update tour plan when duration or unit changes
   useEffect(() => {
@@ -109,12 +109,15 @@ export default function EditTourPage({ params }) {
     });
   };
   
-  // Fetch tour data
+  // Fetch tour data only once when component mounts
   useEffect(() => {
     const fetchTour = async () => {
       try {
         setIsFetching(true);
-        const response = await fetch(`/api/tours/${id}`);
+        // Add cache busting to ensure fresh data
+        const response = await fetch(`/api/tours/${id}?t=${Date.now()}`, {
+          cache: 'no-store'
+        });
         
         if (!response.ok) {
           throw new Error('Failed to fetch tour');
@@ -132,25 +135,7 @@ export default function EditTourPage({ params }) {
         setItineraryItems(data.data.itinerary || [{ title: '', description: '' }]);
         setTourPlan(data.data.tourPlan || []);
         
-        // Reset form with tour data
-        reset({
-          'title.en': data.data.title?.en || '',
-          'title.ar': data.data.title?.ar || '',
-          'description.en': data.data.description?.en || '',
-          'description.ar': data.data.description?.ar || '',
-          price: data.data.price || 0,
-          duration: data.data.duration || 1,
-          durationUnit: data.data.durationUnit || 'hours',
-          maxGroupSize: data.data.maxGroupSize || 1,
-          activityLevel: data.data.activityLevel || 'easy',
-          languages: data.data.languages || [],
-          transportation: data.data.transportation || 'walking',
-          handicappedFriendly: data.data.handicappedFriendly || false,
-          kidFriendly: data.data.kidFriendly || false,
-          expertise: data.data.expertise || '',
-          isActive: data.data.isActive !== undefined ? data.data.isActive : true,
-        });
-        setValue('pricePer', data.data.pricePer || 'group');
+        // Don't call reset() - let defaultValue handle it
       } catch (error) {
         console.error('Error fetching tour:', error);
         setError('Failed to load tour data');
@@ -160,7 +145,8 @@ export default function EditTourPage({ params }) {
     };
     
     fetchTour();
-  }, [id, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
   
   const handleCoverImageUploaded = (url) => {
     setCoverImage(url);
@@ -238,6 +224,11 @@ export default function EditTourPage({ params }) {
     setIsLoading(true);
     setError('');
     
+    console.log('Form data received:', data);
+    console.log('Title object:', data.title);
+    console.log('Description object:', data.description);
+    console.log('Excluded items from state:', excludedItems);
+    
     if (!coverImage) {
       setError(locale === 'en' ? 'Cover image is required' : 'صورة الغلاف مطلوبة');
       setIsLoading(false);
@@ -267,17 +258,17 @@ export default function EditTourPage({ params }) {
       // Prepare tour data
       const tourData = {
         title: {
-          en: data['title.en'],
-          ar: data['title.ar'],
+          en: data.titleEn || tour?.title?.en || '',
+          ar: data.titleAr || tour?.title?.ar || '',
         },
         description: {
-          en: data['description.en'],
-          ar: data['description.ar'],
+          en: data.descriptionEn || tour?.description?.en || '',
+          ar: data.descriptionAr || tour?.description?.ar || '',
         },
         // Add tour plan for multi-day tours
         tourPlan: data.durationUnit === 'days' && Math.floor(data.duration) > 0 ? tourPlan : [],
         price: parseFloat(data.price),
-        pricePer: pricePer,
+        pricePer: pricePer || tour?.pricePer || 'group',
         duration: parseInt(data.duration),
         durationUnit: data.durationUnit,
         maxGroupSize: parseInt(data.maxGroupSize),
@@ -300,23 +291,41 @@ export default function EditTourPage({ params }) {
         },
       };
       
+      // Only remove expertise if it's empty string
+      if (!tourData.expertise || tourData.expertise === '') {
+        delete tourData.expertise;
+      }
+      
+      console.log('Sending update payload:', tourData);
+      
       // Update tour
       const response = await fetch(`/api/tours/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(tourData),
       });
       
+      console.log('Update response status:', response.status);
+      
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Update failed:', errorData);
+        if (response.status === 401) {
+          router.push(`/${locale}/auth/login?redirect=${encodeURIComponent(`/${locale}/dashboard/guide/tours/edit/${id}`)}`);
+          return;
+        }
         throw new Error(errorData.message || 'Failed to update tour');
       }
       
-      // Redirect to tours page
-      router.push(`/${locale}/dashboard/guide/tours`);
-      router.refresh();
+      const result = await response.json();
+      console.log('Update successful:', result);
+      
+      // Show success and redirect to tours page with hard navigation
+      alert(locale === 'en' ? 'Tour updated successfully!' : 'تم تحديث الجولة بنجاح!');
+      window.location.href = `/${locale}/dashboard/guide/tours`;
     } catch (error) {
       console.error('Error updating tour:', error);
       setError(error.message);
@@ -353,25 +362,31 @@ export default function EditTourPage({ params }) {
         </div>
       )}
       
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="basic">
-              {locale === 'en' ? 'Basic Info' : 'معلومات أساسية'}
-            </TabsTrigger>
-            <TabsTrigger value="details">
-              {locale === 'en' ? 'Details' : 'تفاصيل'}
-            </TabsTrigger>
-            <TabsTrigger value="itinerary">
-              {locale === 'en' ? 'Itinerary' : 'البرنامج'}
-            </TabsTrigger>
-            <TabsTrigger value="media">
-              {locale === 'en' ? 'Media' : 'الوسائط'}
-            </TabsTrigger>
-          </TabsList>
-          
-          {/* Basic Info Tab */}
-          <TabsContent value="basic" className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} key={tour?._id}>
+        {/* Status - At the top */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center">
+            <input
+              id="isActive"
+              type="checkbox"
+              key={`isActive-${tour?._id}`}
+              defaultChecked={tour?.isActive}
+              {...register('isActive')}
+              className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+            />
+            <label htmlFor="isActive" className="ml-3 block text-base font-medium text-secondary-900">
+              {locale === 'en' ? 'Active (visible to customers)' : 'نشط (مرئي للعملاء)'}
+            </label>
+          </div>
+          <p className="mt-2 ml-8 text-sm text-secondary-600">
+            {locale === 'en' 
+              ? 'When active, this tour will be visible to customers on the platform.' 
+              : 'عند التفعيل، ستكون هذه الجولة مرئية للعملاء على المنصة.'}
+          </p>
+        </div>
+
+        {/* Basic Info */}
+        <div className="space-y-6">
             {/* Title */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -379,9 +394,11 @@ export default function EditTourPage({ params }) {
                   {locale === 'en' ? 'Title (English)' : 'العنوان (بالإنجليزية)'}*
                 </label>
                 <input
-                  id="title.en"
+                  id="titleEn"
                   type="text"
-                  {...register('title.en', { required: true })}
+                  key={`title-en-${tour?._id}`}
+                  defaultValue={tour?.title?.en || ''}
+                  {...register('titleEn', { required: true })}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 {errors['title.en'] && (
@@ -396,9 +413,11 @@ export default function EditTourPage({ params }) {
                   {locale === 'en' ? 'Title (Arabic)' : 'العنوان (بالعربية)'}*
                 </label>
                 <input
-                  id="title.ar"
+                  id="titleAr"
                   type="text"
-                  {...register('title.ar', { required: true })}
+                  key={`title-ar-${tour?._id}`}
+                  defaultValue={tour?.title?.ar || ''}
+                  {...register('titleAr', { required: true })}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 {errors['title.ar'] && (
@@ -416,8 +435,10 @@ export default function EditTourPage({ params }) {
                   {locale === 'en' ? 'Description (English)' : 'الوصف (بالإنجليزية)'}*
                 </label>
                 <textarea
-                  id="description.en"
-                  {...register('description.en', { required: true })}
+                  id="descriptionEn"
+                  key={`desc-en-${tour?._id}`}
+                  defaultValue={tour?.description?.en || ''}
+                  {...register('descriptionEn', { required: true })}
                   rows={5}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 ></textarea>
@@ -433,8 +454,10 @@ export default function EditTourPage({ params }) {
                   {locale === 'en' ? 'Description (Arabic)' : 'الوصف (بالعربية)'}*
                 </label>
                 <textarea
-                  id="description.ar"
-                  {...register('description.ar', { required: true })}
+                  id="descriptionAr"
+                  key={`desc-ar-${tour?._id}`}
+                  defaultValue={tour?.description?.ar || ''}
+                  {...register('descriptionAr', { required: true })}
                   rows={5}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 ></textarea>
@@ -457,6 +480,8 @@ export default function EditTourPage({ params }) {
                   type="number"
                   min="0"
                   step="0.01"
+                  key={`price-${tour?._id}`}
+                  defaultValue={tour?.price || ''}
                   {...register('price', { required: true, min: 0 })}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
@@ -508,6 +533,8 @@ export default function EditTourPage({ params }) {
                   id="duration"
                   type="number"
                   min="1"
+                  key={`duration-${tour?._id}`}
+                  defaultValue={tour?.duration || ''}
                   {...register('duration', { required: true, min: 1 })}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
@@ -524,6 +551,8 @@ export default function EditTourPage({ params }) {
                 </label>
                 <select
                   id="durationUnit"
+                  key={`durationUnit-${tour?._id}`}
+                  defaultValue={tour?.durationUnit || 'hours'}
                   {...register('durationUnit', { required: true })}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
@@ -543,6 +572,8 @@ export default function EditTourPage({ params }) {
                   id="maxGroupSize"
                   type="number"
                   min="1"
+                  key={`maxGroupSize-${tour?._id}`}
+                  defaultValue={tour?.maxGroupSize || ''}
                   {...register('maxGroupSize', { required: true, min: 1 })}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
@@ -559,6 +590,8 @@ export default function EditTourPage({ params }) {
                 </label>
                 <select
                   id="activityLevel"
+                  key={`activityLevel-${tour?._id}`}
+                  defaultValue={tour?.activityLevel || 'easy'}
                   {...register('activityLevel', { required: true })}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
@@ -568,25 +601,10 @@ export default function EditTourPage({ params }) {
                 </select>
               </div>
             </div>
-            
-            {/* Status */}
-            <div>
-              <div className="flex items-center">
-                <input
-                  id="isActive"
-                  type="checkbox"
-                  {...register('isActive')}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
-                />
-                <label htmlFor="isActive" className="ml-2 block text-sm text-secondary-700">
-                  {locale === 'en' ? 'Active (visible to customers)' : 'نشط (مرئي للعملاء)'}
-                </label>
-              </div>
-            </div>
-          </TabsContent>
-          
-          {/* Details Tab */}
-          <TabsContent value="details" className="space-y-6">
+        </div>
+        
+        {/* Details */}
+        <div className="space-y-6 mt-10">
             {/* Languages & Locations */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -676,6 +694,8 @@ export default function EditTourPage({ params }) {
               </label>
               <select
                 id="expertise"
+                key={`expertise-${tour?._id}`}
+                defaultValue={tour?.expertise || ''}
                 {...register('expertise')}
                 className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
@@ -804,10 +824,10 @@ export default function EditTourPage({ params }) {
                 </label>
               </div>
             </div>
-          </TabsContent>
-          
-          {/* Itinerary Tab */}
-          <TabsContent value="itinerary" className="space-y-6">
+        </div>
+        
+        {/* Itinerary */}
+        <div className="space-y-6 mt-10">
             {/* Tour Plan - Only show for multi-day tours */}
             {tourPlan.length > 0 && (
               <div className="mb-8">
@@ -958,10 +978,10 @@ export default function EditTourPage({ params }) {
                 {locale === 'en' ? 'Add Stop' : 'إضافة محطة'}
               </button>
             </div>
-          </TabsContent>
-          
-          {/* Media Tab */}
-          <TabsContent value="media" className="space-y-6">
+        </div>
+        
+        {/* Media */}
+        <div className="space-y-6 mt-10">
             {/* Cover Image */}
             <div>
               <label className="block text-sm font-medium text-secondary-700 mb-1">
@@ -1009,57 +1029,24 @@ export default function EditTourPage({ params }) {
                 folder="tours/gallery"
               />
             </div>
-          </TabsContent>
-        </Tabs>
+        </div>
         
-        {/* Navigation Buttons */}
-        <div className="flex justify-between mt-8">
-          {activeTab !== 'basic' && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                const tabs = ['basic', 'details', 'itinerary', 'media'];
-                const currentIndex = tabs.indexOf(activeTab);
-                setActiveTab(tabs[currentIndex - 1]);
-              }}
-            >
-              {locale === 'en' ? 'Previous' : 'السابق'}
-            </Button>
-          )}
-          
-          <div className="ml-auto">
-            {activeTab !== 'media' ? (
-              <Button
-                type="button"
-                variant="primary"
-                className="text-black"
-                onClick={() => {
-                  const tabs = ['basic', 'details', 'itinerary', 'media'];
-                  const currentIndex = tabs.indexOf(activeTab);
-                  setActiveTab(tabs[currentIndex + 1]);
-                }}
-              >
-                {locale === 'en' ? 'Next' : 'التالي'}
-              </Button>
+        <div className="flex justify-end mt-8">
+          <Button
+            type="submit"
+            variant="primary"
+            className="text-black"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="flex items-center">
+                <Loader className="animate-spin mr-2 h-4 w-4" />
+                {locale === 'en' ? 'Updating...' : 'جاري التحديث...'}
+              </span>
             ) : (
-              <Button
-                type="submit"
-                variant="primary"
-                className="text-black"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <span className="flex items-center">
-                    <Loader className="animate-spin mr-2 h-4 w-4" />
-                    {locale === 'en' ? 'Updating...' : 'جاري التحديث...'}
-                  </span>
-                ) : (
-                  locale === 'en' ? 'Update Tour' : 'تحديث الجولة'
-                )}
-              </Button>
+              locale === 'en' ? 'Update Tour' : 'تحديث الجولة'
             )}
-          </div>
+          </Button>
         </div>
       </form>
     </div>

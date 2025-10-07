@@ -14,6 +14,10 @@ export const metadata = {
   description: 'Manage your tours as a guide',
 };
 
+// Ensure page is always dynamic so updates appear immediately after edits
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getUserTours(userId) {
   await connectDB();
   
