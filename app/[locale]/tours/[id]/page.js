@@ -315,6 +315,23 @@ export default async function TourPage({ params }) {
                   <p>{description}</p>
                 </div>
               </div>
+      {/* CTA: Message the guide to customize */}
+      {tourData.guide?.userId && (
+        <div className="rounded-xl border border-primary-200 bg-primary-50 px-4 py-4 md:px-6 md:py-5 mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+          <p className="text-secondary-900 mb-3 md:mb-0">
+            {locale === 'en'
+              ? `Itinerary not perfect? Message ${tourData.guide.name || 'the guide'} to build a tour that's just right for you.`
+              : `الخطة ليست مثالية؟ أرسل رسالة إلى ${tourData.guide.name || 'المرشد'} لبناء جولة تناسبك تمامًا.`}
+          </p>
+          <Link
+            href={`/${locale}/chat/${tourData.guide.userId}`}
+            className="inline-flex items-center rounded-xl bg-primary-600 px-4 py-2 bg-black text-white font-medium hover:bg-white hover:text-black transition-colors border-2 border-primary-600"
+          >
+            <MessageCircle className="w-5 h-5 mr-2" />
+            <span>{locale === 'en' ? `Message ${tourData.guide.name || ''}` : `مراسلة ${tourData.guide.name || ''}`}</span>
+          </Link>
+        </div>
+      )}
               
               {/* Tour Plan - Only show for multi-day tours */}
               {tourData.tourPlan && tourData.tourPlan.length > 0 && (

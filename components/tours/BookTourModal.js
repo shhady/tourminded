@@ -137,7 +137,7 @@ export default function BookTourModal({ locale = 'en', tourId, maxGroupSize = 10
   return (
     <>
       <button
-        className="w-full bg-black hover:bg-black/90 text-white font-bold py-3 px-4 rounded-lg transition duration-300"
+        className="w-full bg-black hover:bg-black/90 text-white font-bold py-3 px-4 rounded-lg transition duration-300 cursor-pointer"
         onClick={() => setOpen(true)}
       >
         {locale === 'en' ? 'Book Tour' : 'احجز الجولة'}
