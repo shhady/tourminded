@@ -389,23 +389,26 @@ export default async function TourPage({ params }) {
                       <p className="text-secondary-600">{formatTransportation(tourData.transportation)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center">
-                    <div className="flex space-x-2 mr-3">
-                      {tourData.handicappedFriendly && <Accessibility className="text-primary-600 w-5 h-5" />}
-                      {tourData.kidFriendly && <Baby className="text-primary-600 w-5 h-5" />}
+                  {tourData.handicappedFriendly && (
+                    <div className="flex items-center">
+                      <Accessibility className="text-primary-600 w-5 h-5 mr-3" />
+                      <div>
+                        <p className="text-secondary-600">
+                          {locale === 'en' ? 'Handicapped Friendly' : 'مناسب لذوي الاحتياجات الخاصة'}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-secondary-900">
-                        {locale === 'en' ? 'Accessibility' : 'إمكانية الوصول'}
-                      </p>
-                      <p className="text-secondary-600">
-                        {tourData.handicappedFriendly && (locale === 'en' ? 'Handicapped Friendly' : 'مناسب لذوي الاحتياجات الخاصة')}
-                        {tourData.handicappedFriendly && tourData.kidFriendly && ', '}
-                        {tourData.kidFriendly && (locale === 'en' ? 'Kid Friendly' : 'مناسب للأطفال')}
-                        {!tourData.handicappedFriendly && !tourData.kidFriendly && (locale === 'en' ? 'Standard' : 'قياسي')}
-                      </p>
+                  )}
+                  {tourData.kidFriendly && (
+                    <div className="flex items-center">
+                      <Baby className="text-primary-600 w-5 h-5 mr-3" />
+                      <div>
+                        <p className="text-secondary-600">
+                          {locale === 'en' ? 'Kid Friendly' : 'مناسب للأطفال'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
               
