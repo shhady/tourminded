@@ -314,8 +314,9 @@ const TravelDatesDropdown = ({ onChange, value, locale = 'en' }) => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {locale === 'en' ? 'Dates' : 'التواريخ'}
+      <label className="text-gray-800 text-sm font-medium mb-2 flex items-center">
+        <Calendar className="text-primary-600 mr-2" size={16} />
+        <span>{locale === 'en' ? 'Dates' : 'التواريخ'}</span>
       </label>
       
       <button

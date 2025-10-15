@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Search, Users, GraduationCap, Languages, ChevronDown } from 'lucide-react';
 import TravelerCounter from './TravelerCounter.js';
 import TravelDatesDropdown from '../ui/TravelDatesDropdown';
+import { MdOutlineTravelExplore } from "react-icons/md";
 
 const HeroSection = ({ locale }) => {
   const router = useRouter();
@@ -251,7 +252,7 @@ const HeroSection = ({ locale }) => {
       </div>
       
       {/* Hero Content */}
-      <div className="container mx-auto px-4 py-8 md:py-0 h-full flex flex-col justify-center relative z-20 max-w-6xl">
+      <div className="container mx-auto px-4 py-10 h-full flex flex-col justify-between items-center relative z-20 max-w-6xl">
         <div className="max-w-3xl mx-auto text-center mb-8 md:mb-10 animate-fade-in">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-white leading-tight">
             {locale === 'en' 
@@ -409,7 +410,7 @@ const HeroSection = ({ locale }) => {
         </div>
 
         {/* Search Form - Desktop Version */}
-        <div className="hidden md:block bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 max-w-5xl mx-auto animate-fade-in">
+        <div className="hidden md:block bg-white/70 rounded-xl shadow-lg p-6 max-w-5xl mx-auto animate-fade-in">
           <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-5">
             {/* Travelers */}
             <div className="relative">
@@ -458,7 +459,7 @@ const HeroSection = ({ locale }) => {
             {/* Expertise */}
             <div>
               <label className="text-gray-800 text-sm font-medium mb-2 flex items-center">
-                <GraduationCap className="text-primary-600 mr-2" size={16} />
+                <MdOutlineTravelExplore className="text-primary-600 mr-2" size={16} />
                 <span>{locale === 'en' ? 'Tour Type' : 'نوع الجولة'}</span>
               </label>
               <select
