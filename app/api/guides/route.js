@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import User from '@/models/User';
 import { currentUser } from '@clerk/nextjs/server';
+import { sendAdminGuideRegistrationEmail } from '@/lib/mailer';
 
 // Get all guides (public)
 export async function GET(request) {
@@ -125,6 +126,14 @@ export async function POST(request) {
     
     // Update user role to guide
     await User.findByIdAndUpdate(user._id, { role: 'guide' });
+
+    // Send admin notification email (non-blocking)
+    try {
+      const plainUser = { _id: user._id, email: user.email, name: user.name };
+      await sendAdminGuideRegistrationEmail({ guide, user: plainUser, data });
+    } catch (e) {
+      console.error('Guide registration email error:', e);
+    }
     
     return NextResponse.json({ 
       message: 'Guide registered successfully',
