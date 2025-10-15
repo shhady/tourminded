@@ -226,7 +226,7 @@ export default async function TourPage({ params }) {
     
     return (
       <MainLayout locale={locale}>
-        {/* Hero Section */}
+        {/* Hero Section !!*/}
         <div className="relative h-[50vh] md:h-[60vh] lg:h-[70vh]">
           {tourData.images?.cover?.url ? (
             <Image
