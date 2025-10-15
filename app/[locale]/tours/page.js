@@ -404,9 +404,13 @@ export default async function ToursPage({ searchParams, params }) {
                         <div className="flex items-center text-gray-600 w-1/2">
                           <Clock className="w-4 h-4 mr-1" />
                           <span className="text-sm">
-                            {tour.duration} {locale === 'en' ? 
-                              (tour.duration === 1 ? 'day' : 'days') : 
-                              (tour.duration === 1 ? 'يوم' : 'أيام')}
+                            {tour.duration} {tour.durationUnit === 'hours' 
+                              ? (locale === 'en' 
+                                ? (tour.duration === 1 ? 'hour' : 'hours') 
+                                : (tour.duration === 1 ? 'ساعة' : 'ساعات')) 
+                              : (locale === 'en' 
+                                ? (tour.duration === 1 ? 'day' : 'days') 
+                                : (tour.duration === 1 ? 'يوم' : 'أيام'))}
                           </span>
                         </div>
                         
