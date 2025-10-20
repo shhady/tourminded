@@ -20,6 +20,7 @@ export default function TourFilters({ locale, initialFilters = {} }) {
     expertise: initialFilters.expertise || '',
     language: initialFilters.language || '',
     travelers: initialFilters.travelers || '',
+    pricePer: initialFilters.pricePer || '',
     priceRange: initialFilters.priceRange || '',
   });
 
@@ -159,7 +160,12 @@ export default function TourFilters({ locale, initialFilters = {} }) {
     { value: '100-200', label: '$100 - $200' },
     { value: '200-300', label: '$200 - $300' },
     { value: '300-500', label: '$300 - $500' },
-    { value: '500+', label: '$500+' },
+    { value: '500-750', label: '$500 - $750' },
+    { value: '750-1000', label: '$750 - $1,000' },
+    { value: '1000-1500', label: '$1,000 - $1,500' },
+    { value: '1500-2000', label: '$1,500 - $2,000' },
+    { value: '2000-3000', label: '$2,000 - $3,000' },
+    { value: '3000+', label: '$3,000+' },
   ];
   
   // Create query string from filters
@@ -274,6 +280,7 @@ export default function TourFilters({ locale, initialFilters = {} }) {
       expertise: '',
       language: '',
       travelers: '',
+      pricePer: '',
       minPrice: '',
       maxPrice: '',
       priceRange: '',
@@ -660,6 +667,24 @@ export default function TourFilters({ locale, initialFilters = {} }) {
                     {option.label}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            {/* Price Per Filter */}
+            <div>
+              <label htmlFor="pricePer" className="block text-sm font-medium text-secondary-700 mb-1">
+                {locale === 'en' ? 'Price Per' : 'السعر لكل'}
+              </label>
+              <select
+                id="pricePer"
+                name="pricePer"
+                value={filters.pricePer}
+                onChange={(e) => handleFilterChange('pricePer', e.target.value)}
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="">{locale === 'en' ? 'Any' : 'أي'}</option>
+                <option value="person">{locale === 'en' ? 'Per person' : 'للفرد'}</option>
+                <option value="group">{locale === 'en' ? 'Per group' : 'للمجموعة'}</option>
               </select>
             </div>
             

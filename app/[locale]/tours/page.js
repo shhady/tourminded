@@ -85,6 +85,11 @@ async function getTours(searchParams) {
     } else if (params.maxPrice) {
       filter.price = { $lte: parseInt(params.maxPrice) };
     }
+
+    // Handle price per (person/group)
+    if (params.pricePer) {
+      filter.pricePer = params.pricePer === 'person' ? 'person' : 'group';
+    }
     
     // Handle language filter from HeroSection
     if (params.language) {
@@ -297,6 +302,7 @@ export default async function ToursPage({ searchParams, params }) {
     expertise: awaitedSearchParams.expertise || '', // Changed from type to expertise
     language: awaitedSearchParams.language || '',
     travelers: awaitedSearchParams.travelers || '',
+    pricePer: awaitedSearchParams.pricePer || '',
     minPrice: awaitedSearchParams.minPrice || '',
     maxPrice: awaitedSearchParams.maxPrice || '',
     priceRange: awaitedSearchParams.priceRange || '',
