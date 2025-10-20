@@ -8,66 +8,66 @@ import { ArrowLeft, Search } from 'lucide-react';
 
 // Sample blog posts data
 const blogPosts = [
-  {
-    id: 1,
-    title: "The Historical Significance of Jerusalem's Old City",
-    excerpt: "Explore the rich history and cultural importance of Jerusalem's Old City, a UNESCO World Heritage site that holds significance for three major religions.",
-    coverImage: '/images/blog/jerusalem-old-city.jpg',
-    category: 'History',
-    author: 'Dr. Sarah Cohen',
-    date: 'May 15, 2023',
-    slug: 'historical-significance-jerusalem-old-city'
-  },
-  {
-    id: 2,
-    title: 'Culinary Adventures: Street Food Tour of Tel Aviv',
-    excerpt: 'Discover the vibrant food scene of Tel Aviv with our guide to the best street food spots that showcase the diverse flavors of Israeli cuisine.',
-    coverImage: '/images/blog/tel-aviv-food.jpg',
-    category: 'Food',
-    author: 'Chef Michael Levy',
-    date: 'June 3, 2023',
-    slug: 'culinary-adventures-street-food-tel-aviv'
-  },
-  {
-    id: 3,
-    title: 'Understanding the Complex Politics of the Holy Land',
-    excerpt: 'A balanced overview of the political landscape in the region, helping visitors understand the context behind the news headlines.',
-    coverImage: '/images/blog/political-landscape.jpg',
-    category: 'Political',
-    author: 'Prof. Ahmad Khalidi',
-    date: 'July 12, 2023',
-    slug: 'understanding-complex-politics-holy-land'
-  },
-  {
-    id: 4,
-    title: 'The Dead Sea: Natural Wonder and Healing Destination',
-    excerpt: 'Learn about the unique properties of the Dead Sea and why it continues to attract visitors seeking its therapeutic benefits.',
-    coverImage: '/images/blog/dead-sea.jpg',
-    category: 'Nature',
-    author: 'Emma Rodriguez',
-    date: 'August 5, 2023',
-    slug: 'dead-sea-natural-wonder-healing-destination'
-  },
-  {
-    id: 5,
-    title: 'Cultural Festivals of the Holy Land: A Year-Round Guide',
-    excerpt: 'From Passover to Ramadan to Christmas, discover the vibrant cultural festivals that take place throughout the year in this region.',
-    coverImage: '/images/blog/cultural-festivals.jpg',
-    category: 'Culture',
-    author: 'Yusuf Ibrahim',
-    date: 'September 20, 2023',
-    slug: 'cultural-festivals-holy-land-year-round-guide'
-  },
-  {
-    id: 6,
-    title: 'Photography Tips for Capturing the Essence of the Holy Land',
-    excerpt: 'Professional photography advice to help you capture stunning images that truly represent the beauty and spirit of this unique region.',
-    coverImage: '/images/blog/photography-tips.jpg',
-    category: 'Photography',
-    author: 'Sophia Chen',
-    date: 'October 8, 2023',
-    slug: 'photography-tips-capturing-essence-holy-land'
-  }
+//   {
+//     id: 1,
+//     title: "The Historical Significance of Jerusalem's Old City",
+//     excerpt: "Explore the rich history and cultural importance of Jerusalem's Old City, a UNESCO World Heritage site that holds significance for three major religions.",
+//     coverImage: '/images/blog/jerusalem-old-city.jpg',
+//     category: 'History',
+//     author: 'Dr. Sarah Cohen',
+//     date: 'May 15, 2023',
+//     slug: 'historical-significance-jerusalem-old-city'
+//   },
+//   {
+//     id: 2,
+//     title: 'Culinary Adventures: Street Food Tour of Tel Aviv',
+//     excerpt: 'Discover the vibrant food scene of Tel Aviv with our guide to the best street food spots that showcase the diverse flavors of Israeli cuisine.',
+//     coverImage: '/images/blog/tel-aviv-food.jpg',
+//     category: 'Food',
+//     author: 'Chef Michael Levy',
+//     date: 'June 3, 2023',
+//     slug: 'culinary-adventures-street-food-tel-aviv'
+//   },
+//   {
+//     id: 3,
+//     title: 'Understanding the Complex Politics of the Holy Land',
+//     excerpt: 'A balanced overview of the political landscape in the region, helping visitors understand the context behind the news headlines.',
+//     coverImage: '/images/blog/political-landscape.jpg',
+//     category: 'Political',
+//     author: 'Prof. Ahmad Khalidi',
+//     date: 'July 12, 2023',
+//     slug: 'understanding-complex-politics-holy-land'
+//   },
+//   {
+//     id: 4,
+//     title: 'The Dead Sea: Natural Wonder and Healing Destination',
+//     excerpt: 'Learn about the unique properties of the Dead Sea and why it continues to attract visitors seeking its therapeutic benefits.',
+//     coverImage: '/images/blog/dead-sea.jpg',
+//     category: 'Nature',
+//     author: 'Emma Rodriguez',
+//     date: 'August 5, 2023',
+//     slug: 'dead-sea-natural-wonder-healing-destination'
+//   },
+//   {
+//     id: 5,
+//     title: 'Cultural Festivals of the Holy Land: A Year-Round Guide',
+//     excerpt: 'From Passover to Ramadan to Christmas, discover the vibrant cultural festivals that take place throughout the year in this region.',
+//     coverImage: '/images/blog/cultural-festivals.jpg',
+//     category: 'Culture',
+//     author: 'Yusuf Ibrahim',
+//     date: 'September 20, 2023',
+//     slug: 'cultural-festivals-holy-land-year-round-guide'
+//   },
+//   {
+//     id: 6,
+//     title: 'Photography Tips for Capturing the Essence of the Holy Land',
+//     excerpt: 'Professional photography advice to help you capture stunning images that truly represent the beauty and spirit of this unique region.',
+//     coverImage: '/images/blog/photography-tips.jpg',
+//     category: 'Photography',
+//     author: 'Sophia Chen',
+//     date: 'October 8, 2023',
+//     slug: 'photography-tips-capturing-essence-holy-land'
+//   }
 ];
 
 // Get unique categories from blog posts
@@ -240,6 +240,7 @@ export default function BlogPage({ params }) {
             ))
           ) : (
             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
+              <h1 className="text-3xl font-bold mb-4 text-gray-900">{locale === 'en' ? 'Coming Soon' : 'قريبا'}</h1>
               <p className="text-lg text-gray-500">
                 {locale === 'en' 
                   ? 'No articles found matching your search criteria.' 
