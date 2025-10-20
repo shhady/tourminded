@@ -513,7 +513,7 @@ export default async function LocationDetailsPage({ params }) {
         id: 'tel-aviv',
         name: locale === 'en' ? 'Tel Aviv' : 'تل أبيب',
         region: 'Israel',
-        image: '/tel-aviv.jpg',
+        image: '/hero-tlv.jpg',
         gallery: ['/hero-bg-1.jpg', '/hero-bg-2.jpg', '/hero-bg-3.jpg'],
         description: locale === 'en'
           ? 'Tel Aviv is a vibrant coastal city on the Mediterranean Sea, known for its stunning beaches, world-class culinary scene, and dynamic nightlife. Often called "The City That Never Sleeps," Tel Aviv is Israel\'s cultural and commercial heart, renowned for its Bauhaus architecture, innovative tech startups, and liberal atmosphere. The city offers a perfect blend of relaxed beach life, rich history, and contemporary urban experiences.'
@@ -547,7 +547,7 @@ export default async function LocationDetailsPage({ params }) {
         id: 'sea-of-galilee',
         name: locale === 'en' ? 'Sea of Galilee' : 'بحر الجليل',
         region: 'Northern Israel',
-        image: '/hero-bg-1.jpg',
+        image: '/her-tiberias.jpg',
         gallery: ['/hero-bg-1.jpg', '/hero-bg-2.jpg', '/hero-bg-3.jpg'],
         description: locale === 'en'
           ? 'The Sea of Galilee, also known as Lake Tiberias or Kinneret, is Israel\'s largest freshwater lake and the lowest freshwater lake on Earth. Located in the northeast of Israel, this heart-shaped lake holds tremendous religious significance as the site where many of Jesus\' miracles are believed to have occurred. Today, the Sea of Galilee serves as Israel\'s primary water reservoir while offering visitors peaceful shores, historic sites, thermal hot springs, and various water activities.'
@@ -564,7 +564,7 @@ export default async function LocationDetailsPage({ params }) {
         id: 'masada',
         name: locale === 'en' ? 'Masada' : 'مسادا',
         region: 'Judean Desert, Israel',
-        image: '/masada.jpg',
+        image: '/hero-massada.jpg',
         gallery: ['/hero-bg-1.jpg', '/hero-bg-2.jpg', '/hero-bg-3.jpg'],
         description: locale === 'en'
           ? 'Masada is an ancient fortification perched atop an isolated rock plateau overlooking the Dead Sea. This UNESCO World Heritage site is famous for its dramatic story of resistance and the well-preserved ruins of King Herod\'s palace complex. Standing 400 meters above the Dead Sea, Masada offers breathtaking panoramic views of the Judean Desert and serves as a powerful symbol of Jewish determination and heroism.'

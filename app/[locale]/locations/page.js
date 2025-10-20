@@ -65,7 +65,7 @@ export default async function LocationsPage({ params }) {
     {
       id: 'tel-aviv',
       name: locale === 'en' ? 'Tel Aviv' : 'تل أبيب',
-      image: '/hero-bg-1.jpg',
+      image: '/hero-tlv.jpg',
       description: locale === 'en'
         ? 'Experience the vibrant culture of Israel\'s bustling coastal city'
         : 'استمتع بالثقافة النابضة بالحياة في مدينة إسرائيل الساحلية المزدحمة',
@@ -73,7 +73,7 @@ export default async function LocationsPage({ params }) {
     {
       id: 'sea-of-galilee',
       name: locale === 'en' ? 'Sea of Galilee' : 'بحر الجليل',
-      image: '/hero-bg-1.jpg',
+      image: '/her-tiberias.jpg',
       description: locale === 'en'
         ? 'Visit the freshwater lake where Jesus performed many miracles'
         : 'زيارة بحيرة المياه العذبة حيث قام يسوع بالعديد من المعجزات',
@@ -81,7 +81,7 @@ export default async function LocationsPage({ params }) {
     {
       id: 'masada',
       name: locale === 'en' ? 'Masada' : 'مسادا',
-      image: '/hero-bg-1.jpg',
+      image: '/hero-massada.jpg',
       description: locale === 'en'
         ? 'Explore the ancient fortress overlooking the Dead Sea'
         : 'استكشف القلعة القديمة المطلة على البحر الميت',
