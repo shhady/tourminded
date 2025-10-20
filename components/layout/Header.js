@@ -341,7 +341,7 @@ const Header = ({ locale }) => {
 
                   {/* Bookings Link */}
                   <Link
-                    href={`/${locale}/bookings`}
+                    href={guideStatus === 'active' ? `/${locale}/dashboard/guide/bookings` : `/${locale}/bookings`}
                     className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                     onClick={() => setIsUserMenuOpen(false)}
                   >
