@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import MainLayout from '@/components/layout/MainLayout';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, Newspaper } from 'lucide-react';
 
 // Sample blog posts data
 const blogPosts = [
@@ -239,22 +239,40 @@ export default function BlogPage({ params }) {
               </div>
             ))
           ) : (
-            <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
-              <h1 className="text-3xl font-bold mb-4 text-gray-900">{locale === 'en' ? 'Coming Soon' : 'قريبا'}</h1>
-              <p className="text-lg text-gray-500">
-                {locale === 'en' 
-                  ? 'No articles found matching your search criteria.' 
-                  : 'لم يتم العثور على مقالات تطابق معايير البحث.'}
-              </p>
-              <button 
-                onClick={() => {
-                  setSelectedCategory('All');
-                  setSearchQuery('');
-                }}
-                className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                {locale === 'en' ? 'Clear Filters' : 'مسح عوامل التصفية'}
-              </button>
+            <div className="col-span-1 md:col-span-2 lg:col-span-3">
+              <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary-100/40 via-transparent to-transparent" />
+                <div className="relative px-6 py-12 text-center md:px-10">
+                  <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary-600/10 text-primary-600">
+                    <Newspaper className="h-7 w-7" />
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-3">
+                    {locale === 'en' ? 'Our blog is coming soon' : 'المدونة قادمة قريبًا'}
+                  </h2>
+                  <p className="text-gray-600 max-w-2xl mx-auto">
+                    {locale === 'en'
+                      ? 'We’re crafting thoughtful stories, guides, and tips from the Holy Land. Check back soon or explore our tours meanwhile.'
+                      : 'نعمل على إعداد قصص وإرشادات ونصائح من الأرض المقدسة. عاود الزيارة قريبًا أو استكشف جولاتنا في هذه الأثناء.'}
+                  </p>
+                  <div className="mt-6 flex items-center justify-center gap-3">
+                    <Link
+                      href={`/${locale}/tours`}
+                      className="px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-primary-700 transition-colors"
+                    >
+                      {locale === 'en' ? 'Explore Tours' : 'استكشف الجولات'}
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setSelectedCategory('All');
+                        setSearchQuery('');
+                      }}
+                      className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      {locale === 'en' ? 'Clear Filters' : 'مسح عوامل التصفية'}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
