@@ -451,7 +451,7 @@ export default async function GuidesPage({ searchParams, params }) {
                 return (
                   <Link
                     key={page}
-                    href={`/guides?${params.toString()}`}
+                    href={`/${locale}/guides?${params.toString()}`}
                     className={`px-4 py-2 border ${
                       page === pagination.page
                         ? 'bg-primary-600 text-black border-primary-600'
