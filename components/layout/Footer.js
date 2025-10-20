@@ -27,7 +27,7 @@ const Footer = ({ locale }) => {
         href: '/guide/register',
         highlight: true 
       }] : []),
-      { name: locale === 'en' ? 'Our Team' : 'فريقنا', href: '/team' },
+      // { name: locale === 'en' ? 'Our Team' : 'فريقنا', href: '/team' },
       // { name: locale === 'en' ? 'Careers' : 'وظائف', href: '/careers' },
       { name: locale === 'en' ? 'Contact' : 'اتصل بنا', href: '/contact' },
     ],

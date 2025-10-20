@@ -481,7 +481,7 @@ export default async function AboutPage({ params }) {
       </section>
       
       {/* Team Link Section */}
-      <section className="py-16">
+      {/* <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-6">
@@ -500,7 +500,7 @@ export default async function AboutPage({ params }) {
             </Link>
           </div>
         </div>
-      </section>
+      </section> */}
       
       {/* Call to Action */}
       <CallToAction locale={locale} />
