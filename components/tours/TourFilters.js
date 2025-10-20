@@ -613,7 +613,7 @@ export default function TourFilters({ locale, initialFilters = {} }) {
             {/* Expertise (Tour Type) Filter */}
             <div>
               <label htmlFor="expertise" className="block text-sm font-medium text-secondary-700 mb-1">
-                {locale === 'en' ? 'Guide Expertise' : 'خبرة المرشد'}
+                {locale === 'en' ? 'Expertise' : 'الخبرة'}
               </label>
               <select
                 id="expertise"
@@ -633,7 +633,7 @@ export default function TourFilters({ locale, initialFilters = {} }) {
             {/* Language Filter */}
             <div>
               <label htmlFor="language" className="block text-sm font-medium text-secondary-700 mb-1">
-                {locale === 'en' ? 'Guide Language' : 'لغة المرشد'}
+                {locale === 'en' ? 'Language' : 'اللغة'}
               </label>
               <select
                 id="language"
