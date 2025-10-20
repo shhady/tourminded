@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Globe, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Clock, Heart, MessageCircle } from 'lucide-react';
+import { Globe, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Clock, Heart, MessageCircle, PlusCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import { locales } from '@/lib/i18n';
 import Image from 'next/image';
@@ -195,6 +195,7 @@ const Header = ({ locale }) => {
   const getGuideMenuItem = () => {
     if (guideStatus === 'active') {
       return (
+       <>
         <Link
           href={`/${locale}/dashboard/guide`}
           className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
@@ -203,6 +204,15 @@ const Header = ({ locale }) => {
           <LayoutDashboard className="mr-2 h-4 w-4" />
           {locale === 'en' ? 'Guide Dashboard' : 'لوحة المرشد'}
         </Link>
+        <Link
+          href={`/${locale}/dashboard/guide/tours/new`}
+          className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+          onClick={() => setIsUserMenuOpen(false)}
+        >
+          <PlusCircle className="mr-2 h-4 w-4" />
+          {locale === 'en' ? 'Create Tour' : 'إنشاء جولة'}
+        </Link>
+        </>
       );
     } else if (guideStatus === 'pending') {
       return (
@@ -261,6 +271,8 @@ const Header = ({ locale }) => {
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center space-x-3">
+            
+           
             {/* Language Switcher */}
             <div className="relative">
               <button
@@ -275,7 +287,7 @@ const Header = ({ locale }) => {
                 <span>{locale === 'en' ? 'English' : 'العربية'}</span>
                 <ChevronDown className="ml-1 h-3 w-3" />
               </button>
-
+            
               {isLanguageMenuOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-medium z-10 animate-fade-in overflow-hidden">
                   <button
@@ -500,6 +512,9 @@ const Header = ({ locale }) => {
                   
                   {/* Guide-related menu item (dynamic based on status) */}
                   {user && getGuideMenuItem()}
+
+                  {/* Create Tour - only for active guides (Mobile) */}
+                 
                    {/* Admin Dashboard - only for admins */}
                     {user && user.role === 'admin' && (
                       <Link
