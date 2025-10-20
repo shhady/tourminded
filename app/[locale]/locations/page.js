@@ -67,7 +67,7 @@ export default async function LocationsPage({ params }) {
       name: locale === 'en' ? 'Tel Aviv' : 'تل أبيب',
       image: '/hero-tlv.jpg',
       description: locale === 'en'
-        ? 'Experience the vibrant culture of Israel\'s bustling coastal city'
+        ? 'Experience the vibrant culture of the coastal city'
         : 'استمتع بالثقافة النابضة بالحياة في مدينة إسرائيل الساحلية المزدحمة',
     },
     {
