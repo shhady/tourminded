@@ -75,11 +75,11 @@ const ReviewsSection = ({ guideId, locale }) => {
           
             
             <div className="ml-auto">
-            <Link href={`/${locale}/guides/${guideId}/review`} className="text-sm bg-primary-100 text-blue-600 hover:bg-primary-200 font-medium py-1 px-3 rounded-full border border-primary-600">
+              {/* <Link href={`/${locale}/guides/${guideId}/review`} className="text-sm bg-primary-100 text-blue-600 hover:bg-primary-200 font-medium py-1 px-3 rounded-full border border-primary-600">
               {locale === 'en' ? 'Write Review' : 'كتابة تقييم'}
-            </Link>
-          </div>
-        </div>
+               </Link> */}
+             </div>
+             </div>
         <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
         </div>
@@ -97,7 +97,7 @@ const ReviewsSection = ({ guideId, locale }) => {
           {locale === 'en' ? 'Reviews' : 'التقييمات'}
         </h2>
         
-        {isSignedIn && (
+        {/* {isSignedIn && (
           <Link 
             href={`/${locale}/guides/${guideId}/review`}
             className="inline-flex items-center px-4 py-2 bg-primary-600 text-blue-500 rounded-lg hover:bg-primary-700 transition-colors"
@@ -105,7 +105,7 @@ const ReviewsSection = ({ guideId, locale }) => {
             <Plus className="w-4 h-4 mr-2" />
             {locale === 'en' ? 'Write Review' : 'كتابة تقييم'}
           </Link>
-        )}
+        )} */}
       </div>
 
       {error && (

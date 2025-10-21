@@ -22,7 +22,7 @@ const ReviewSchema = new mongoose.Schema({
   },
   comment: {
     type: String,
-    required: [true, 'Review must have a comment'],
+    // required: [true, 'Review must have a comment'],
   },
   createdAt: {
     type: Date,

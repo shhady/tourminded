@@ -186,6 +186,16 @@ export default async function TourPage({ params }) {
       ? (locale === 'en' ? tourData.description.en : tourData.description.ar) || tourData.description.en
       : tourData.description;
     
+    // Compute rating from embedded tourReviews if available
+    const embeddedReviews = Array.isArray(tourData.tourReviews) ? tourData.tourReviews : (tourData.tourreviews || []);
+    const reviewsForAverage = embeddedReviews.filter(r => r && typeof r.rating === 'number');
+    const avgFromEmbedded = reviewsForAverage.length > 0
+      ? reviewsForAverage.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviewsForAverage.length
+      : null;
+
+    const averageRating = avgFromEmbedded !== null ? avgFromEmbedded : (Number(tourData.rating) || 0);
+    const reviewsCount = embeddedReviews.length > 0 ? embeddedReviews.length : (tourData.reviewCount || 0);
+
     // Placeholder image for development
     const placeholderImage = 'https://placehold.co/800x600/0d47a1/ffffff?text=Tour+Image';
     
@@ -250,18 +260,12 @@ export default async function TourPage({ params }) {
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
             <div className="container mx-auto">
               <div className="flex items-center space-x-2 mb-3">
-                {Array.isArray(tourData.expertise) && tourData.expertise.length > 0 && (
-                  tourData.expertise.slice(0, 3).map((exp, idx) => (
-                    <span key={idx} className="bg-primary-600 text-white text-sm font-medium px-2.5 py-0.5 rounded">
-                      {exp}
-                    </span>
-                  ))
-                )}
-                {tourData.rating > 0 && (
+                
+                {averageRating > 0 && (
                   <div className="flex items-center">
                     <Star className="text-yellow-400 w-5 h-5" />
-                    <span className="ml-1 font-medium">{tourData.rating.toFixed(1)}</span>
-                    <span className="ml-1 text-white/80">({tourData.reviewCount} {locale === 'en' ? 'reviews' : 'تقييمات'})</span>
+                    <span className="ml-1 font-medium">{averageRating.toFixed(1)}</span>
+                    <span className="ml-1 text-white/80">({reviewsCount} {locale === 'en' ? 'reviews' : 'تقييمات'})</span>
                   </div>
                 )}
               </div>
@@ -523,6 +527,29 @@ export default async function TourPage({ params }) {
                   <GalleryLightbox images={tourData.images.gallery} locale={locale} />
                 </div>
               )}
+
+              {/* Reviews Section */}
+              {embeddedReviews && embeddedReviews.length > 0 && (
+                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                  <h3 className="text-xl font-semibold mb-4 text-secondary-900">
+                    {locale === 'en' ? 'Reviews' : 'المراجعات'}
+                  </h3>
+                  <div className="space-y-4">
+                    {embeddedReviews.map((rev) => (
+                      <div key={rev.id || rev._id} className="border border-secondary-200 rounded-md p-4">
+                        <div className="flex items-center mb-2">
+                          <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                          <span className="font-medium text-secondary-900">{Number(rev.rating) || 0}</span>
+                          <span className="ml-2 text-xs text-secondary-600">{new Date(rev.createdAt || Date.now()).toLocaleDateString()}</span>
+                        </div>
+                        {rev.comment && (
+                          <p className="text-secondary-800 whitespace-pre-line">{rev.comment}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Sidebar */}
@@ -591,11 +618,14 @@ export default async function TourPage({ params }) {
                         <div className="flex items-center">
                           <Star className="text-yellow-400 w-4 h-4" />
                           <span className="ml-1 text-secondary-700">
-                            {tourData.guide.reviews ? 
-                              `${(tourData.guide.reviews.reduce((acc, review) => acc + review.rating, 0) / tourData.guide.reviews.length).toFixed(1)} (${tourData.guide.reviews.length})`
-                              : '0 (0)'}
+                            {(() => {
+                              const reviews = Array.isArray(tourData.guide.reviews) ? tourData.guide.reviews : [];
+                              const count = reviews.length;
+                              if (count === 0) return '0 (0)';
+                              const avg = (reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / count).toFixed(1);
+                              return `${avg} (${count})`;
+                            })()}
                           </span>
-                          {/* <span className="ml-1 text-secondary-700">{tourData.guide.rating.toFixed(1) || 0} ({tourData.guide.reviewCount || 0})</span> */}
                         </div>
                         <Link 
                           href={`/${locale}/guides/${tourData.guide._id}`}

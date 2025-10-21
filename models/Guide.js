@@ -160,7 +160,8 @@ const GuideSchema = new mongoose.Schema({
     },
     review: {
       type: String,
-      required: [true, 'Please provide a review'],
+      // comment is optional now
+      required: false,
       trim: true,
     },
     rating: {

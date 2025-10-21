@@ -142,11 +142,34 @@ export async function POST(request) {
       );
     }
     
-    // Create review
+    // Create review (canonical)
     const review = await Review.create({
       ...reviewData,
       user: user._id,
     });
+
+    // Also append to embedded arrays for legacy views
+    if (reviewData.tour) {
+      try {
+        const Tour = (await import('@/models/Tour')).default;
+        await Tour.findByIdAndUpdate(
+          reviewData.tour,
+          {
+            $push: {
+              tourReviews: {
+                userId: user._id,
+                comment: typeof reviewData.comment === 'string' ? reviewData.comment : '',
+                rating: reviewData.rating,
+                createdAt: new Date(),
+              },
+            },
+          },
+          { new: true, runValidators: false }
+        );
+      } catch (e) {
+        console.error('Failed to append embedded tour review', e);
+      }
+    }
     
     return NextResponse.json(
       { success: true, data: review },

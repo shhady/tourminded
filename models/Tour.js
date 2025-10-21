@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import Guide from './Guide';
+import Review from './Review';
+import User from './User';
 const TourSchema = new mongoose.Schema({
   title: {
     en: {
@@ -173,6 +175,35 @@ const TourSchema = new mongoose.Schema({
       description: {
         type: String,
         trim: true,
+      },
+    },
+  ],
+  // Embedded tour reviews (legacy/local cache) - comment optional
+  tourReviews: [
+    {
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: () => new mongoose.Types.ObjectId(),
+      },
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: [true, 'User ID is required'],
+      },
+      comment: {
+        type: String,
+        required: false,
+        trim: true,
+      },
+      rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        required: [true, 'Please provide a rating'],
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
       },
     },
   ],

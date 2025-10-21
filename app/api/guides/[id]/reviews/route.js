@@ -17,14 +17,7 @@ export async function POST(request, { params }) {
     const { id } = await params;
     const { review, rating } = await request.json();
 
-    // Validate input
-    if (!review || !rating) {
-      return NextResponse.json(
-        { success: false, message: 'Review text and rating are required' },
-        { status: 400 }
-      );
-    }
-
+    // Validate input: rating required, comment optional
     if (typeof rating !== 'number' || rating < 1 || rating > 5) {
       return NextResponse.json(
         { success: false, message: 'Rating must be a number between 1 and 5' },
@@ -78,7 +71,7 @@ export async function POST(request, { params }) {
       updatedReviews[existingReviewIndex] = {
         id: guide.reviews[existingReviewIndex].id,
         userId: user._id,
-        review: review.trim(),
+        review: typeof review === 'string' ? review.trim() : '',
         rating: rating,
         createdAt: new Date()
       };
@@ -86,7 +79,7 @@ export async function POST(request, { params }) {
       // Add new review
       updatedReviews = [...guide.reviews, {
         userId: user._id,
-        review: review.trim(),
+        review: typeof review === 'string' ? review.trim() : '',
         rating: rating,
         createdAt: new Date()
       }];
