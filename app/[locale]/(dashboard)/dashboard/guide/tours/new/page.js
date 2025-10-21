@@ -26,6 +26,8 @@ export default function NewTourPage({ params }) {
   const [guideLanguages, setGuideLanguages] = useState([]);
   const [tourPlan, setTourPlan] = useState([]);
   const [includesItems, setIncludesItems] = useState(['']);
+  const [selectedExpertise, setSelectedExpertise] = useState([]);
+  const [faqs, setFaqs] = useState([{ question: { en: '', ar: '' }, answer: { en: '', ar: '' } }]);
   
   // Hardcoded locations in Palestine and Israel
   const locations = [
@@ -58,6 +60,38 @@ export default function NewTourPage({ params }) {
     { _id: 'Jenin', name: { en: 'Jenin', ar: 'جنين' } },
     { _id: 'Taybeh', name: { en: 'Taybeh', ar: 'الطيبة' } },
   ];
+
+  const expertiseOptions = [
+    'Religious',
+    'Christian',
+    'Jewish',
+    'Muslim',
+    'Political',
+    'Historical',
+    'Cultural',
+    'Food',
+    'Adventure',
+    'Nature',
+    'Photography',
+    'Culinary',
+    'All-inclusive',
+  ];
+
+  const expertiseLabels = {
+    'Religious': { en: 'Religious', ar: 'دينية' },
+    'Christian': { en: 'Christian', ar: 'مسيحية' },
+    'Jewish': { en: 'Jewish', ar: 'يهودية' },
+    'Muslim': { en: 'Muslim', ar: 'إسلامية' },
+    'Political': { en: 'Political', ar: 'سياسية' },
+    'Historical': { en: 'Historical', ar: 'تاريخية' },
+    'Cultural': { en: 'Cultural', ar: 'ثقافية' },
+    'Food': { en: 'Food', ar: 'طعام' },
+    'Adventure': { en: 'Adventure', ar: 'مغامرة' },
+    'Nature': { en: 'Nature', ar: 'طبيعة' },
+    'Photography': { en: 'Photography', ar: 'تصوير' },
+    'Culinary': { en: 'Culinary', ar: 'طهي' },
+    'All-inclusive': { en: 'All-inclusive', ar: 'شامل' },
+  };
   
   const { register, handleSubmit, setValue, formState: { errors }, watch } = useForm();
   
@@ -181,6 +215,32 @@ export default function NewTourPage({ params }) {
     newItems[index] = value;
     setIncludesItems(newItems);
   };
+
+  const toggleExpertise = (value) => {
+    setSelectedExpertise(prev => prev.includes(value)
+      ? prev.filter(v => v !== value)
+      : [...prev, value]
+    );
+  };
+
+  const addFaq = () => {
+    setFaqs([...faqs, { question: { en: '', ar: '' }, answer: { en: '', ar: '' } }]);
+  };
+
+  const removeFaq = (index) => {
+    const next = [...faqs];
+    next.splice(index, 1);
+    setFaqs(next.length ? next : [{ question: { en: '', ar: '' }, answer: { en: '', ar: '' } }]);
+  };
+
+  const updateFaq = (index, section, lang, value) => {
+    setFaqs(prev => {
+      const updated = [...prev];
+      if (!updated[index][section]) updated[index][section] = {};
+      updated[index][section][lang] = value;
+      return updated;
+    });
+  };
   
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -194,6 +254,12 @@ export default function NewTourPage({ params }) {
     
     if (selectedLocations.length === 0) {
       setError(locale === 'en' ? 'At least one location is required' : 'مطلوب موقع واحد على الأقل');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!selectedExpertise.length) {
+      setError(locale === 'en' ? 'Select at least one expertise' : 'اختر نوع خبرة واحدًا على الأقل');
       setIsLoading(false);
       return;
     }
@@ -244,6 +310,7 @@ export default function NewTourPage({ params }) {
       
       const tourData = {
         ...data,
+        expertise: selectedExpertise,
         images: {
           cover: {
             url: coverImage
@@ -274,6 +341,13 @@ export default function NewTourPage({ params }) {
         locationNames: selectedLocations,
         // Add includes items
         includes: includesItems.filter(item => item.trim() !== ''),
+        // FAQs: only include items with at least question or answer
+        faqs: faqs
+          .map(f => ({
+            question: { en: (f.question?.en || '').trim(), ar: (f.question?.ar || '').trim() },
+            answer: { en: (f.answer?.en || '').trim(), ar: (f.answer?.ar || '').trim() },
+          }))
+          .filter(f => f.question.en || f.question.ar || f.answer.en || f.answer.ar),
         // Set active status
         isActive: true
       };
@@ -611,31 +685,27 @@ export default function NewTourPage({ params }) {
           {/* Tour Features */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="expertise" className="block text-sm font-medium text-secondary-700 mb-1">
-                {locale === 'en' ? 'Expertise' : 'الخبرة'}*
+              <label className="block text-sm font-medium text-secondary-700 mb-1">
+                {locale === 'en' ? 'Expertise (select multiple)' : 'الخبرة (اختر متعدد)'}*
               </label>
-              <select
-                id="expertise"
-                {...register('expertise', {
-                  required: locale === 'en' ? 'Expertise is required' : 'الخبرة مطلوبة',
-                })}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="">{locale === 'en' ? 'Select expertise' : 'اختر الخبرة'}</option>
-                <option value="Historical">{locale === 'en' ? 'Historical' : 'تاريخية'}</option>
-                <option value="Religious">{locale === 'en' ? 'Religious' : 'دينية'}</option>
-                <option value="Cultural">{locale === 'en' ? 'Cultural' : 'ثقافية'}</option>
-                <option value="Adventure">{locale === 'en' ? 'Adventure' : 'مغامرة'}</option>
-                <option value="Culinary">{locale === 'en' ? 'Culinary' : 'طهي'}</option>
-                <option value="Nature">{locale === 'en' ? 'Nature' : 'طبيعة'}</option>
-                <option value="Photography">{locale === 'en' ? 'Photography' : 'تصوير'}</option>
-                <option value="Jewish">{locale === 'en' ? 'Jewish' : 'يهودية'}</option>
-                <option value="Christian">{locale === 'en' ? 'Christian' : 'مسيحية'}</option>
-                <option value="Muslim">{locale === 'en' ? 'Muslim' : 'إسلامية'}</option>
-                <option value="Political">{locale === 'en' ? 'Political' : 'سياسية'}</option>
-              </select>
-              {errors.expertise && (
-                <p className="mt-1 text-sm text-red-600">{errors.expertise.message}</p>
+              <div className="border border-secondary-300 rounded-md p-3 max-h-48 overflow-y-auto">
+                {expertiseOptions.map((opt) => (
+                  <div key={opt} className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      id={`exp-${opt}`}
+                      checked={selectedExpertise.includes(opt)}
+                      onChange={() => toggleExpertise(opt)}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                    />
+                    <label htmlFor={`exp-${opt}`} className="ml-2 block text-sm text-secondary-700">
+                      {locale === 'en' ? expertiseLabels[opt].en : expertiseLabels[opt].ar}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              {selectedExpertise.length === 0 && (
+                <p className="mt-1 text-sm text-red-600">{locale === 'en' ? 'Select at least one expertise' : 'اختر نوع خبرة واحدًا على الأقل'}</p>
               )}
             </div>
             
@@ -789,6 +859,48 @@ export default function NewTourPage({ params }) {
             >
               <Plus className="h-5 w-5 mr-2" />
               {locale === 'en' ? 'Add Included Item' : 'إضافة عنصر مشمول'}
+            </button>
+          </div>
+
+          {/* FAQs */}
+          <div>
+            <label className="block text-sm font-medium text-secondary-700 mb-3">
+              {locale === 'en' ? 'Frequently Asked Questions' : 'الأسئلة الشائعة'}
+            </label>
+            <p className="text-xs text-secondary-500 mb-3">
+              {locale === 'en' ? 'Add common questions travelers ask. Either language is fine.' : 'أضف الأسئلة الشائعة. أي لغة مقبولة.'}
+            </p>
+            {faqs.map((f, idx) => (
+              <div key={`faq-${idx}`} className="mb-4 p-4 border border-secondary-200 rounded-md">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium">{locale === 'en' ? `FAQ ${idx + 1}` : `سؤال ${idx + 1}`}</h3>
+                  <button type="button" onClick={() => removeFaq(idx)} className="text-red-500 hover:text-red-700" disabled={faqs.length === 1}>
+                    <Minus className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Question (English)' : 'السؤال (بالإنجليزية)'}</label>
+                    <input type="text" value={f.question.en} onChange={(e) => updateFaq(idx, 'question', 'en', e.target.value)} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Question (Arabic)' : 'السؤال (بالعربية)'}</label>
+                    <input type="text" value={f.question.ar} onChange={(e) => updateFaq(idx, 'question', 'ar', e.target.value)} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Answer (English)' : 'الإجابة (بالإنجليزية)'}</label>
+                    <textarea rows="3" value={f.answer.en} onChange={(e) => updateFaq(idx, 'answer', 'en', e.target.value)} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Answer (Arabic)' : 'الإجابة (بالعربية)'}</label>
+                    <textarea rows="3" value={f.answer.ar} onChange={(e) => updateFaq(idx, 'answer', 'ar', e.target.value)} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={addFaq} className="flex items-center text-primary-600 hover:text-primary-700">
+              <Plus className="h-5 w-5 mr-2" />
+              {locale === 'en' ? 'Add FAQ' : 'إضافة سؤال'}
             </button>
           </div>
           

@@ -127,25 +127,31 @@ const TourSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  expertise: {
-    type: String,
-    enum: [
-      'Religious',
-      'Christian',
-      'Jewish',
-      'Muslim',
-      'Political',
-      'Historical',
-      'Cultural',
-      'Food',
-      'Adventure',
-      'Nature',
-      'Photography',
-      'Culinary',
-      'All-inclusive',
-    ],
-    required: [true, 'Tour must have an expertise category'],
-  },
+  expertise: [
+    {
+      type: String,
+      enum: [
+        'Religious',
+        'Christian',
+        'Jewish',
+        'Muslim',
+        'Political',
+        'Historical',
+        'Cultural',
+        'Food',
+        'Adventure',
+        'Nature',
+        'Photography',
+        'Culinary',
+        'All-inclusive',
+      ],
+      required: true,
+    },
+  ],
+  // Ensure at least one expertise is selected
+  // Mongoose validates arrays differently; use a custom validator
+  // Note: Keep messages concise for UI
+  
   includes: [
     {
       type: String,
@@ -167,6 +173,19 @@ const TourSchema = new mongoose.Schema({
       description: {
         type: String,
         trim: true,
+      },
+    },
+  ],
+  // Frequently Asked Questions (localized)
+  faqs: [
+    {
+      question: {
+        en: { type: String, trim: true },
+        ar: { type: String, trim: true },
+      },
+      answer: {
+        en: { type: String, trim: true },
+        ar: { type: String, trim: true },
       },
     },
   ],
@@ -193,6 +212,11 @@ const TourSchema = new mongoose.Schema({
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
 });
+
+// Custom validator: at least one expertise
+TourSchema.path('expertise').validate(function (value) {
+  return Array.isArray(value) && value.length > 0;
+}, 'Please select at least one expertise');
 
 // Virtual populate reviews
 TourSchema.virtual('reviews', {

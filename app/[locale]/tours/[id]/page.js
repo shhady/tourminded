@@ -19,7 +19,8 @@ import {
   ChevronRight,
   Check,
   X,
-  Share
+  Share,
+  HelpCircle
 } from 'lucide-react';
 import connectDB from '@/lib/mongodb';
 import Tour from '@/models/Tour';
@@ -109,6 +110,7 @@ async function getTourData(id) {
             profileImage: guide.profileImage?.url || null,
             email: guide.user?.email || null,
             phone: guide.user?.phone || null,
+            address: guide.address || null,
             rating: guide.rating || 4.5,
             reviewCount: guide.reviewCount || 0,
             // Additional guide-specific fields
@@ -142,7 +144,7 @@ async function getTourData(id) {
       durationUnit: tourData.durationUnit || 'hours',
       maxGroupSize: tourData.maxGroupSize || 1,
       activityLevel: tourData.activityLevel || 'easy',
-      expertise: tourData.expertise || '',
+      expertise: Array.isArray(tourData.expertise) ? tourData.expertise : (tourData.expertise ? [tourData.expertise] : []),
       transportation: tourData.transportation || 'walking',
       locationNames: tourData.locationNames || [],
       languages: tourData.languages || [],
@@ -151,7 +153,8 @@ async function getTourData(id) {
       rating: tourData.rating || 0,
       reviewCount: tourData.reviewCount || 0,
       includes: tourData.includes || [],
-      images: tourData.images || { cover: { url: null }, gallery: [] }
+      images: tourData.images || { cover: { url: null }, gallery: [] },
+      faqs: Array.isArray(tourData.faqs) ? tourData.faqs : []
     };
   } catch (error) {
     console.error('Error getting tour data:', error);
@@ -247,10 +250,12 @@ export default async function TourPage({ params }) {
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
             <div className="container mx-auto">
               <div className="flex items-center space-x-2 mb-3">
-                {tourData.expertise && (
-                  <span className="bg-primary-600 text-white text-sm font-medium px-2.5 py-0.5 rounded">
-                    {tourData.expertise}
-                  </span>
+                {Array.isArray(tourData.expertise) && tourData.expertise.length > 0 && (
+                  tourData.expertise.slice(0, 3).map((exp, idx) => (
+                    <span key={idx} className="bg-primary-600 text-white text-sm font-medium px-2.5 py-0.5 rounded">
+                      {exp}
+                    </span>
+                  ))
                 )}
                 {tourData.rating > 0 && (
                   <div className="flex items-center">
@@ -388,13 +393,19 @@ export default async function TourPage({ params }) {
                       <p className="text-secondary-600">{formatActivityLevel(tourData.activityLevel)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center">
-                    <Briefcase className="text-primary-600 w-5 h-5 mr-3" />
+                  <div className="flex items-start">
+                    <Briefcase className="text-primary-600 w-5 h-5 mr-3 mt-1" />
                     <div>
                       <p className="font-medium text-secondary-900">
                         {locale === 'en' ? 'Expertise' : 'الخبرة'}
                       </p>
-                      <p className="text-secondary-600">{tourData.expertise}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {tourData.expertise.map((exp, i) => (
+                          <span key={i} className="bg-secondary-100 text-secondary-800 text-sm px-2.5 py-0.5 rounded">
+                            {exp}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center">
@@ -427,6 +438,34 @@ export default async function TourPage({ params }) {
                     </div>
                   )}
                 </div>
+                {/* Locations */}
+                {Array.isArray(tourData.locationNames) && tourData.locationNames.length > 0 && (
+                  <>
+                    <h3 className="text-lg font-semibold mt-6 text-secondary-900">
+                      {locale === 'en' ? 'Covered Locations' : 'المواقع المغطاة'}
+                    </h3>
+                    <p className="text-sm text-secondary-600 mt-1">
+                      {locale === 'en' ? 'This tour typically visits:' : 'تزور هذه الجولة عادةً:'}
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {tourData.locationNames.slice(0, 6).map((location, index) => (
+                        <Link
+                          key={index}
+                          href={`/${locale}/locations/${encodeURIComponent(location.toLowerCase())}`}
+                          className="inline-flex items-center gap-1 rounded-full border border-secondary-200 bg-secondary-50 px-3 py-1.5 text-sm text-secondary-800 hover:bg-secondary-100 transition-colors"
+                        >
+                          <MapPin className="w-3.5 h-3.5 text-primary-600" />
+                          {formatLocationName(location)}
+                        </Link>
+                      ))}
+                      {tourData.locationNames.length > 6 && (
+                        <span className="inline-flex items-center rounded-full border border-secondary-200 bg-secondary-50 px-3 py-1.5 text-sm text-secondary-700">
+                          +{tourData.locationNames.length - 6} {locale === 'en' ? 'more' : 'أخرى'}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
               
               {/* What's Included */}
@@ -443,6 +482,33 @@ export default async function TourPage({ params }) {
                           <p className="font-medium text-secondary-900">{item}</p>
                         </div>
                       </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* FAQs */}
+              {Array.isArray(tourData.faqs) && tourData.faqs.length > 0 && (
+                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                  <h3 className="text-xl font-semibold mb-4 text-secondary-900 flex items-center">
+                    <HelpCircle className="w-5 h-5 mr-2 text-primary-600" />
+                    {locale === 'en' ? 'Frequently Asked Questions' : 'الأسئلة الشائعة'}
+                  </h3>
+                  <div className="space-y-3">
+                    {tourData.faqs.map((faq, idx) => (
+                      <details key={idx} className="group border border-secondary-200 rounded-lg">
+                        <summary className="cursor-pointer p-4 bg-secondary-50 hover:bg-secondary-100 transition-colors rounded-lg group-open:rounded-b-none list-none [&::-webkit-details-marker]:hidden [&::marker]:hidden">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-md font-semibold text-secondary-900">
+                              {faq.question?.[locale] || faq.question?.en}
+                            </h4>
+                            <ChevronRight className="w-5 h-5 text-secondary-600 transition-transform group-open:rotate-90" />
+                          </div>
+                        </summary>
+                        <div className="p-4 border-t border-secondary-200 text-secondary-700">
+                          {faq.answer?.[locale] || faq.answer?.en}
+                        </div>
+                      </details>
                     ))}
                   </div>
                 </div>
@@ -572,42 +638,39 @@ export default async function TourPage({ params }) {
                     <hr className="my-4 border-secondary-200" />
                   </>
                 )}
-                
-                {/* Expertise */}
-                {tourData.expertise && (
+                 
+              {/* Guide Address */}
+              {tourData.guide?.address && (
+                <>
+                  <h3 className="text-lg font-semibold mb-2 text-secondary-900">
+                    {locale === 'en' ? 'Address' : 'العنوان'}
+                  </h3>
+                  <p className="mb-4 text-secondary-700 flex items-start">
+                    <MapPin className="w-4 h-4 mr-1 text-primary-600 mt-0.5" />
+                    <span>{tourData.guide.address}</span>
+                  </p>
+                  <hr className="my-4 border-secondary-200" />
+                </>
+              )}
+                {/* Guide Expertise (comma-separated) */}
+                {Array.isArray(tourData.guide?.expertise) && tourData.guide.expertise.length > 0 && (
                   <>
                     <h3 className="text-lg font-semibold mb-2 text-secondary-900">
                       {locale === 'en' ? 'Expertise' : 'الخبرة'}
                     </h3>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="bg-secondary-100 text-secondary-800 text-sm px-2.5 py-0.5 rounded">
-                        {tourData.expertise}
-                      </span>
-                    </div>
+                    <p className="mb-4 text-secondary-700">
+                      {tourData.guide.expertise
+                        .map((e) => (typeof e === 'string' ? e : (e?.area || '')))
+                        .filter(Boolean)
+                        .join(', ')}
+                    </p>
                     <hr className="my-4 border-secondary-200" />
                   </>
                 )}
                 
-                {/* Locations */}
-                {tourData.locationNames && tourData.locationNames.length > 0 && (
-                  <>
-                    <h3 className="text-lg font-semibold mb-2 text-secondary-900">
-                      {locale === 'en' ? 'Locations' : 'المواقع'}
-                    </h3>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {tourData.locationNames.map((location, index) => (
-                        <Link 
-                          key={index}
-                          href={`/${locale}/locations/${encodeURIComponent(location.toLowerCase())}`}
-                          className="bg-secondary-100 text-secondary-800 text-sm px-2.5 py-0.5 rounded hover:bg-secondary-200 transition-colors"
-                        >
-                          {formatLocationName(location)}
-                        </Link>
-                      ))}
-                    </div>
-                  </>
-                )}
+                
               </div>
+             
             </div>
           </div>
         </div>

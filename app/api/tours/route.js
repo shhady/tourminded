@@ -147,6 +147,98 @@ export async function POST(request) {
       }
     }
     
+    // Normalize and validate expertise (now an array)
+    if (tourData.expertise !== undefined) {
+      const allowedExpertise = [
+        'Religious',
+        'Christian',
+        'Jewish',
+        'Muslim',
+        'Political',
+        'Historical',
+        'Cultural',
+        'Food',
+        'Adventure',
+        'Nature',
+        'Photography',
+        'Culinary',
+        'All-inclusive',
+      ];
+
+      // map lower-case/codes to canonical values
+      const canonMap = {
+        religious: 'Religious',
+        christian: 'Christian',
+        jewish: 'Jewish',
+        muslim: 'Muslim',
+        political: 'Political',
+        historical: 'Historical',
+        cultural: 'Cultural',
+        food: 'Food',
+        adventure: 'Adventure',
+        nature: 'Nature',
+        photography: 'Photography',
+        culinary: 'Culinary',
+        'all-inclusive': 'All-inclusive',
+        allinclusive: 'All-inclusive',
+      };
+
+      let expertiseArray = tourData.expertise;
+      if (typeof expertiseArray === 'string') {
+        // support comma-separated string
+        expertiseArray = expertiseArray
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+
+      if (!Array.isArray(expertiseArray) || expertiseArray.length === 0) {
+        return NextResponse.json(
+          { success: false, message: 'At least one expertise is required' },
+          { status: 400 }
+        );
+      }
+
+      // Canonicalize and validate entries
+      const normalizedExpertise = expertiseArray.map((val) => {
+        const key = String(val).toLowerCase();
+        return canonMap[key] || val; // allow already-canonical values
+      });
+
+      const invalid = normalizedExpertise.filter((v) => !allowedExpertise.includes(v));
+      if (invalid.length > 0) {
+        return NextResponse.json(
+          { success: false, message: `Invalid expertise values: ${invalid.join(', ')}` },
+          { status: 400 }
+        );
+      }
+
+      tourData.expertise = normalizedExpertise;
+    }
+
+    // Validate FAQs if provided (optional)
+    if (tourData.faqs !== undefined) {
+      if (!Array.isArray(tourData.faqs)) {
+        return NextResponse.json(
+          { success: false, message: 'FAQs must be an array' },
+          { status: 400 }
+        );
+      }
+
+      // Basic shape validation
+      for (let i = 0; i < tourData.faqs.length; i++) {
+        const item = tourData.faqs[i] || {};
+        const hasQuestion = item.question && (item.question.en || item.question.ar);
+        const hasAnswer = item.answer && (item.answer.en || item.answer.ar);
+        if (!hasQuestion || !hasAnswer) {
+          return NextResponse.json(
+            { success: false, message: `FAQ at index ${i} must include question and answer (en and/or ar)` },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // Validate required fields
     if (!tourData.title || !tourData.title.en || !tourData.description || !tourData.description.en) {
       return NextResponse.json(
