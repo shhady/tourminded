@@ -40,11 +40,13 @@ async function getTours(searchParams) {
         ? params.location 
         : params.location.split(',');
       
-      // If multiple locations are selected, we want tours that include ALL selected locations
-      // Use $all operator instead of $in to ensure all locations are present in the tour
+      // Require ALL selected locations, case-insensitive match against stored names (capitalized)
       if (locationValues.length > 0) {
-        filter.locationNames = { $all: locationValues };
-        console.log('Filtering by locations (all must match):', locationValues);
+        const regexes = locationValues
+          .filter(Boolean)
+          .map((val) => new RegExp(`^${val}$`, 'i'));
+        filter.locationNames = { $all: regexes };
+        console.log('Filtering by locations (all must match, case-insensitive):', locationValues);
       }
     }
     
@@ -117,10 +119,10 @@ async function getTours(searchParams) {
     
     console.log('Final filter:', JSON.stringify(filter, null, 2)); // Debug log
     
-    // Get page and limit from search params or use defaults
-    const page = params.page ? parseInt(params.page) : 1;
-    const limit = params.limit ? parseInt(params.limit) : 9;
-    const skip = (page - 1) * limit;
+    // Show all tours: no pagination
+    const page = 1;
+    const limit = 0; // unused
+    const skip = 0; // unused
     
     // Parse travelDates range (format: YYYY-MM-DD_to_YYYY-MM-DD)
     let requestedStart = null;
@@ -145,8 +147,6 @@ async function getTours(searchParams) {
     // Find tours with filters, but don't populate locations
     const toursAll = await Tour.find(filter)
       .populate('guide', 'names profileImage rating reviewCount notAvailable')
-      .skip(skip)
-      .limit(limit)
       .sort({ createdAt: -1 });
 
     // Filter by guide availability if travelDates provided
@@ -164,16 +164,16 @@ async function getTours(searchParams) {
         })
       : toursAll;
 
-    // Count total tours for pagination (after availability filtering)
-    const total = tours.length + Math.max(0, (await Tour.countDocuments(filter)) - toursAll.length);
+    // Total after availability filtering (no pagination)
+    const total = tours.length;
     
     return {
       tours,
       pagination: {
-        page,
-        limit,
-        total: tours.length, // reflect filtered count on this page
-        pages: Math.ceil(tours.length / limit),
+        page: 1,
+        limit: total,
+        total,
+        pages: 0,
       },
     };
   } catch (error) {
@@ -393,15 +393,19 @@ export default async function ToursPage({ searchParams, params }) {
                       
                       <div className="flex items-center mb-3">
                         <div className="flex items-center text-yellow-500">
-                          {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={`w-4 h-4 ${i < Math.floor(tour.rating || 5) ? 'fill-current' : ''}`} 
-                            />
-                          ))}
+                          {(() => {
+                            const hasReviews = (tour.reviewCount && tour.reviewCount > 0) || (Array.isArray(tour.tourReviews) && tour.tourReviews.length > 0);
+                            const ratingVal = hasReviews ? Math.floor(Number(tour.rating) || 0) : 0;
+                            return [...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${hasReviews && i < ratingVal ? 'fill-current' : ''}`}
+                              />
+                            ));
+                          })()}
                         </div>
                         <span className="text-gray-500 text-sm ml-2">
-                          ({tour.reviewCount || 0} {locale === 'en' ? 'reviews' : 'تقييمات'})
+                          ({(Array.isArray(tour.tourReviews) ? tour.tourReviews.length : (tour.reviewCount || 0))} {locale === 'en' ? 'reviews' : 'تقييمات'})
                         </span>
                       </div>
                       
@@ -486,32 +490,7 @@ export default async function ToursPage({ searchParams, params }) {
           </div>
         )}
         
-        {/* Pagination */}
-        {pagination.pages > 1 && (
-          <div className="flex justify-center">
-            <nav className="inline-flex rounded-md shadow">
-              {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((page) => {
-                // Create new URLSearchParams with current params
-                const params = new URLSearchParams(awaitedSearchParams);
-                params.set('page', page.toString());
-                
-                return (
-                  <Link
-                    key={page}
-                    href={`/${locale}/tours?${params.toString()}`}
-                    className={`px-4 py-2 border ${
-                      page === pagination.page
-                        ? 'bg-primary-600 text-white border-primary-600'
-                        : 'bg-white text-secondary-700 border-secondary-300 hover:bg-secondary-50'
-                    }`}
-                  >
-                    {page}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        )}
+        {/* Pagination removed - showing all tours */}
       </div>
     </MainLayout>
   );
