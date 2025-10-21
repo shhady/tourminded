@@ -23,6 +23,8 @@ export default function EditTourPage({ params }) {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [tour, setTour] = useState(null);
   const [tourPlan, setTourPlan] = useState([]);
+  const [selectedExpertise, setSelectedExpertise] = useState([]);
+  const [faqs, setFaqs] = useState([{ question: { en: '', ar: '' }, answer: { en: '', ar: '' } }]);
   
   // Hardcoded locations in Palestine and Israel
   const locations = [
@@ -134,6 +136,11 @@ export default function EditTourPage({ params }) {
         setExcludedItems(data.data.excluded || ['']);
         setItineraryItems(data.data.itinerary || [{ title: '', description: '' }]);
         setTourPlan(data.data.tourPlan || []);
+        // Initialize expertise and faqs
+        if (Array.isArray(data.data.expertise)) {
+          setSelectedExpertise(data.data.expertise);
+        }
+        setFaqs(Array.isArray(data.data.faqs) && data.data.faqs.length > 0 ? data.data.faqs : [{ question: { en: '', ar: '' }, answer: { en: '', ar: '' } }]);
         
         // Don't call reset() - let defaultValue handle it
       } catch (error) {
@@ -256,6 +263,11 @@ export default function EditTourPage({ params }) {
     
     try {
       // Prepare tour data
+      // Determine expertise to send: if user picked checkboxes, send array; otherwise keep original as-is
+      const expertiseToSend = selectedExpertise.length > 0
+        ? selectedExpertise
+        : tour?.expertise;
+
       const tourData = {
         title: {
           en: data.titleEn || tour?.title?.en || '',
@@ -277,12 +289,18 @@ export default function EditTourPage({ params }) {
         transportation: data.transportation,
         handicappedFriendly: data.handicappedFriendly,
         kidFriendly: data.kidFriendly,
-        expertise: data.expertise,
+        expertise: expertiseToSend,
         isActive: data.isActive,
         locationNames: selectedLocations,
         includes: includedItems.filter(item => item.trim() !== ''),
         excluded: excludedItems.filter(item => item.trim() !== ''),
         itinerary: itineraryItems.filter(item => item.title.trim() !== '' || item.description.trim() !== ''),
+        faqs: faqs
+          .map(f => ({
+            question: { en: (f.question?.en || '').trim(), ar: (f.question?.ar || '').trim() },
+            answer: { en: (f.answer?.en || '').trim(), ar: (f.answer?.ar || '').trim() },
+          }))
+          .filter(f => f.question.en || f.question.ar || f.answer.en || f.answer.ar),
         images: {
           cover: {
             url: coverImage,
@@ -687,31 +705,38 @@ export default function EditTourPage({ params }) {
               </div>
             </div>
             
-            {/* Expertise */}
+            {/* Expertise (backward-compatible) */}
             <div>
-              <label htmlFor="expertise" className="block text-sm font-medium text-secondary-700 mb-1">
+              <label className="block text-sm font-medium text-secondary-700 mb-1">
                 {locale === 'en' ? 'Expertise' : 'الخبرة'}
               </label>
-              <select
-                id="expertise"
-                key={`expertise-${tour?._id}`}
-                defaultValue={tour?.expertise || ''}
-                {...register('expertise')}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="">{locale === 'en' ? 'Select expertise' : 'اختر الخبرة'}</option>
-                <option value="Historical">{locale === 'en' ? 'Historical' : 'تاريخية'}</option>
-                <option value="Religious">{locale === 'en' ? 'Religious' : 'دينية'}</option>
-                <option value="Cultural">{locale === 'en' ? 'Cultural' : 'ثقافية'}</option>
-                <option value="Adventure">{locale === 'en' ? 'Adventure' : 'مغامرة'}</option>
-                <option value="Culinary">{locale === 'en' ? 'Culinary' : 'طهي'}</option>
-                <option value="Nature">{locale === 'en' ? 'Nature' : 'طبيعة'}</option>
-                <option value="Photography">{locale === 'en' ? 'Photography' : 'تصوير'}</option>
-                <option value="Jewish">{locale === 'en' ? 'Jewish' : 'يهودية'}</option>
-                <option value="Christian">{locale === 'en' ? 'Christian' : 'مسيحية'}</option>
-                <option value="Muslim">{locale === 'en' ? 'Muslim' : 'إسلامية'}</option>
-                <option value="Political">{locale === 'en' ? 'Political' : 'سياسية'}</option>
-              </select>
+              {Array.isArray(tour?.expertise) ? (
+                <div className="mb-2 text-sm text-secondary-700">{tour.expertise.join(', ')}</div>
+              ) : (
+                tour?.expertise ? (
+                  <div className="mb-2 text-sm text-secondary-700">
+                    {tour.expertise}
+                    <span className="ml-2 text-xs text-secondary-500">{locale === 'en' ? '(legacy value — choose below to update)' : '(قيمة قديمة — اختر بالأسفل للتحديث)'}</span>
+                  </div>
+                ) : null
+              )}
+              <div className="border border-secondary-300 rounded-md p-3 max-h-48 overflow-y-auto">
+                {['Religious','Christian','Jewish','Muslim','Political','Historical','Cultural','Food','Adventure','Nature','Photography','Culinary','All-inclusive'].map(opt => (
+                  <div key={opt} className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      id={`exp-${opt}`}
+                      checked={selectedExpertise.includes(opt)}
+                      onChange={() => setSelectedExpertise(prev => prev.includes(opt) ? prev.filter(v => v !== opt) : [...prev, opt])}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                    />
+                    <label htmlFor={`exp-${opt}`} className="ml-2 block text-sm text-secondary-700">{opt}</label>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-1 text-xs text-secondary-500">
+                {locale === 'en' ? 'Selecting any option will migrate the legacy expertise to a multi-select list.' : 'اختيار أي خيار سيحوّل قيمة الخبرة القديمة إلى قائمة متعددة.'}
+              </p>
             </div>
             
             {/* Included Items */}
@@ -1033,6 +1058,45 @@ export default function EditTourPage({ params }) {
                 folder="tours/gallery"
               />
             </div>
+        </div>
+        
+        {/* FAQs */}
+        <div className="space-y-4 mt-10">
+          <h3 className="text-lg font-semibold text-secondary-900">
+            {locale === 'en' ? 'Frequently Asked Questions' : 'الأسئلة الشائعة'}
+          </h3>
+          {faqs.map((f, idx) => (
+            <div key={`faq-${idx}`} className="mb-4 p-4 border border-secondary-200 rounded-md">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-medium">{locale === 'en' ? `FAQ ${idx + 1}` : `سؤال ${idx + 1}`}</h4>
+                <button type="button" onClick={() => setFaqs(prev => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev))} className="text-red-500 hover:text-red-700">
+                  <Minus className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Question (English)' : 'السؤال (بالإنجليزية)'}</label>
+                  <input type="text" value={f.question?.en || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], question: { ...(u[idx].question||{}), en: e.target.value } }; return u; })} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Question (Arabic)' : 'السؤال (بالعربية)'}</label>
+                  <input type="text" value={f.question?.ar || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], question: { ...(u[idx].question||{}), ar: e.target.value } }; return u; })} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Answer (English)' : 'الإجابة (بالإنجليزية)'}</label>
+                  <textarea rows="3" value={f.answer?.en || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], answer: { ...(u[idx].answer||{}), en: e.target.value } }; return u; })} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Answer (Arabic)' : 'الإجابة (بالعربية)'}</label>
+                  <textarea rows="3" value={f.answer?.ar || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], answer: { ...(u[idx].answer||{}), ar: e.target.value } }; return u; })} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                </div>
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={() => setFaqs(prev => [...prev, { question: { en: '', ar: '' }, answer: { en: '', ar: '' } }])} className="mt-2 flex items-center text-primary-600 hover:text-primary-800">
+            <Plus className="h-4 w-4 mr-1" />
+            {locale === 'en' ? 'Add FAQ' : 'إضافة سؤال'}
+          </button>
         </div>
         
         <div className="flex justify-end mt-8">
