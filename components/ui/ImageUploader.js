@@ -12,13 +12,15 @@ const ImageUploader = ({
   className = '',
   accept = 'image/*',
   maxSize = 5 * 1024 * 1024, // 5MB
-  showPreview = true
+  showPreview = true,
+  resetAfterUpload = false
 }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
   const [preview, setPreview] = useState('');
   const [cloudName, setCloudName] = useState('');
+  const inputRef = useRef(null);
 
   useEffect(() => {
     // Get cloud name from environment variable
@@ -95,6 +97,12 @@ const ImageUploader = ({
           onImageUploaded(data.secure_url, data);
           setUploadProgress(0);
           setIsUploading(false);
+          if (resetAfterUpload) {
+            setPreview('');
+            if (inputRef.current) {
+              inputRef.current.value = '';
+            }
+          }
         } else {
           console.error('Upload failed with status:', xhr.status, xhr.response);
           throw new Error('Upload failed: ' + xhr.status);
@@ -128,6 +136,7 @@ const ImageUploader = ({
         <label className="relative flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-primary-500 focus:outline-none">
           <input
             type="file"
+            ref={inputRef}
             className="absolute inset-0 z-50 w-full h-full p-0 m-0 outline-none opacity-0 cursor-pointer"
             onChange={handleFileUpload}
             accept={accept}

@@ -47,7 +47,7 @@ export default function TourFilters({ locale, initialFilters = {} }) {
     { value: 'qumran', label: locale === 'en' ? 'Qumran' : 'قمران' },
     { value: 'banias', label: locale === 'en' ? 'Banias' : 'بانياس' },
     { value: 'caesarea', label: locale === 'en' ? 'Caesarea' : 'قيسارية' },
-    { value: 'golan', label: locale === 'en' ? 'Golan' : 'الجولان' },
+    // { value: 'golan', label: locale === 'en' ? 'Golan' : 'الجولان' },
     { value: 'negev', label: locale === 'en' ? 'Naqab (Negev Desert)' : 'النقب' },
     { value: 'beersheba', label: locale === 'en' ? 'Beersheba' : 'بئر السبع' },
     { value: 'ashkelon', label: locale === 'en' ? 'Ascalon (Ashkelon)' : 'عسقلان' },

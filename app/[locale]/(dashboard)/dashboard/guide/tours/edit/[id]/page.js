@@ -42,7 +42,7 @@ export default function EditTourPage({ params }) {
     { _id: 'Qumran', name: { en: 'Qumran', ar: 'قمران' } },
     { _id: 'Banias', name: { en: 'Banias', ar: 'بانياس' } },
     { _id: 'Caesarea', name: { en: 'Caesarea', ar: 'قيسارية' } },
-    { _id: 'Golan', name: { en: 'Golan', ar: 'الجولان' } },
+    // { _id: 'Golan', name: { en: 'Golan', ar: 'الجولان' } },
     { _id: 'Negev', name: { en: 'Naqab (Negev Desert)', ar: 'النقب' } },
     { _id: 'Beersheba', name: { en: 'Beersheba', ar: 'بئر السبع' } },
     { _id: 'Ashkelon', name: { en: 'Ascalon (Ashkelon)', ar: 'عسقلان' } },
@@ -1056,6 +1056,7 @@ export default function EditTourPage({ params }) {
               <ImageUploader
                 onImageUploaded={handleGalleryImageUploaded}
                 folder="tours/gallery"
+                resetAfterUpload
               />
             </div>
         </div>
