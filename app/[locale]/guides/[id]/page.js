@@ -604,7 +604,7 @@ export default async function GuideProfilePage({ params }) {
                     const yearsExperience = calculateYearsOfExperience(exp.licenseIssueDate);
                     
                     return (
-                      <div key={index} className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
+                      <div key={index} className="bg-gray-50 rounded-xl p-5 border border-gray-100  transition-shadow">
                         <div className="flex items-center mb-3">
                           <div className="w-10 h-10 rounded-full bg-secondary-100 flex items-center justify-center mr-3">
                             <Award className="w-5 h-5 text-secondary-600" />
