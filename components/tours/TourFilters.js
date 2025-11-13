@@ -510,11 +510,11 @@ export default function TourFilters({ locale, initialFilters = {} }) {
               <button
                 type="button"
                 onClick={toggleLocationDropdown}
-                className="w-full flex items-center justify-between bg-white border border-secondary-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full flex items-center justify-between bg-white border border-secondary-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 aria-expanded={isLocationDropdownOpen}
                 aria-haspopup="listbox"
               >
-                <span className={`block truncate ${filters.location.length === 0 ? 'text-black' : 'text-gray-900'}`}>
+                <span className={`block truncate  ${filters.location.length === 0 ? 'text-black' : 'text-gray-900'}`}>
                   {getSelectedLocationsText()}
                 </span>
                 <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${isLocationDropdownOpen ? 'rotate-180' : ''}`} />
@@ -538,7 +538,7 @@ export default function TourFilters({ locale, initialFilters = {} }) {
                         setIsLocationDropdownOpen(false);
                       }}
                     >
-                      <span className={`text-black block text-sm ${filters.location.length === 0 ? 'font-medium' : ''}`}>
+                      <span className={`text-black block text-sm  ${filters.location.length === 0 ? 'font-medium' : ''}`}>
                         {locale === 'en' ? 'All Locations' : 'جميع المواقع'}
                       </span>
                     </div>
