@@ -76,7 +76,7 @@ export default async function AboutPage({ params }) {
               
               <div className="flex flex-col md:flex-row gap-10 items-center mb-8">
                 <div className="md:w-1/2">
-                  <div className="relative h-64 w-full rounded-xl overflow-hidden shadow-lg">
+                  <div className="relative h-64 w-[390px] md:w-full rounded-xl overflow-hidden shadow-lg">
                     <Image 
                       src="https://res.cloudinary.com/shhady/image/upload/v1741739969/tours/gallery/rcjvzwei0y7xvfl0uvkq.jpg" 
                       alt="Vacation stress"
@@ -147,7 +147,7 @@ export default async function AboutPage({ params }) {
             
             <div className="flex flex-col md:flex-row gap-10 items-center mb-12">
               <div className="md:w-1/2">
-                <div className="relative h-80 w-full rounded-xl overflow-hidden shadow-lg">
+                <div className="relative h-80 w-[390px] md:w-full rounded-xl overflow-hidden shadow-lg">
                   <Image 
                     src="https://res.cloudinary.com/shhady/image/upload/v1741752805/tour-image-2_g7gvby.jpg" 
                     alt="Watermelon Tours founders"
@@ -160,22 +160,44 @@ export default async function AboutPage({ params }) {
               
               <div className="md:w-1/2">
                 <p className="text-gray-700 mb-4">
-                  {locale === 'en' 
-                    ? 'Watermelon Tours was born from a simple observation: the Holy Land is filled with incredible stories, but travelers often miss the authentic experiences that make this region so special.' 
-                    : 'ولدت Watermelon Tours من ملاحظة بسيطة: الأرض المقدسة مليئة بالقصص المذهلة، لكن المسافرين غالبًا ما يفوتون التجارب الأصيلة التي تجعل هذه المنطقة مميزة للغاية.'}
+                  {locale === 'en'
+                    ? "The name Watermelon carries a piece of home with it. My father comes from Sakhnin, a town known for its red, sun-grown watermelons, a symbol of summer, land, and togetherness."
+                    : "يحمل اسم البطيخ قطعة من الوطن بداخله. والدي من سخنين، بلدة مشهورة بالبطيخ الأحمر المزروع تحت الشمس، رمز الصيف والأرض ولمّة الأحبة."
+                  }
                 </p>
                 <p className="text-gray-700 mb-4">
-                  {locale === 'en' 
-                    ? 'Founded in 2023, our platform connects travelers directly with licensed local guides who can provide personalized, authentic experiences that go beyond the typical tourist routes.' 
-                    : 'تأسست في عام 2023، تربط منصتنا المسافرين مباشرة بالمرشدين المحليين المرخصين الذين يمكنهم تقديم تجارب شخصية وأصيلة تتجاوز مسارات السياح النموذجية.'}
+                  {locale === 'en'
+                    ? "For me, watermelon isn’t just a fruit; it’s a memory of the Mediterranean heat, of bringing people together, and of something that feels like home."
+                    : "بالنسبة لي، البطيخ ليس مجرد فاكهة، بل هو ذكرى حرّ المتوسط، ولمّة الناس، وإحساس بشيء يشبه الوطن."
+                  }
                 </p>
-                <p className="text-gray-700">
-                  {locale === 'en' 
-                    ? 'We believe that meaningful travel experiences come from genuine human connections and local expertise.' 
-                    : 'نحن نؤمن بأن تجارب السفر الهادفة تأتي من الروابط الإنسانية الحقيقية والخبرة المحلية.'}
+                <p className="text-gray-700 mb-4">
+                  {locale === 'en'
+                    ? "Watermelon Tours was born from that same spirit, sharing the sweetness of our land and stories with travelers from all over the world."
+                    : "ولدت Watermelon Tours من تلك الروح نفسها، لنشارك حلاوة أرضنا وقصصنا مع المسافرين من كل بقاع العالم."
+                  }
                 </p>
+                <p className="text-gray-700 mb-4">
+                  {locale === 'en'
+                    ? "It all started with a simple observation: the Holy Land is filled with incredible stories, but travelers often miss the authentic experiences that make this region so special."
+                    : "بدأ كل شيء بملاحظة بسيطة: الأرض المقدسة مليئة بالقصص المذهلة، لكن المسافرين غالبًا ما يفوتون التجارب الأصيلة التي تجعل هذه المنطقة مميزة للغاية."
+                  }
+                </p>
+               
               </div>
             </div>
+            <p className="text-gray-700 mb-4">
+                  {locale === 'en'
+                    ? "Founded in 2023, Watermelon Tours connects travelers directly with licensed local guides who offer personalized, genuine experiences that go beyond the typical tourist routes."
+                    : "تأسست Watermelon Tours في عام 2023، وتربط المسافرين مباشرةً بالمرشدين المحليين المرخصين الذين يقدمون تجارب أصيلة وشخصية تتجاوز المسارات السياحية المعتادة."
+                  }
+                </p>
+                <p className="text-gray-700">
+                  {locale === 'en'
+                    ? "We believe that meaningful travel comes from real human connection, from meeting the people who live the stories, not just hearing about them. Through local expertise and heartfelt encounters, we aim to make every journey as warm, refreshing, and unforgettable as a slice of watermelon on a summer day."
+                    : "نؤمن أن السفر الهادف ينبع من التواصل الإنساني الحقيقي، من لقاء أصحاب القصص وليس فقط سماعها. ومن خلال الخبرة المحلية واللقاءات الصادقة، نطمح أن نجعل كل رحلة دافئة، منعشة، ولا تُنسى… تماماً كقطعة بطيخ في يوم صيفي."
+                  }
+                </p>
           </div>
         </div>
       </section>

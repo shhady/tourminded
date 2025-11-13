@@ -170,6 +170,22 @@ const GuideSchema = new mongoose.Schema({
       max: 5,
       required: [true, 'Please provide a rating'],
     },
+    // Optional sub-ratings
+    knowledgeStorytelling: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    punctualityOrganization: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    hospitalityFriendliness: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
     createdAt: {
       type: Date,
       default: Date.now,

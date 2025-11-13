@@ -30,6 +30,10 @@ export default function RateTourPage({ params }) {
   const [tourTriedNext, setTourTriedNext] = useState(false);
   const [guideTriedNext, setGuideTriedNext] = useState(false);
   const [langTriedSubmit, setLangTriedSubmit] = useState(false);
+  // Optional guide sub-ratings
+  const [knowledge, setKnowledge] = useState(0);
+  const [punctuality, setPunctuality] = useState(0);
+  const [hospitality, setHospitality] = useState(0);
 
   const stars = [1, 2, 3, 4, 5];
 
@@ -71,7 +75,14 @@ export default function RateTourPage({ params }) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ guide: guideId, rating: guideRating, comment: guideComment }),
+          body: JSON.stringify({
+            guide: guideId,
+            rating: guideRating,
+            comment: guideComment,
+            knowledgeStorytelling: knowledge || undefined,
+            punctualityOrganization: punctuality || undefined,
+            hospitalityFriendliness: hospitality || undefined,
+          }),
         });
         if (guideRes.status === 401) {
           router.push(`/${locale}/auth/login?redirect=${encodeURIComponent(`/${locale}/tours/${id}/rate`)}`);
@@ -302,6 +313,39 @@ export default function RateTourPage({ params }) {
                   <Star className={`w-7 h-7 ${ ((guideHoverRating || guideRating) >= s) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300' }`} />
                 </button>
               ))}
+            </div>
+            {/* Optional sub-ratings */}
+            <div className="space-y-3 mb-4">
+              <div>
+                <p className="text-sm font-medium text-secondary-800">{locale === 'en' ? 'Knowledge & Storytelling (optional)' : 'المعرفة والسرد (اختياري)'}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  {[1,2,3,4,5].map((s) => (
+                    <button key={s} type="button" onClick={() => setKnowledge(s)} className="cursor-pointer">
+                      <Star className={`w-5 h-5 ${knowledge >= s ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-secondary-800">{locale === 'en' ? 'Punctuality & Organization (optional)' : 'الالتزام بالمواعيد والتنظيم (اختياري)'}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  {[1,2,3,4,5].map((s) => (
+                    <button key={s} type="button" onClick={() => setPunctuality(s)} className="cursor-pointer">
+                      <Star className={`w-5 h-5 ${punctuality >= s ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-secondary-800">{locale === 'en' ? 'Hospitality & Friendliness (optional)' : 'الضيافة والود (اختياري)'}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  {[1,2,3,4,5].map((s) => (
+                    <button key={s} type="button" onClick={() => setHospitality(s)} className="cursor-pointer">
+                      <Star className={`w-5 h-5 ${hospitality >= s ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             <textarea
               rows={5}

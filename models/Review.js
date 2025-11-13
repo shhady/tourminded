@@ -20,6 +20,22 @@ const ReviewSchema = new mongoose.Schema({
     max: 5,
     required: [true, 'Review must have a rating'],
   },
+  // Optional sub-ratings for guide reviews
+  knowledgeStorytelling: {
+    type: Number,
+    min: 1,
+    max: 5,
+  },
+  punctualityOrganization: {
+    type: Number,
+    min: 1,
+    max: 5,
+  },
+  hospitalityFriendliness: {
+    type: Number,
+    min: 1,
+    max: 5,
+  },
   comment: {
     type: String,
     // required: [true, 'Review must have a comment'],

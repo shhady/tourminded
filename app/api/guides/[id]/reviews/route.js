@@ -15,7 +15,7 @@ export async function POST(request, { params }) {
     }
 
     const { id } = await params;
-    const { review, rating } = await request.json();
+    const { review, rating, knowledgeStorytelling, punctualityOrganization, hospitalityFriendliness } = await request.json();
 
     // Validate input: rating required, comment optional
     if (typeof rating !== 'number' || rating < 1 || rating > 5) {
@@ -73,6 +73,9 @@ export async function POST(request, { params }) {
         userId: user._id,
         review: typeof review === 'string' ? review.trim() : '',
         rating: rating,
+        knowledgeStorytelling: knowledgeStorytelling || undefined,
+        punctualityOrganization: punctualityOrganization || undefined,
+        hospitalityFriendliness: hospitalityFriendliness || undefined,
         createdAt: new Date()
       };
     } else {
@@ -81,6 +84,9 @@ export async function POST(request, { params }) {
         userId: user._id,
         review: typeof review === 'string' ? review.trim() : '',
         rating: rating,
+        knowledgeStorytelling: knowledgeStorytelling || undefined,
+        punctualityOrganization: punctualityOrganization || undefined,
+        hospitalityFriendliness: hospitalityFriendliness || undefined,
         createdAt: new Date()
       }];
     }

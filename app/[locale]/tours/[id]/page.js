@@ -131,6 +131,33 @@ async function getTourData(id) {
     
     // Convert Mongoose document to plain object
     const tourData = JSON.parse(JSON.stringify(tour));
+
+    // Enrich embedded tour reviews with user names
+    let enrichedTourReviews = [];
+    try {
+      const originalReviews = Array.isArray(tour.tourReviews) ? tour.tourReviews : [];
+      enrichedTourReviews = await Promise.all(
+        originalReviews.map(async (rev) => {
+          let userName = '';
+          try {
+            const userDoc = await User.findById(rev.userId).select('firstName lastName name');
+            if (userDoc) {
+              if (userDoc.firstName && userDoc.lastName) {
+                userName = `${userDoc.firstName} ${userDoc.lastName}`;
+              } else if (userDoc.name) {
+                userName = userDoc.name;
+              }
+            }
+          } catch (e) {}
+          return {
+            ...(rev.toObject ? rev.toObject() : JSON.parse(JSON.stringify(rev))),
+            userName,
+          };
+        })
+      );
+    } catch (e) {
+      enrichedTourReviews = [];
+    }
     
     return {
       ...tourData,
@@ -154,7 +181,8 @@ async function getTourData(id) {
       reviewCount: tourData.reviewCount || 0,
       includes: tourData.includes || [],
       images: tourData.images || { cover: { url: null }, gallery: [] },
-      faqs: Array.isArray(tourData.faqs) ? tourData.faqs : []
+      faqs: Array.isArray(tourData.faqs) ? tourData.faqs : [],
+      tourReviews: enrichedTourReviews
     };
   } catch (error) {
     console.error('Error getting tour data:', error);
@@ -188,6 +216,7 @@ export default async function TourPage({ params }) {
     
     // Compute rating from embedded tourReviews if available
     const embeddedReviews = Array.isArray(tourData.tourReviews) ? tourData.tourReviews : (tourData.tourreviews || []);
+    const commentedReviews = embeddedReviews.filter(r => r && typeof r.comment === 'string' && r.comment.trim().length > 0);
     const reviewsForAverage = embeddedReviews.filter(r => r && typeof r.rating === 'number');
     const avgFromEmbedded = reviewsForAverage.length > 0
       ? reviewsForAverage.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviewsForAverage.length
@@ -528,23 +557,24 @@ export default async function TourPage({ params }) {
                 </div>
               )}
 
-              {/* Reviews Section */}
-              {embeddedReviews && embeddedReviews.length > 0 && (
+              {/* Reviews Section (only reviews with comments) */}
+              {commentedReviews && commentedReviews.length > 0 && (
                 <div className="bg-white rounded-lg shadow-md p-6 mb-8">
                   <h3 className="text-xl font-semibold mb-4 text-secondary-900">
                     {locale === 'en' ? 'Reviews' : 'المراجعات'}
                   </h3>
                   <div className="space-y-4">
-                    {embeddedReviews.map((rev) => (
+                    {commentedReviews.map((rev) => (
                       <div key={rev.id || rev._id} className="border border-secondary-200 rounded-md p-4">
                         <div className="flex items-center mb-2">
                           <Star className="w-4 h-4 text-yellow-500 mr-1" />
                           <span className="font-medium text-secondary-900">{Number(rev.rating) || 0}</span>
                           <span className="ml-2 text-xs text-secondary-600">{new Date(rev.createdAt || Date.now()).toLocaleDateString()}</span>
                         </div>
-                        {rev.comment && (
-                          <p className="text-secondary-800 whitespace-pre-line">{rev.comment}</p>
+                        {rev.userName && (
+                          <p className="text-xs text-secondary-700 mb-1">{locale === 'en' ? 'By' : 'بواسطة'} {rev.userName}</p>
                         )}
+                        <p className="text-secondary-800 whitespace-pre-line">{rev.comment}</p>
                       </div>
                     ))}
                   </div>
