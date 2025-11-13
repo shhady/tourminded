@@ -12,6 +12,7 @@ import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import Tour from '@/models/Tour';
 import AvailabilityCalendar from '@/components/guides/AvailabilityCalendar';
+import LightboxImage from '@/components/common/LightboxImage';
 
 // Generate QR code URL
 const generateQRCode = (url) => {
@@ -242,15 +243,14 @@ export default async function GuideProfilePage({ params }) {
         <div className="relative h-[50vh] min-h-[400px] w-full">
           {/* Cover Image */}
           <div className="absolute inset-0">
-            <Image 
+            <LightboxImage
               src={coverImage || '/no-image-cover.png'}
               alt={`${name} cover`}
-              fill
-              className="object-cover"
-              priority
-              sizes='100vw'
+              containerClassName="absolute inset-0"
+              imageClassName="object-cover"
+              sizes="100vw "
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/70"></div>
+            <div className="md:block hidden absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/70 pointer-events-none"></div>
           </div>
           
           {/* Back button */}
@@ -265,18 +265,16 @@ export default async function GuideProfilePage({ params }) {
           </div>
           
           {/* Guide name overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-10 bg-gradient-to-b from-black/10 via-black/20 to-black/60 shadow-lg">
+          <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-10 md:w-1/3 shadow-lg">
             <div className="container mx-auto px-4">
               <div className="flex items-center  gap-2">
-                <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg mr-6">
-                  <Image 
-                    src={profileImage}
-                    alt={name}
-                    fill
-                    className="object-cover"
-                    sizes='100vw'
-                  />
-                </div>
+                <LightboxImage
+                  src={profileImage}
+                  alt={name}
+                  containerClassName="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg mr-6"
+                  imageClassName="object-cover"
+                  sizes="128px"
+                />
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold mb-2 drop-shadow-md">{name}</h1>
                   <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">

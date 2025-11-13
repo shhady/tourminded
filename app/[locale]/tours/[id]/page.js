@@ -29,6 +29,7 @@ import Guide from '@/models/Guide';
 import dynamic from 'next/dynamic';
 import GalleryLightbox from './GalleryLightbox';
 import BookTourModal from '@/components/tours/BookTourModal';
+import LightboxImage from '@/components/common/LightboxImage';
 
 // Dynamically import the ShareTourButton component with no SSR
 const ShareTourButton = dynamic(() => import('./ShareTourButton'));
@@ -271,12 +272,12 @@ export default async function TourPage({ params }) {
         {/* Hero Section !!*/}
         <div className="relative h-[50vh] md:h-[60vh] lg:h-[70vh]">
           {tourData.images?.cover?.url ? (
-            <Image
+            <LightboxImage
               src={tourData.images.cover.url}
               alt={title}
-              fill
-              className="object-contain"
-              priority
+              containerClassName="absolute inset-0"
+              imageClassName="object-contain"
+              sizes="100vw"
             />
           ) : (
             <div className="w-full h-full bg-primary-100 flex items-center justify-center">
@@ -285,7 +286,7 @@ export default async function TourPage({ params }) {
               </span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
             <div className="container mx-auto">
               <div className="flex items-center space-x-2 mb-3">
@@ -629,20 +630,21 @@ export default async function TourPage({ params }) {
                       {locale === 'en' ? 'Your Guide' : 'مرشدك'}
                     </h3>
                     <div className="flex items-center mb-4">
-                      <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4">
-                        {tourData.guide.profileImage ? (
-                          <Image
-                            src={tourData.guide.profileImage}
-                            alt={tourData.guide.name || ''}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
+                      {tourData.guide.profileImage ? (
+                        <LightboxImage
+                          src={tourData.guide.profileImage}
+                          alt={tourData.guide.name || ''}
+                          containerClassName="relative w-16 h-16 rounded-full overflow-hidden mr-4"
+                          imageClassName="object-cover"
+                          sizes="64px"
+                        />
+                      ) : (
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4">
                           <div className="w-full h-full bg-primary-100 flex items-center justify-center">
                             <span className="text-primary-600 text-xl">{tourData.guide.name?.charAt(0) || 'G'}</span>
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       <div>
                         <h4 className="font-semibold text-secondary-900">{tourData.guide.name || ''}</h4>
                         <div className="flex items-center">
