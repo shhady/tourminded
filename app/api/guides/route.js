@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import User from '@/models/User';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { sendAdminGuideRegistrationEmail } from '@/lib/mailer';
 
 // Get all guides (public)
@@ -38,17 +39,19 @@ export async function GET(request) {
 // Create a new guide (authenticated)
 export async function POST(request) {
   try {
-    // Get the current user from Clerk
-    const clerkUser = await currentUser();
+    // Get the current user from NextAuth
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     
     await connectDB();
     
-    // Find the MongoDB user with the Clerk ID
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    // Find the MongoDB user with session id/email
+    const user =
+      (await User.findById(session.user.id)) ||
+      (await User.findOne({ email: session.user.email }));
     
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });

@@ -2,16 +2,15 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Tour from '@/models/Tour';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import User from '@/models/User';
 
 // GET all bookings with optional filtering (requires authentication)
 export async function GET(request) {
   try {
-    // Get current user from Clerk
-    const clerkUser = await currentUser();
-    
-    if (!clerkUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
@@ -31,7 +30,7 @@ export async function GET(request) {
     await connectDB();
     
     // Find user in our database
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     
     if (!user) {
       return NextResponse.json(
@@ -113,10 +112,8 @@ export async function GET(request) {
 // POST create a new booking (requires authentication)
 export async function POST(request) {
   try {
-    // Get current user from Clerk
-    const clerkUser = await currentUser();
-    
-    if (!clerkUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
@@ -130,7 +127,7 @@ export async function POST(request) {
     await connectDB();
     
     // Find user in our database
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     
     if (!user) {
       return NextResponse.json(

@@ -3,10 +3,8 @@ import React, { useEffect, useState } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
 
 const MainLayout = ({ children, locale }) => {
-  const { isLoaded: authLoaded } = useAuth();
   const [clientLoaded, setClientLoaded] = useState(false);
   const pathname = usePathname();
   

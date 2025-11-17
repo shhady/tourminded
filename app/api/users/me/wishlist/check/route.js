@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import  connectToDB  from '@/lib/mongodb';
 import User from '@/models/User';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 // GET - Check if an item is in the user's wishlist
 export async function GET(request) {
   try {
-    const clerkUser = await currentUser();
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     
@@ -22,7 +23,7 @@ export async function GET(request) {
     
     await connectToDB();
     
-        const user = await User.findOne({ clerkId: clerkUser.id });
+        const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });

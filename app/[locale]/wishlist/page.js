@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import MainLayout from '@/components/layout/MainLayout';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Heart, Loader2, Star, MapPin, Clock, Users, Languages } from 'lucide-react';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ export default function WishlistPage({ params }) {
   const unwrappedParams = use(params);
   const locale = unwrappedParams?.locale || 'en';
   
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { status } = useSession();
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -26,10 +26,10 @@ export default function WishlistPage({ params }) {
   // Fetch wishlist data
   useEffect(() => {
     const fetchWishlist = async () => {
-      if (!isLoaded) return;
+      if (status === 'loading') return;
       
-      if (!isSignedIn) {
-        router.push(`/${locale}/sign-in?redirect_url=${encodeURIComponent('/wishlist')}`);
+      if (status === 'unauthenticated') {
+        router.push(`/${locale}/sign-in?callbackUrl=${encodeURIComponent(`/${locale}/wishlist`)}`);
         return;
       }
       
@@ -49,7 +49,7 @@ export default function WishlistPage({ params }) {
     };
     
     fetchWishlist();
-  }, [isLoaded, isSignedIn, locale, router]);
+  }, [status, locale, router]);
 
   // Helper functions for tours
   const getTourTitle = (tour) => {
@@ -204,7 +204,7 @@ export default function WishlistPage({ params }) {
   };
 
   // Loading state
-  if (!isLoaded || isLoading) {
+  if (status === 'loading' || isLoading) {
     return (
       <MainLayout locale={locale}>
         <div className="container mx-auto px-4 py-12 min-h-screen">

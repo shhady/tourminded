@@ -145,7 +145,7 @@ ChatSchema.statics.findOrCreateChat = async function(userId1, userId2) {
   // Try to find existing chat
   let chat = await this.findOne({
     participants: { $all: sortedIds, $size: 2 }
-  }).populate('participants', 'firstName lastName name clerkId');
+  }).populate('participants', 'firstName lastName name');
   
   // If no chat exists, create one
   if (!chat) {
@@ -157,7 +157,7 @@ ChatSchema.statics.findOrCreateChat = async function(userId1, userId2) {
     await chat.save();
     
     // Populate participants after creation
-    chat = await this.findById(chat._id).populate('participants', 'firstName lastName name clerkId');
+    chat = await this.findById(chat._id).populate('participants', 'firstName lastName name');
   }
   
   return chat;
@@ -169,7 +169,7 @@ ChatSchema.statics.getUserChats = async function(userId) {
     participants: userId,
     isActive: true,
   })
-  .populate('participants', 'firstName lastName name clerkId')
+  .populate('participants', 'firstName lastName name')
   .sort({ lastMessageAt: -1 });
 };
 

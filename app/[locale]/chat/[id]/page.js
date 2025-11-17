@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useRef, use } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, MessageCircle, Send } from 'lucide-react';
 
 const ChatPage = ({ params }) => {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { status } = useSession();
   const router = useRouter();
   const { id, locale } = use(params); // id is the guide's user ID
   const messagesEndRef = useRef(null);
@@ -24,7 +24,7 @@ const ChatPage = ({ params }) => {
   // Fetch data and set up chat
   useEffect(() => {
     const fetchData = async () => {
-      if (!isLoaded || !isSignedIn) return;
+      if (status !== 'authenticated') return;
       
       try {
         setLoading(true);
@@ -33,7 +33,7 @@ const ChatPage = ({ params }) => {
         const userResponse = await fetch('/api/users/me');
         if (userResponse.ok) {
           const userData = await userResponse.json();
-          setCurrentUser(userData);
+          setCurrentUser(userData.user);
           
           // Get target user data (the other person we're chatting with)
           const targetUserResponse = await fetch(`/api/users/profile/${id}`);
@@ -86,7 +86,7 @@ const ChatPage = ({ params }) => {
     };
 
     fetchData();
-  }, [isLoaded, isSignedIn, id]);
+  }, [status, id]);
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -160,7 +160,7 @@ const ChatPage = ({ params }) => {
     return user?.name || user?.fullName || 'User';
   };
 
-  if (!isLoaded || loading) {
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -173,8 +173,8 @@ const ChatPage = ({ params }) => {
     );
   }
 
-  if (!isSignedIn) {
-    router.push(`/${locale}/sign-in`);
+  if (status === 'unauthenticated') {
+    router.push(`/${locale}/sign-in?callbackUrl=${encodeURIComponent(`/${locale}/chat/${id}`)}`);
     return null;
   }
 

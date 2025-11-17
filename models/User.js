@@ -17,11 +17,14 @@ const UserSchema = new mongoose.Schema({
       'Please provide a valid email',
     ],
   },
-  // Clerk ID for syncing with Clerk authentication
-  clerkId: {
+  password: {
     type: String,
-    required: true,
-    unique: true,
+  },
+  image: {
+    type: String,
+  },
+  emailVerified: {
+    type: Date,
   },
   phone: {
     type: String

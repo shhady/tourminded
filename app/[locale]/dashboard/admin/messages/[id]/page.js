@@ -1,5 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, MessageCircle, Clock, User as UserIcon } from 'lucide-react';
@@ -11,23 +12,23 @@ export default async function AdminMessageViewPage({ params }) {
   const { locale, id } = await params;
   
   // Check if user is authenticated and is admin
-  const clerkUser = await currentUser();
-  if (!clerkUser) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
     redirect(`/${locale}/sign-in`);
   }
 
   await connectDB();
   
   // Find user in database and check if admin
-  const user = await User.findOne({ clerkId: clerkUser.id });
+  const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
   if (!user || user.role !== 'admin') {
     redirect(`/${locale}/dashboard`);
   }
 
   // Get the specific chat with messages
   const chat = await Chat.findById(id)
-    .populate('participants', 'firstName lastName name clerkId')
-    .populate('messages.senderId', 'firstName lastName name clerkId')
+    .populate('participants', 'firstName lastName name')
+    .populate('messages.senderId', 'firstName lastName name')
     .lean();
 
   if (!chat) {
@@ -47,13 +48,11 @@ export default async function AdminMessageViewPage({ params }) {
   const [user1, user2] = chat.participants;
   const formattedUser1 = {
     _id: user1._id.toString(),
-    name: getFullName(user1),
-    clerkId: user1.clerkId
+    name: getFullName(user1)
   };
   const formattedUser2 = {
     _id: user2._id.toString(),
-    name: getFullName(user2),
-    clerkId: user2.clerkId
+    name: getFullName(user2)
   };
 
   // Format messages

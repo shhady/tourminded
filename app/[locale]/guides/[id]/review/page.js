@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, use } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star, ArrowLeft, User } from 'lucide-react';
 
 const ReviewPage = ({ params }) => {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { status } = useSession();
   const router = useRouter();
   const { id, locale } = use(params);
 
@@ -28,20 +28,20 @@ const ReviewPage = ({ params }) => {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push(`/${locale}/sign-in`);
+    if (status === 'unauthenticated') {
+      router.push(`/${locale}/sign-in?callbackUrl=${encodeURIComponent(`/${locale}/guides/${id}/review`)}`);
     }
-  }, [isLoaded, isSignedIn, router, locale]);
+  }, [status, router, locale, id]);
 
   // Fetch current user data from our database
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      if (isLoaded && isSignedIn && user) {
+      if (status === 'authenticated') {
         try {
           const response = await fetch('/api/users/me');
           if (response.ok) {
             const userData = await response.json();
-            setCurrentUser(userData);
+            setCurrentUser(userData.user);
           }
         } catch (err) {
           console.error('Error fetching current user:', err);
@@ -50,7 +50,7 @@ const ReviewPage = ({ params }) => {
     };
 
     fetchCurrentUser();
-  }, [isLoaded, isSignedIn, user]);
+  }, [status]);
 
   // Fetch guide data
   useEffect(() => {
@@ -89,10 +89,10 @@ const ReviewPage = ({ params }) => {
       }
     };
 
-    if (isLoaded && isSignedIn && id && currentUser) {
+    if (status === 'authenticated' && id && currentUser) {
       fetchGuide();
     }
-  }, [id, currentUser?._id, isLoaded, isSignedIn, currentUser]);
+  }, [id, currentUser?._id, status, currentUser]);
 
   const handleStarClick = (rating) => {
     setReviewData(prev => ({ ...prev, rating }));
@@ -165,7 +165,7 @@ const ReviewPage = ({ params }) => {
     return 'Guide';
   };
 
-  if (!isLoaded || loading) {
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -178,7 +178,7 @@ const ReviewPage = ({ params }) => {
     );
   }
 
-  if (!isSignedIn) {
+  if (status === 'unauthenticated') {
     return null; // Will redirect
   }
 

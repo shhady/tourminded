@@ -1,10 +1,10 @@
 import { Inter, Tajawal } from "next/font/google";
 import "./globals.css";
 import { getDirection } from "@/lib/i18n";
-import { ClerkProvider } from '@clerk/nextjs'
 import { UserProvider } from "@/contexts/UserContext";
 import { GuideProvider } from "@/contexts/GuideContext";
 import { Analytics } from "@vercel/analytics/next"
+import NextAuthProvider from '@/components/providers/NextAuthProvider';
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -107,12 +107,10 @@ export const metadata = {
 };
 
 export default function RootLayout({ children, params }) {
+  const direction = getDirection?.(params?.locale || 'en') || 'ltr';
   return (
-    <ClerkProvider>
-      <GuideProvider>
-        <UserProvider>
-          <html lang="en" dir="ltr">
-          <head>
+    <html lang={params?.locale || 'en'} dir={direction}>
+      <head>
         <meta name="robots" content="index, follow" />
         <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -123,31 +121,34 @@ export default function RootLayout({ children, params }) {
         <meta name="theme-color" content="#08171f" />
         <meta property="og:site_name" content="Watermelon Tours - Connect with Expert Local Guides" />
       </head>
-            <body className={`${inter.variable} ${tajawal.variable} font-sans antialiased`}>
-              {process.env.NODE_ENV === 'development' && (
-                <script
-                  dangerouslySetInnerHTML={{
-                    __html: `
-                      if (typeof window !== 'undefined') {
-                        const blocked = ['/__nextjs_original-stack-frames'];
-                        const originalFetch = window.fetch;
-                        window.fetch = async (...args) => {
-                          if (typeof args[0] === 'string' && blocked.some(url => args[0].includes(url))) {
-                            return new Response(null, { status: 204 });
-                          }
-                          return originalFetch(...args);
-                        };
-                      }
-                    `,
-                  }}
-                />
-              )}
+      <body className={`${inter.variable} ${tajawal.variable} font-sans antialiased`}>
+        {process.env.NODE_ENV === 'development' && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                if (typeof window !== 'undefined') {
+                  const blocked = ['/__nextjs_original-stack-frames'];
+                  const originalFetch = window.fetch;
+                  window.fetch = async (...args) => {
+                    if (typeof args[0] === 'string' && blocked.some(url => args[0].includes(url))) {
+                      return new Response(null, { status: 204 });
+                    }
+                    return originalFetch(...args);
+                  };
+                }
+              `,
+            }}
+          />
+        )}
+        <NextAuthProvider>
+          <GuideProvider>
+            <UserProvider>
               {children}
-              <Analytics />
-            </body>
-          </html>
-        </UserProvider>
-      </GuideProvider>
-    </ClerkProvider>
+            </UserProvider>
+          </GuideProvider>
+        </NextAuthProvider>
+        <Analytics />
+      </body>
+    </html>
   );
 }

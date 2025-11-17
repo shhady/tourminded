@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 
@@ -12,14 +13,14 @@ export default async function AdminUsersPage({ params }) {
   const localeParams = await params;
   const locale = localeParams?.locale || 'en';
 
-  const clerkUser = await currentUser();
-  if (!clerkUser) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
     redirect(`/${locale}/sign-in`);
     return null;
   }
 
   await connectDB();
-  const admin = await User.findOne({ clerkId: clerkUser.id });
+  const admin = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
   if (!admin || admin.role !== 'admin') {
     redirect(`/${locale}/dashboard`);
     return null;
@@ -41,6 +42,7 @@ export default async function AdminUsersPage({ params }) {
                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">{locale === 'en' ? 'Role' : 'الدور'}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">{locale === 'en' ? 'Joined' : 'تاريخ الانضمام'}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">{locale === 'en' ? 'Actions' : 'إجراءات'}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-secondary-100">
@@ -50,6 +52,14 @@ export default async function AdminUsersPage({ params }) {
                   <td className="px-6 py-4 text-sm text-secondary-700">{u.email}</td>
                   <td className="px-6 py-4 text-sm text-secondary-700">{u.role}</td>
                   <td className="px-6 py-4 text-sm text-secondary-700">{formatDate(u.createdAt)}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <a
+                      href={`/${locale}/dashboard/admin/users/${u._id}/password`}
+                      className="inline-flex items-center px-3 py-1.5 rounded-md bg-black text-white hover:bg-gray-800"
+                    >
+                      {locale === 'en' ? 'Set/Change Password' : 'تعيين/تغيير كلمة المرور'}
+                    </a>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -63,6 +73,14 @@ export default async function AdminUsersPage({ params }) {
               <div className="text-sm text-secondary-700">{u.email}</div>
               <div className="text-sm text-secondary-700 mt-1">{locale === 'en' ? 'Role:' : 'الدور:'} {u.role}</div>
               <div className="text-xs text-secondary-500 mt-1">{formatDate(u.createdAt)}</div>
+              <div className="mt-3">
+                <a
+                  href={`/${locale}/dashboard/admin/users/${u._id}/password`}
+                  className="inline-flex items-center px-3 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+                >
+                  {locale === 'en' ? 'Set/Change Password' : 'تعيين/تغيير كلمة المرور'}
+                </a>
+              </div>
             </div>
           ))}
         </div>

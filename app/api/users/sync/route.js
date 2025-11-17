@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Guide from '@/models/Guide';
@@ -7,10 +8,10 @@ import Guide from '@/models/Guide';
 // This route handles both fetching and creating/updating users
 export async function GET() {
   try {
-    // Get the current user from Clerk
-    const clerkUser = await currentUser();
+    // Get the current user from NextAuth
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
@@ -21,40 +22,36 @@ export async function GET() {
     await connectDB();
     
     // Check if user already exists in MongoDB
-    const existingUser = await User.findOne({ clerkId: clerkUser.id });
+    const existingUser =
+      (await User.findById(session.user.id)) ||
+      (await User.findOne({ email: session.user.email }));
     
     if (existingUser) {
-      // Update existing user but preserve their role
-      const updatedUser = await User.findOneAndUpdate(
-        { clerkId: clerkUser.id },
-        {
-          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
-          email: clerkUser.emailAddresses[0]?.emailAddress || '',
-          // Don't update role here - keep the existing role
-          updatedAt: new Date(),
-        },
-        { new: true }
-      );
+      // Update existing user with session data but preserve role
+      existingUser.name = session.user.name || existingUser.name;
+      existingUser.email = session.user.email || existingUser.email;
+      if (session.user.image) existingUser.image = session.user.image;
+      await existingUser.save();
       
       // If user is a guide, fetch guide data
       let guideData = null;
-      if (updatedUser.role === "guide") {
-        guideData = await Guide.findOne({ user: updatedUser._id });
+      if (existingUser.role === "guide") {
+        guideData = await Guide.findOne({ user: existingUser._id });
       }
       
       return NextResponse.json({
         success: true,
         message: 'User updated in MongoDB',
-        user: updatedUser,
+        user: existingUser,
         guide: guideData
       });
     } else {
       // Create new user
       const newUser = new User({
-        clerkId: clerkUser.id,
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
-        email: clerkUser.emailAddresses[0]?.emailAddress || '',
-        role: 'user', // Default role for new users
+        name: session.user.name || '',
+        email: session.user.email || '',
+        image: session.user.image || undefined,
+        role: 'user',
         createdAt: new Date(),
       });
       
@@ -78,25 +75,22 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const clerkUser = await currentUser();
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json({ message: 'No authenticated user found' }, { status: 401 });
     }
     
     await connectDB();
     
     // Check if user already exists in MongoDB
-    let user = await User.findOne({ clerkId: clerkUser.id });
+    let user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     
     if (user) {
-      // Update existing user with latest Clerk data
-      user.email = clerkUser.emailAddresses[0]?.emailAddress || user.email;
-      user.name = {
-        en: clerkUser.firstName ? `${clerkUser.firstName} ${clerkUser.lastName || ''}`.trim() : user.name.en,
-        ar: user.name.ar // Keep existing Arabic name
-      };
-      user.image = clerkUser.imageUrl || user.image;
+      // Update existing user with latest session data
+      user.email = session.user.email || user.email;
+      user.name = session.user.name || user.name;
+      user.image = session.user.image || user.image;
       
       await user.save();
       
@@ -107,13 +101,9 @@ export async function POST(request) {
     } else {
       // Create new user
       const newUser = new User({
-        clerkId: clerkUser.id,
-        email: clerkUser.emailAddresses[0]?.emailAddress,
-        name: {
-          en: clerkUser.firstName ? `${clerkUser.firstName} ${clerkUser.lastName || ''}`.trim() : '',
-          ar: ''
-        },
-        image: clerkUser.imageUrl,
+        email: session.user.email || '',
+        name: session.user.name || '',
+        image: session.user.image || undefined,
         role: 'user'
       });
       
@@ -136,10 +126,10 @@ export async function POST(request) {
 // Update user role to guide
 export async function PUT(request) {
   try {
-    // Get the current user from Clerk
-    const clerkUser = await currentUser();
+    // Get the current user from NextAuth
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Unauthorized", message: "Not authenticated" },
         { status: 401 }
@@ -150,7 +140,9 @@ export async function PUT(request) {
     await connectDB();
     
     // Find the user making the request
-    const requestingUser = await User.findOne({ clerkId: clerkUser.id });
+    const requestingUser =
+      (await User.findById(session.user.id)) ||
+      (await User.findOne({ email: session.user.email }));
     
     if (!requestingUser) {
       return NextResponse.json(
@@ -171,14 +163,9 @@ export async function PUT(request) {
     
     // Determine which user to update (self or target)
     const userIdToUpdate = userData.targetUserId || requestingUser._id;
-    const clerkIdToUpdate = userData.targetClerkId || clerkUser.id;
     
     // Find and update the user
-    const user = await User.findOneAndUpdate(
-      { clerkId: clerkIdToUpdate },
-      { role: "guide" },
-      { new: true }
-    );
+    const user = await User.findByIdAndUpdate(userIdToUpdate, { role: 'guide' }, { new: true });
     
     if (!user) {
       return NextResponse.json(

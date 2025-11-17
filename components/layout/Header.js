@@ -6,17 +6,16 @@ import { Globe, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Clock, Hear
 import Button from '../ui/Button';
 import { locales } from '@/lib/i18n';
 import Image from 'next/image';
-import { SignOutButton } from '@clerk/nextjs';
 import { useUser } from '@/contexts/UserContext';
 // import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
-import { useUser as useUserClerk } from '@clerk/clerk-react';
+import { signOut, useSession } from 'next-auth/react';
 const Header = ({ locale }) => {
+  const { data: session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { user } = useUser();
-  const { user: userClerk } = useUserClerk();
   const [guideStatus, setGuideStatus] = useState(null); // 'active', 'pending', or null
   const [messagesLink, setMessagesLink] = useState(`/${locale}/chat`);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -27,10 +26,10 @@ const Header = ({ locale }) => {
   // Fetch guide status when user is loaded
   useEffect(() => {
     const fetchGuideStatus = async () => {
-      if (!user || !user._id) return;
-      
+      const id = user?._id || session?.user?.id;
+      if (!id) return;
       try {
-        const response = await fetch(`/api/guides/user/${user._id}`);
+        const response = await fetch(`/api/guides/user/${id}`);
         if (response.ok) {
           const data = await response.json();
           if (data.guide) {
@@ -49,15 +48,13 @@ const Header = ({ locale }) => {
         console.error('Error fetching guide status:', error);
       }
     };
-    
     fetchGuideStatus();
-  }, [user]);
+  }, [user, session, locale]);
 
   // Fetch unread messages count
   useEffect(() => {
     const fetchUnreadCount = async () => {
-      if (!userClerk || !user) return;
-      
+      if (!(user || session?.user)) return;
       try {
         const response = await fetch('/api/chats/unread-count');
         if (response.ok) {
@@ -72,29 +69,29 @@ const Header = ({ locale }) => {
     };
 
     fetchUnreadCount();
-    
+
     // Poll for unread count every 30 seconds when user is active
     const interval = setInterval(fetchUnreadCount, 30000);
-    
+
     // Listen for custom event to refresh unread count
     const handleRefreshUnreadCount = () => {
       fetchUnreadCount();
     };
-    
+
     window.addEventListener('refreshUnreadCount', handleRefreshUnreadCount);
-    
+
     return () => {
       clearInterval(interval);
       window.removeEventListener('refreshUnreadCount', handleRefreshUnreadCount);
     };
-  }, [userClerk, user]);
+  }, [user, session]);
 
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -162,9 +159,9 @@ const Header = ({ locale }) => {
 
   // Get dashboard link based on user role
   const getDashboardLink = () => {
-    if (!user) return null;
-    
-    switch (user.publicMetadata?.role) {
+    const role = user?.role || session?.user?.role;
+    if (!role) return null;
+    switch (role) {
       case 'admin':
         return `/${locale}/dashboard/admin`;
       case 'guide':
@@ -177,15 +174,7 @@ const Header = ({ locale }) => {
   // Handle logout
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/auth/logout');
-      if (response.ok) {
-        // Redirect to home page
-        router.push(`/${locale}`);
-        // Force a refresh to update the UI
-        router.refresh();
-      } else {
-        console.error('Logout failed');
-      }
+      await signOut({ callbackUrl: `/${locale}` });
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -272,7 +261,7 @@ const Header = ({ locale }) => {
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center space-x-3">
             
-           
+            
             {/* Language Switcher */}
             <div className="relative">
               <button
@@ -307,7 +296,7 @@ const Header = ({ locale }) => {
             </div>
            
             {/* User Menu or Login/Register Buttons */}
-            {user ? (
+            {(user || session?.user) ? (
               <div className="relative">
                 <button
                   onClick={toggleUserMenu}
@@ -323,7 +312,7 @@ const Header = ({ locale }) => {
                       <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
                     )}
                   </div>
-                  <span>{userClerk?.fullName}</span>
+                  <span>{user?.name || session?.user?.name}</span>
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
 
@@ -377,10 +366,10 @@ const Header = ({ locale }) => {
                     </Link>
                     
                     {/* Guide-related menu item (dynamic based on status) */}
-                    {user && getGuideMenuItem()}
+                    {(user || session?.user) && getGuideMenuItem()}
                     
                     {/* Admin Dashboard - only for admins */}
-                    {user && user.role === 'admin' && (
+                    {(user?.role === 'admin' || session?.user?.role === 'admin') && (
                       <Link
                         href={`/${locale}/dashboard`}
                         className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
@@ -392,10 +381,10 @@ const Header = ({ locale }) => {
                     )}
                     
                     {/* Logout Button */}
-                    <div className='cursor-pointer flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors border-t border-secondary-100'>
+                    <button onClick={handleLogout} className='w-full cursor-pointer flex items-center text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors border-t border-secondary-100'>
                     <LogOut className="mr-2 h-4 w-4" /> 
-                    <SignOutButton />
-                    </div>
+                    {locale === 'en' ? 'Logout' : 'تسجيل الخروج'}
+                    </button>
                   </div>
                 )}
               </div>
@@ -431,7 +420,7 @@ const Header = ({ locale }) => {
             }`}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            {unreadCount > 0 && user && (
+            {unreadCount > 0 && (user || session?.user) && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
             )}
           </button>
@@ -457,7 +446,7 @@ const Header = ({ locale }) => {
               ))}
               
               {/* User Menu (Mobile) */}
-              {user && (
+              {(user || session?.user) && (
                 <div className="pt-4 border-t border-secondary-200 mt-4">
                   <p className="px-4 text-sm font-medium text-secondary-900 mb-2">
                     {locale === 'en' ? 'Account' : 'الحساب'}
@@ -511,12 +500,12 @@ const Header = ({ locale }) => {
                   </Link>
                   
                   {/* Guide-related menu item (dynamic based on status) */}
-                  {user && getGuideMenuItem()}
+                  {(user || session?.user) && getGuideMenuItem()}
 
                   {/* Create Tour - only for active guides (Mobile) */}
                  
                    {/* Admin Dashboard - only for admins */}
-                    {user && user.role === 'admin' && (
+                    {(user?.role === 'admin' || session?.user?.role === 'admin') && (
                       <Link
                         href={`/${locale}/dashboard`}
                         className="flex items-center w-full text-left px-4 py-3 text-sm text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
@@ -528,14 +517,13 @@ const Header = ({ locale }) => {
                     )}
                   {/* Logout Button */}
                  
-                  <div
-                  
+                  <button
+                    onClick={handleLogout}
                     className="cursor-pointer flex items-center w-full text-left px-4 py-3 rounded-md text-secondary-900 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    <SignOutButton />
-                    {/* {locale === 'en' ? 'Logout' : 'تسجيل الخروج'} */}
-                  </div>
+                    {locale === 'en' ? 'Logout' : 'تسجيل الخروج'}
+                  </button>
                 </div>
               )}
               
@@ -573,7 +561,7 @@ const Header = ({ locale }) => {
               </div>
               
               {/* Login/Register (Mobile) */}
-              {!user && (
+              {!(user || session?.user) && (
                 <div className="flex flex-col space-y-2 pt-4 border-t border-secondary-200 mt-4">
                   <Button
                     href={getLocalizedHref('/sign-in')}

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Guide from '@/models/Guide';
@@ -7,10 +8,10 @@ import Guide from '@/models/Guide';
 // Update guide activation status (admin only)
 export async function PATCH(request, { params }) {
   try {
-    // Get the current user from Clerk
-    const clerkUser = await currentUser();
+    // Get the current user from NextAuth
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
@@ -21,7 +22,9 @@ export async function PATCH(request, { params }) {
     await connectDB();
     
     // Check if user is admin
-    const adminUser = await User.findOne({ clerkId: clerkUser.id });
+    const adminUser =
+      (await User.findById(session.user.id)) ||
+      (await User.findOne({ email: session.user.email }));
     
     if (!adminUser || adminUser.role !== 'admin') {
       return NextResponse.json(

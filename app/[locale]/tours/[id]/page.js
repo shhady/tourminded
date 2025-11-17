@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
-import { currentUser } from '@clerk/nextjs/server';
 import { 
   Star, 
   Clock, 
@@ -202,9 +201,6 @@ export default async function TourPage({ params }) {
     if (!tourData) {
       notFound();
     }
-    
-    // Get current user from Clerk
-    const clerkUser = await currentUser();
     
     // Format title and description based on locale
     const title = typeof tourData.title === 'object' 

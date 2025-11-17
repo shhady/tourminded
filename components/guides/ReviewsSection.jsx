@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Star, Plus, User } from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 
 const ReviewsSection = ({ guideId, locale }) => {
-  const { user, isSignedIn } = useUser();
+  const { status } = useSession();
+  const isSignedIn = status === 'authenticated';
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

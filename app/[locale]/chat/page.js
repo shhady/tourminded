@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, use } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, MessageCircle, User, Search } from 'lucide-react';
 
 const UserChatPage = ({ params }) => {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { status } = useSession();
   const router = useRouter();
   const { locale } = use(params);
 
@@ -21,20 +21,20 @@ const UserChatPage = ({ params }) => {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (isLoaded && !isSignedIn) {
+    if (status === 'unauthenticated') {
       router.push(`/${locale}/sign-in`);
     }
-  }, [isLoaded, isSignedIn, router, locale]);
+  }, [status, router, locale]);
 
   // Fetch current user data and their conversations
   useEffect(() => {
     const fetchUserData = async () => {
-      if (isLoaded && isSignedIn && user) {
+      if (status === 'authenticated') {
         try {
           const response = await fetch('/api/users/me');
           if (response.ok) {
             const userData = await response.json();
-            setCurrentUser(userData);
+            setCurrentUser(userData.user);
             
             // Check if this user is a guide
             const guideResponse = await fetch('/api/guides/me');
@@ -67,9 +67,9 @@ const UserChatPage = ({ params }) => {
     };
 
     fetchUserData();
-  }, [isLoaded, isSignedIn, user]);
+  }, [status]);
 
-  if (!isLoaded || loading) {
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -82,7 +82,7 @@ const UserChatPage = ({ params }) => {
     );
   }
 
-  if (!isSignedIn) {
+  if (status === 'unauthenticated') {
     return null; // Will redirect
   }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Chat from '@/models/Chat';
 import User from '@/models/User';
@@ -7,8 +8,8 @@ import User from '@/models/User';
 // GET - Get all chats for the current user
 export async function GET(request) {
   try {
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
@@ -17,8 +18,8 @@ export async function GET(request) {
 
     await connectDB();
 
-    // Find the MongoDB user by Clerk ID
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    // Find the MongoDB user by NextAuth session id or email
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found in database' },
@@ -36,25 +37,8 @@ export async function GET(request) {
         participant => participant._id.toString() !== user._id.toString()
       );
 
-      // Get Clerk user data for profile image
-      let profileImage = null;
-      if (otherParticipant.clerkId) {
-        try {
-          const clerkResponse = await fetch(`https://api.clerk.com/v1/users/${otherParticipant.clerkId}`, {
-            headers: {
-              'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-              'Content-Type': 'application/json',
-            },
-          });
-          
-          if (clerkResponse.ok) {
-            const clerkUserData = await clerkResponse.json();
-            profileImage = clerkUserData.image_url;
-          }
-        } catch (error) {
-          console.log('Could not fetch Clerk user image:', error);
-        }
-      }
+      // Use stored image from our User model if available
+      const profileImage = otherParticipant?.image || null;
 
       return {
         _id: chat._id,
@@ -93,8 +77,8 @@ export async function GET(request) {
 // POST - Create a new chat or get existing one
 export async function POST(request) {
   try {
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
@@ -112,8 +96,8 @@ export async function POST(request) {
 
     await connectDB();
 
-    // Find the MongoDB user by Clerk ID
-    const currentUserData = await User.findOne({ clerkId: clerkUser.id });
+    // Find the MongoDB user by NextAuth session id or email
+    const currentUserData = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     if (!currentUserData) {
       return NextResponse.json(
         { success: false, message: 'User not found in database' },

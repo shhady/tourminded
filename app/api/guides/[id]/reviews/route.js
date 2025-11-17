@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import User from '@/models/User';
 
 export async function POST(request, { params }) {
   try {
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
@@ -27,8 +28,8 @@ export async function POST(request, { params }) {
 
     await connectDB();
 
-    // Find the MongoDB user by Clerk ID
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    // Find the MongoDB user by session id/email
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found in database' },
@@ -56,7 +57,7 @@ export async function POST(request, { params }) {
         }
         
         // Check if it's the old Clerk ID format
-        if (typeof r.userId === 'string' && r.userId === clerkUser.id) {
+        if (typeof r.userId === 'string' && r.userId.startsWith('user_')) {
           return true;
         }
         
@@ -153,19 +154,12 @@ export async function GET(request, { params }) {
       (guide.reviews || []).map(async (review) => {
         let user = null;
         
-        // Handle both old format (Clerk ID strings) and new format (MongoDB ObjectIds)
+        // Handle both old format (legacy string IDs) and new format (MongoDB ObjectIds)
         if (review.userId) {
-          if (typeof review.userId === 'string' && review.userId.startsWith('user_')) {
-            // Old format: Clerk ID
-            user = await User.findOne({ clerkId: review.userId }).select('firstName lastName name clerkId').lean();
-          } else {
-            // New format: MongoDB ObjectId
-            try {
-              user = await User.findById(review.userId).select('firstName lastName name clerkId').lean();
-            } catch (err) {
-              // If ObjectId cast fails, try as Clerk ID fallback
-              user = await User.findOne({ clerkId: review.userId }).select('firstName lastName name clerkId').lean();
-            }
+          try {
+            user = await User.findById(review.userId).select('firstName lastName name image').lean();
+          } catch {
+            user = null; // legacy string IDs are no longer resolvable without Clerk
           }
         }
         

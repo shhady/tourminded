@@ -1,55 +1,44 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 
 export async function PUT(request) {
   try {
-    const userClerk = await currentUser();
-    
-    if (!userClerk) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
     await connectDB();
-    
-    // Find the user by Clerk ID
-    const user = await User.findOne({ clerkId: userClerk.id });
-    
-    if (!user) {
+
+    const data = await request.json();
+
+    // Map incoming fields to schema fields
+    const update = {
+      name: data.firstName || data.lastName ? `${data.firstName || ''} ${data.lastName || ''}`.trim() : undefined,
+      phone: data.phone,
+      address: data.address,
+    };
+
+    // Remove undefined fields
+    Object.keys(update).forEach((k) => update[k] === undefined && delete update[k]);
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: session.user.id },
+      update,
+      { new: true }
+    );
+
+    if (!updatedUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
-    // Get update data from request
-    const data = await request.json();
-    console.log(data);
-    // Update user data
-    if (data.firstName !== undefined) user.firstName = data.firstName;
-    if (data.lastName !== undefined) user.lastName = data.lastName;
-    if (data.phone !== undefined) user.phone = data.phone;
-    if (data.address !== undefined) user.address = data.address;
-    
-    // Save updated user
-    await user.save();
-    
-    // Also update Clerk user data
-    await fetch(`https://api.clerk.dev/v1/users/${userClerk.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        first_name: data.firstName,
-        last_name: data.lastName,
-      }),
-    });
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       message: 'User updated successfully',
-      user
+      user: updatedUser
     });
-    
   } catch (error) {
     console.error('Error updating user:', error);
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });

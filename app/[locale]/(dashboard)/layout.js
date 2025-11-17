@@ -1,4 +1,5 @@
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
@@ -6,22 +7,20 @@ import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import Link from 'next/link';
 
 export default async function DashboardLayout({ children, params }) {
-  const clerkUser = await currentUser();
-  
-  if (!clerkUser) {
-    const localeParams = await params;
-    const locale = localeParams?.locale || 'en';
-    redirect(`/${locale}/sign-in?callbackUrl=/${locale}/dashboard`);
-  }
+  const session = await getServerSession(authOptions);
   
   const localeParams = await params;
   const locale = localeParams?.locale || 'en';
+
+  if (!session?.user) {
+    redirect(`/${locale}/sign-in?callbackUrl=/${locale}/dashboard`);
+  }
   
   // Connect to database
   await connectDB();
   
   // Find user in our database
-  const user = await User.findOne({ clerkId: clerkUser.id });
+  const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
   
   if (!user) {
     redirect(`/${locale}/sign-in`);

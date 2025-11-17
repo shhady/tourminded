@@ -7,7 +7,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import ImageUploader from '@/components/ui/ImageUploader';
 import Button from '@/components/ui/Button';
 import { Loader, Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import LanguageSelector from './LanguageSelector';
 
 export default function GuideRegistrationPage({ params }) {
@@ -15,7 +15,7 @@ export default function GuideRegistrationPage({ params }) {
   const locale = unwrappedParams?.locale || 'en';
   const router = useRouter();
   
-  const { user, isLoaded: isClerkLoaded } = useUser();
+  const { status } = useSession();
   
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -119,10 +119,10 @@ export default function GuideRegistrationPage({ params }) {
     }
   };
   
-  // Sync and get the current user from MongoDB using Clerk ID
+  // Sync and get the current user from MongoDB using NextAuth session
   useEffect(() => {
     const syncAndFetchUser = async () => {
-      if (!isClerkLoaded || !user) {
+      if (status !== 'authenticated') {
         setIsPageLoading(false);
         return;
       }
@@ -138,19 +138,10 @@ export default function GuideRegistrationPage({ params }) {
         const syncData = await syncResponse.json();
         console.log('User synced:', syncData);
         
-        // Now fetch the MongoDB user
-        const response = await fetch(`/api/users/clerk/${user.id}`);
-        
-        if (response.ok) {
-          const userData = await response.json();
-          setCurrentUser(userData.user);
-          
-          // Check if user is already a guide
-          if (userData.user.role === 'guide') {
-            setRedirectNeeded(true);
-          }
-        } else {
-          console.error('Failed to fetch user data');
+        const dbUser = syncData.user;
+        if (dbUser) {
+          setCurrentUser(dbUser);
+          if (dbUser.role === 'guide') setRedirectNeeded(true);
         }
       } catch (error) {
         console.error('Error fetching user:', error);
@@ -160,7 +151,7 @@ export default function GuideRegistrationPage({ params }) {
     };
     
     syncAndFetchUser();
-  }, [isClerkLoaded, user]);
+  }, [status]);
   
   // Handle redirect if needed
   useEffect(() => {
@@ -172,10 +163,10 @@ export default function GuideRegistrationPage({ params }) {
   // Replace the direct router.push call with useEffect
   // Add this useEffect near your other useEffect hooks
   useEffect(() => {
-    if (isClerkLoaded && !user) {
+    if (status === 'unauthenticated') {
       router.push(`/${locale}/sign-in`);
     }
-  }, [isClerkLoaded, user, router, locale]);
+  }, [status, router, locale]);
   
   const handleProfileImageUploaded = (url) => {
     setProfileImage(url);
@@ -301,7 +292,7 @@ export default function GuideRegistrationPage({ params }) {
   
   // Then change your render condition to just return null without the router.push
   // If user is not authenticated, show nothing while redirect happens
-  if (!user && isClerkLoaded) {
+  if (status === 'unauthenticated') {
     return null;
   }
   
@@ -317,7 +308,7 @@ export default function GuideRegistrationPage({ params }) {
   }
   
   // If we couldn't fetch the MongoDB user, show an error
-  if (!user && !isPageLoading && !currentUser) {
+  if (!isPageLoading && !currentUser) {
     return (
       <MainLayout locale={locale}>
         <div className="max-w-4xl mx-auto px-4 py-8">

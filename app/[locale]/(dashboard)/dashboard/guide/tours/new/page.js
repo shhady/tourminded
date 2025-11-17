@@ -7,7 +7,6 @@ import Button from '@/components/ui/Button';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Loader, Plus, Minus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import { useGuide } from '@/contexts/GuideContext';
 
 export default function NewTourPage({ params }) {
   const localeParams = React.use(params);
@@ -15,7 +14,6 @@ export default function NewTourPage({ params }) {
   const router = useRouter();
   
   const { user } = useUser();
-  const { guide } = useGuide();
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,7 +21,9 @@ export default function NewTourPage({ params }) {
   const [galleryImages, setGalleryImages] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedLocations, setSelectedLocations] = useState([]);
-  const [guideLanguages, setGuideLanguages] = useState([]);
+  const [guideLanguages, setGuideLanguages] = useState('');
+  const [guideLanguagesArray, setGuideLanguagesArray] = useState([]);
+  const [guideId, setGuideId] = useState(null);
   const [tourPlan, setTourPlan] = useState([]);
   const [includesItems, setIncludesItems] = useState(['']);
   const [selectedExpertise, setSelectedExpertise] = useState([]);
@@ -169,12 +169,32 @@ export default function NewTourPage({ params }) {
   
   // Fetch guide languages when component mounts
   useEffect(() => {
-    if (guide && guide.languages && guide.languages.length > 0) {
-      // Extract language names from guide's languages array for display only
-      const languages = guide.languages.map(lang => lang.language).join(', ');
-      setGuideLanguages(languages);
-    }
-  }, [guide]);
+    const fetchGuideProfile = async () => {
+      try {
+        const res = await fetch('/api/guides/me', { credentials: 'include' });
+        if (!res.ok) {
+          throw new Error('Failed to fetch guide profile');
+        }
+        const data = await res.json();
+        if (data?.guide) {
+          setGuideId(data.guide._id);
+          const langs = Array.isArray(data.guide.languages)
+            ? data.guide.languages.map((l) => (typeof l === 'string' ? l : (l?.language || ''))).filter(Boolean)
+            : [];
+          setGuideLanguagesArray(langs);
+          setGuideLanguages(langs.join(', '));
+        } else {
+          setGuideLanguages('');
+          setGuideLanguagesArray([]);
+        }
+      } catch (e) {
+        console.error('Error fetching guide profile:', e);
+        setGuideLanguages('');
+        setGuideLanguagesArray([]);
+      }
+    };
+    fetchGuideProfile();
+  }, []);
   
   const handleCoverImageUploaded = (url) => {
     setCoverImage(url);
@@ -331,12 +351,12 @@ export default function NewTourPage({ params }) {
         // Add tour plan for multi-day tours
         tourPlan: data.durationUnit === 'days' && Math.floor(data.duration) > 0 ? tourPlan : [],
         // Convert numeric fields
-        guide: guide._id,
+        guide: guideId,
         price: parseFloat(data.price),
         duration: parseFloat(data.duration),
         maxGroupSize: parseInt(data.maxGroupSize),
-        // Convert languages to array from guide profile
-        languages: guide.languages ? guide.languages.map(lang => lang.language) : ['en'],
+        // Convert languages to array from guide profile via NextAuth-backed API
+        languages: guideLanguagesArray.length ? guideLanguagesArray : ['en'],
         // Use selected locations
         locationNames: selectedLocations,
         // Add includes items
@@ -738,9 +758,7 @@ export default function NewTourPage({ params }) {
                 {locale === 'en' ? 'Languages' : 'اللغات'}
               </label>
               <div className="w-full px-3 py-2 border border-secondary-300 rounded-md bg-secondary-50 text-secondary-700">
-                {guide && guide.languages ? 
-                  guide.languages.map(lang => lang.language).join(', ') : 
-                  (locale === 'en' ? 'Loading languages...' : 'جاري تحميل اللغات...')}
+                {guideLanguages || (locale === 'en' ? 'Loading languages...' : 'جاري تحميل اللغات...')}
               </div>
               <p className="mt-1 text-xs text-secondary-500">
                 {locale === 'en' 

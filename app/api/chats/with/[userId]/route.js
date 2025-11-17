@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Chat from '@/models/Chat';
 import User from '@/models/User';
@@ -7,8 +8,8 @@ import User from '@/models/User';
 // GET - Find or create a chat with a specific user
 export async function GET(request, { params }) {
   try {
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
@@ -19,8 +20,8 @@ export async function GET(request, { params }) {
 
     await connectDB();
 
-    // Find the current MongoDB user by Clerk ID
-    const currentUserData = await User.findOne({ clerkId: clerkUser.id });
+    // Find the current MongoDB user by session id/email
+    const currentUserData = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     if (!currentUserData) {
       return NextResponse.json(
         { success: false, message: 'User not found in database' },
@@ -48,7 +49,7 @@ export async function GET(request, { params }) {
     // Find existing chat between these users (don't create new one)
     const existingChat = await Chat.findOne({
       participants: { $all: [currentUserData._id, userId] }
-    }).populate('participants', 'firstName lastName name clerkId');
+    }).populate('participants', 'firstName lastName name');
 
     if (!existingChat) {
       return NextResponse.json({

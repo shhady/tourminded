@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Guide from '@/models/Guide';
@@ -17,7 +18,7 @@ export async function GET(request, { params }) {
       );
     }
     
-    const { id } = params;
+    const { id } = await params;
     
     await connectDB();
     
@@ -52,7 +53,7 @@ export async function PUT(request, { params }) {
       );
     }
     
-    const { id } = params;
+    const { id } = await params;
     const updateData = await request.json();
     
     await connectDB();
@@ -95,7 +96,7 @@ export async function DELETE(request, { params }) {
       );
     }
     
-    const { id } = params;
+    const { id } = await params;
     
     await connectDB();
     
@@ -128,10 +129,10 @@ export async function DELETE(request, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
-    // Get the current user from Clerk
-    const clerkUser = await currentUser();
+    // Get the current user from NextAuth
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
@@ -142,10 +143,12 @@ export async function PATCH(request, { params }) {
     await connectDB();
     
     // Get user ID from params
-    const { id } = params;
+    const { id } = await params;
     
     // Find the user making the request
-    const requestingUser = await User.findOne({ clerkId: clerkUser.id });
+    const requestingUser =
+      (await User.findById(session.user.id)) ||
+      (await User.findOne({ email: session.user.email }));
     
     if (!requestingUser) {
       return NextResponse.json(

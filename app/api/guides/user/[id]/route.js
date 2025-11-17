@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 
 export async function GET(request, { params }) {
   try {
-    // Get the current user from Clerk
-    const clerkUser = await currentUser();
-    
-    if (!clerkUser) {
+    // Ensure authenticated via NextAuth
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }

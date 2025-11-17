@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Tour from '@/models/Tour';
@@ -9,11 +10,11 @@ import User from '@/models/User';
 export async function PUT(request, { params }) {
   try {
     const { id } = await params;
-    const clerkUser = await currentUser();
-    if (!clerkUser) return NextResponse.json({ success: false, message: 'Not authenticated' }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) return NextResponse.json({ success: false, message: 'Not authenticated' }, { status: 401 });
 
     await connectDB();
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     if (!user) return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
 
     const booking = await Booking.findById(id);
@@ -139,10 +140,10 @@ export async function GET(request, { params }) {
   try {
     const { id } = params;
     
-    // Get current user from Clerk
-    const clerkUser = await currentUser();
+    // Get current user from NextAuth
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
@@ -153,7 +154,7 @@ export async function GET(request, { params }) {
     await connectDB();
     
     // Find user in our database
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     
     if (!user) {
       return NextResponse.json(
@@ -232,10 +233,10 @@ export async function DELETE(request, { params }) {
   try {
     const { id } = params;
     
-    // Get current user from Clerk
-    const clerkUser = await currentUser();
+    // Get current user from NextAuth
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
@@ -246,7 +247,7 @@ export async function DELETE(request, { params }) {
     await connectDB();
     
     // Find user in our database
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     
     if (!user || user.role !== 'admin') {
       return NextResponse.json(

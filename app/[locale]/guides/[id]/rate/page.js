@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser as useClerkUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { Star, X, Languages, Check, ArrowLeft } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import Button from '@/components/ui/Button';
@@ -67,7 +67,7 @@ const getCurrentUserRating = (proficiency, userId) => {
 
 export default function RateLanguagesPage({ params }) {
   const router = useRouter();
-  const { isSignedIn, isLoaded: clerkLoaded, user: clerkUser } = useClerkUser();
+  const { status } = useSession();
   const [unwrappedParams, setUnwrappedParams] = useState(null);
   const [guide, setGuide] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -91,15 +91,15 @@ export default function RateLanguagesPage({ params }) {
 
   // Authentication check
   useEffect(() => {
-    if (clerkLoaded && !isSignedIn) {
-      router.push(`/${locale}/sign-in?redirect_url=${encodeURIComponent(`/${locale}/guides/${guideId}/rate`)}`);
+    if (status === 'unauthenticated') {
+      router.push(`/${locale}/sign-in?callbackUrl=${encodeURIComponent(`/${locale}/guides/${guideId}/rate`)}`);
     }
-  }, [clerkLoaded, isSignedIn, locale, guideId, router]);
+  }, [status, locale, guideId, router]);
 
   // Fetch current user data
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      if (!isSignedIn || !clerkLoaded) return;
+      if (status !== 'authenticated') return;
       
       try {
         const response = await fetch('/api/users/me');
@@ -113,7 +113,7 @@ export default function RateLanguagesPage({ params }) {
     };
 
     fetchCurrentUser();
-  }, [isSignedIn, clerkLoaded]);
+  }, [status]);
 
   // Fetch guide data and set current user ratings
   useEffect(() => {
@@ -204,7 +204,7 @@ export default function RateLanguagesPage({ params }) {
     router.push(`/${locale}/guides/${guideId}`);
   }, [router, locale, guideId]);
 
-  if (loading || !clerkLoaded || !isSignedIn) {
+  if (loading || status === 'loading' || status === 'unauthenticated') {
     return (
       <MainLayout locale={locale}>
         <div className="flex items-center justify-center min-h-screen">

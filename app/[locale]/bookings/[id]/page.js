@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import Link from 'next/link';
 import ApproveButton from './ApproveButton';
 import SpecialRequestsClient from './SpecialRequestsClient';
@@ -17,14 +18,14 @@ export default async function BookingDetailsPage({ params }) {
   const locale = paramsData?.locale || 'en';
   const bookingId = paramsData?.id;
 
-  const clerk = await currentUser();
-  if (!clerk) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
     redirect(`/${locale}/sign-in`);
     return null;
   }
 
   await connectDB();
-  const user = await User.findOne({ clerkId: clerk.id });
+  const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
   if (!user) {
     redirect(`/${locale}/sign-in`);
     return null;

@@ -1,20 +1,21 @@
 import { NextResponse } from 'next/server';
 import  connectToDB from '@/lib/mongodb';
 import User from '@/models/User';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 // GET - Get the user's wishlist
 export async function GET() {
   try {
-    const clerkUser = await currentUser();
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     
     await connectToDB();
     
-    const user = await User.findOne({ clerkId: clerkUser.id })
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email })
       .populate({
         path: 'wishlist.tours',
         populate: {
@@ -41,9 +42,9 @@ export async function GET() {
 // PUT - Add or remove an item from wishlist
 export async function PUT(request) {
   try {
-    const clerkUser = await currentUser();
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     
@@ -55,7 +56,7 @@ export async function PUT(request) {
     
     await connectToDB();
     
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -89,7 +90,7 @@ export async function PUT(request) {
     await user.save();
     
     // Get the updated user with populated wishlist
-    const updatedUser = await User.findOne({ clerkId: clerkUser.id })
+    const updatedUser = await User.findById(user._id)
       .populate({
         path: 'wishlist.tours',
         populate: {

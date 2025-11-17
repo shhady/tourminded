@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Button from '@/components/ui/Button';
 import { Loader } from 'lucide-react';
@@ -12,7 +12,7 @@ export default function GuideProfilePage({ params }) {
   const localeParams = React.use(params);
   const locale = localeParams?.locale || 'en';
   const router = useRouter();
-  const { user, isLoaded: isClerkLoaded } = useUser();
+  const { data: session, status } = useSession();
   
   const [guide, setGuide] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +21,7 @@ export default function GuideProfilePage({ params }) {
  
   useEffect(() => {
     const fetchGuideProfile = async () => {
-      if (!isClerkLoaded || !user) {
+      if (status !== 'authenticated') {
         return;
       }
       
@@ -43,7 +43,7 @@ export default function GuideProfilePage({ params }) {
     };
     
     fetchGuideProfile();
-  }, [isClerkLoaded, user]);
+  }, [status]);
   
   // Helper function to get name in current locale or first available
   const getLocalizedName = () => {

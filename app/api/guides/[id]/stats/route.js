@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Guide from '@/models/Guide';
@@ -9,10 +10,10 @@ import Review from '@/models/Review';
 
 export async function GET(request, { params }) {
   try {
-    // Get the current user from Clerk
-    const clerkUser = await currentUser();
+    // Get the current user from NextAuth
+    const session = await getServerSession(authOptions);
     
-    if (!clerkUser) {
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
@@ -26,7 +27,9 @@ export async function GET(request, { params }) {
     const { id } = params;
     
     // Find the user making the request
-    const requestingUser = await User.findOne({ clerkId: clerkUser.id });
+    const requestingUser =
+      (await User.findById(session.user.id)) ||
+      (await User.findOne({ email: session.user.email }));
     
     if (!requestingUser) {
       return NextResponse.json(

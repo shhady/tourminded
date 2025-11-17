@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Chat from '@/models/Chat';
 import User from '@/models/User';
@@ -7,8 +8,8 @@ import User from '@/models/User';
 // GET - Get a specific chat with all messages
 export async function GET(request, { params }) {
   try {
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
@@ -19,8 +20,8 @@ export async function GET(request, { params }) {
 
     await connectDB();
 
-    // Find the MongoDB user by Clerk ID
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    // Find the MongoDB user by session id/email
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found in database' },
@@ -32,8 +33,8 @@ export async function GET(request, { params }) {
     const chat = await Chat.findOne({
       _id: id,
       participants: user._id
-    }).populate('participants', 'firstName lastName name clerkId')
-      .populate('messages.senderId', 'firstName lastName name clerkId');
+    }).populate('participants', 'firstName lastName name')
+      .populate('messages.senderId', 'firstName lastName name');
 
     if (!chat) {
       return NextResponse.json(

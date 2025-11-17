@@ -1,14 +1,32 @@
-import { clerkMiddleware } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
-export default clerkMiddleware((auth, req) => {
-  const { pathname } = req.nextUrl
-  
-  // If user is on root path, redirect to /en immediately
+export async function middleware(req) {
+  const { pathname, search } = req.nextUrl
+
+  // Redirect root to default locale
   if (pathname === '/') {
     return NextResponse.redirect(new URL('/en', req.url))
   }
-})
+
+  // Protect dashboard routes with NextAuth (admins/guides/users)
+  // Example protected pattern: /en/dashboard/... or /ar/dashboard/...
+  const protectedPatterns = [/^\/[a-z]{2}\/dashboard(\/.*)?$/]
+  const isProtected = protectedPatterns.some((re) => re.test(pathname))
+
+  if (isProtected) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    if (!token) {
+      // Extract locale from path, default to 'en'
+      const localeMatch = pathname.match(/^\/([a-z]{2})\b/)
+      const locale = localeMatch ? localeMatch[1] : 'en'
+      const callbackUrl = encodeURIComponent(pathname + search)
+      return NextResponse.redirect(new URL(`/${locale}/sign-in?callbackUrl=${callbackUrl}`, req.url))
+    }
+  }
+
+  return NextResponse.next()
+}
 
 export const config = {
   matcher: [

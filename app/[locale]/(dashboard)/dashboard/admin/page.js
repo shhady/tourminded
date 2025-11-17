@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Guide from '@/models/Guide';
@@ -11,8 +12,8 @@ export const metadata = {
 };
 
 export default async function AdminDashboardPage({ params }) {
-  const clerkUser = await currentUser();
-  if (!clerkUser) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
     const localeParams = await params;
     const locale = localeParams?.locale || 'en';
     redirect(`/${locale}/sign-in`);
@@ -23,7 +24,7 @@ export default async function AdminDashboardPage({ params }) {
   const locale = localeParams?.locale || 'en';
 
   await connectDB();
-  const user = await User.findOne({ clerkId: clerkUser.id });
+  const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
   if (!user || user.role !== 'admin') {
     redirect(`/${locale}/dashboard`);
     return;

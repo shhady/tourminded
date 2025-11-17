@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import User from '@/models/User';
@@ -38,13 +39,13 @@ function mergeRanges(ranges) {
 
 export async function GET() {
   try {
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json({ success: false, message: 'Not authenticated' }, { status: 401 });
     }
 
     await connectDB();
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     if (!user) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
@@ -66,13 +67,13 @@ export async function GET() {
 // - mode: 'replace' replaces all ranges
 export async function PUT(request) {
   try {
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json({ success: false, message: 'Not authenticated' }, { status: 401 });
     }
 
     await connectDB();
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     if (!user) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }

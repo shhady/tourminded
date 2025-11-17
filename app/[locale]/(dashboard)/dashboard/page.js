@@ -1,5 +1,6 @@
 import { useLocale } from 'next-intl';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Tour from '@/models/Tour';
@@ -105,12 +106,12 @@ async function getStats({ role, userId, guideId }) {
 export default async function DashboardPage({ params }) {
   const localeParams = await params;
   const locale = localeParams?.locale || 'en';
-  const clerk = await currentUser();
-  if (!clerk) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
     return null;
   }
   await connectDB();
-  const userData = await User.findOne({ clerkId: clerk.id });
+  const userData = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
   if (!userData) {
     return null;
   }

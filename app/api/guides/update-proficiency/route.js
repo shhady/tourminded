@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
 import User from '@/models/User';
 
 export async function PUT(request) {
   try {
-    const userClerk = await currentUser();
+    const session = await getServerSession(authOptions);
     
-    if (!userClerk) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
@@ -19,7 +20,9 @@ export async function PUT(request) {
     const { guideId, languageIndex, proficiency } = data;
     
     // Find the user in our database
-    const user = await User.findOne({ clerkId: userClerk.id });
+    const user =
+      (await User.findById(session.user.id)) ||
+      (await User.findOne({ email: session.user.email }));
     
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });

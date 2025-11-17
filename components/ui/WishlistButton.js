@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Heart } from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 
@@ -16,7 +16,7 @@ export default function WishlistButton({
 }) {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { isSignedIn, user } = useUser();
+  const { status } = useSession();
   const router = useRouter();
   console.log(id)
   // Size classes
@@ -43,7 +43,7 @@ export default function WishlistButton({
   
   // Function to check if item is in wishlist - memoized to prevent recreation on every render
   const checkWishlistStatus = useCallback(async () => {
-    if (!isSignedIn || !id || !type) return;
+    if (status !== 'authenticated' || !id || !type) return;
     
     try {
       const response = await fetch(`/api/users/me/wishlist/check?type=${type}&id=${id}`);
@@ -55,7 +55,7 @@ export default function WishlistButton({
     } catch (error) {
       console.error('Error checking wishlist status:', error);
     }
-  }, [isSignedIn, id, type]);
+  }, [status, id, type]);
   
   // Check if item is in wishlist on component mount
   useEffect(() => {
@@ -67,12 +67,12 @@ export default function WishlistButton({
     e.preventDefault();
     e.stopPropagation();
     
-    if (!isSignedIn) {
+    if (status !== 'authenticated') {
       // Redirect to sign in page with return URL
       toast.error(locale === 'en' 
         ? 'Please sign in to save to your wishlist' 
         : 'الرجاء تسجيل الدخول للحفظ في قائمة الرغبات');
-      router.push(`/${locale}/sign-in?redirect_url=${encodeURIComponent(window.location.pathname)}`);
+      router.push(`/${locale}/sign-in?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
     

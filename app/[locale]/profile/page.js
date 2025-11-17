@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser as useClerkUser, UserButton } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { useUser } from '@/contexts/UserContext';
 import MainLayout from '@/components/layout/MainLayout';
 import Button from '@/components/ui/Button';
@@ -16,7 +16,7 @@ export default function ProfilePage({ params }) {
   const locale = unwrappedParams?.locale || 'en';
   const router = useRouter();
   
-  const { isSignedIn, isLoaded: clerkLoaded, user: clerkUser } = useClerkUser();
+  const { data: session, status } = useSession();
   const { user, loading: userContextLoading } = useUser();
   
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +37,13 @@ export default function ProfilePage({ params }) {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  // Security/password change state
+  const [hasPassword, setHasPassword] = useState(false);
+  const [pwdLoading, setPwdLoading] = useState(false);
+  const [pwdError, setPwdError] = useState('');
+  const [pwdSuccess, setPwdSuccess] = useState('');
+  const [pwdData, setPwdData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   
   // Add these state variables
   const [languages, setLanguages] = useState([
@@ -188,15 +195,15 @@ export default function ProfilePage({ params }) {
   
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (clerkLoaded && !isSignedIn) {
+    if (status === 'unauthenticated') {
       router.push(`/${locale}/sign-in?callbackUrl=/${locale}/profile`);
     }
-  }, [clerkLoaded, isSignedIn, locale, router]);
+  }, [status, locale, router]);
   
   // Update the useEffect that fetches user data to properly handle the name
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!isSignedIn || !clerkLoaded) {
+      if (status !== 'authenticated') {
         return;
       }
       
@@ -208,14 +215,14 @@ export default function ProfilePage({ params }) {
         if (response.ok) {
           const data = await response.json();
           
-          // Set user form data with proper name handling
-          const fullName = data.user.firstName && data.user.lastName 
-            ? `${data.user.firstName} ${data.user.lastName}` 
-            : clerkUser?.fullName || '';
+          // reflect whether credentials password exists
+          setHasPassword(!!data.hasPassword);
+          
+          const fullName = data.user.name || session?.user?.name || '';
           
           setFormData({
             name: fullName,
-            email: clerkUser?.emailAddresses[0]?.emailAddress || '',
+            email: session?.user?.email || '',
             phone: data.user.phone || '',
             address: data.user.address || '',
           });
@@ -229,7 +236,7 @@ export default function ProfilePage({ params }) {
     };
     
     fetchUserData();
-  }, [isSignedIn, clerkLoaded, clerkUser]);
+  }, [status, session]);
  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -407,7 +414,7 @@ export default function ProfilePage({ params }) {
     }
   };
   
-  if (isLoading || !clerkLoaded || userContextLoading) {
+  if (isLoading || userContextLoading || status === 'loading') {
     return (
       <MainLayout locale={locale}>
         <div className="flex items-center justify-center min-h-screen">
@@ -553,17 +560,99 @@ export default function ProfilePage({ params }) {
                     {locale === 'en' ? 'Security Settings' : 'إعدادات الأمان'}
                   </h2>
                   
-                  <p className="text-secondary-700 mb-6">
-                    {t.passwordInfo}
-                  </p>
-                  
-                  <div className="flex items-center gap-2">
-                    <UserButton/> 
-                    <ArrowLeft size={16}/>
-                    <span className="text-sm text-secondary-600">
-                      {locale === 'en' ? 'Click to manage your account' : 'انقر لإدارة حسابك'}
-                    </span>
-                  </div>
+                  {!hasPassword ? (
+                    <p className="text-secondary-700">
+                      {locale === 'en' 
+                        ? 'You signed in with Google. Manage your password in your Google Account.' 
+                        : 'قمت بتسجيل الدخول باستخدام جوجل. قم بإدارة كلمة المرور من حساب جوجل.'}
+                    </p>
+                  ) : (
+                    <div>
+                      {pwdError && (
+                        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">{pwdError}</div>
+                      )}
+                      {pwdSuccess && (
+                        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">{pwdSuccess}</div>
+                      )}
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          setPwdError('');
+                          setPwdSuccess('');
+                          if (pwdData.newPassword.length < 6) {
+                            setPwdError(locale === 'en' ? 'Password must be at least 6 characters' : 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل');
+                            return;
+                          }
+                          if (pwdData.newPassword !== pwdData.confirmPassword) {
+                            setPwdError(locale === 'en' ? 'Passwords do not match' : 'كلمات المرور غير متطابقة');
+                            return;
+                          }
+                          setPwdLoading(true);
+                          try {
+                            const res = await fetch('/api/auth/change-password', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ currentPassword: pwdData.currentPassword, newPassword: pwdData.newPassword }),
+                            });
+                            const j = await res.json();
+                            if (!res.ok) throw new Error(j.message || (locale === 'en' ? 'Failed to change password' : 'فشل تغيير كلمة المرور'));
+                            setPwdSuccess(locale === 'en' ? 'Password changed successfully' : 'تم تغيير كلمة المرور بنجاح');
+                            setPwdData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                          } catch (err) {
+                            setPwdError(err.message);
+                          } finally {
+                            setPwdLoading(false);
+                          }
+                        }}
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-medium text-secondary-700 mb-2">
+                              {locale === 'en' ? 'Current Password' : 'كلمة المرور الحالية'}
+                            </label>
+                            <input
+                              type="password"
+                              value={pwdData.currentPassword}
+                              onChange={(e) => setPwdData({ ...pwdData, currentPassword: e.target.value })}
+                              className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-secondary-700 mb-2">
+                              {locale === 'en' ? 'New Password' : 'كلمة المرور الجديدة'}
+                            </label>
+                            <input
+                              type="password"
+                              value={pwdData.newPassword}
+                              onChange={(e) => setPwdData({ ...pwdData, newPassword: e.target.value })}
+                              className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              required
+                              minLength={6}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-secondary-700 mb-2">
+                              {locale === 'en' ? 'Confirm New Password' : 'تأكيد كلمة المرور الجديدة'}
+                            </label>
+                            <input
+                              type="password"
+                              value={pwdData.confirmPassword}
+                              onChange={(e) => setPwdData({ ...pwdData, confirmPassword: e.target.value })}
+                              className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              required
+                              minLength={6}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end mt-6">
+                          <Button type="submit" disabled={pwdLoading}>
+                            {pwdLoading ? (locale === 'en' ? 'Saving...' : 'جاري الحفظ...') : (locale === 'en' ? 'Change Password' : 'تغيير كلمة المرور')}
+                          </Button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>

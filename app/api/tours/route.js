@@ -3,7 +3,8 @@ import connectDB from '@/lib/mongodb';
 import Tour from '@/models/Tour';
 import Guide from '@/models/Guide';
 import User from '@/models/User';
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import Location from '@/models/Location';
 
 // GET all tours with optional filtering
@@ -92,10 +93,8 @@ export async function GET(request) {
 // POST create a new tour (requires authentication as a guide)
 export async function POST(request) {
   try {
-    // Get current user from Clerk
-    const clerkUser = await currentUser();
-    
-    if (!clerkUser) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
         { status: 401 }
@@ -106,7 +105,7 @@ export async function POST(request) {
     await connectDB();
     
     // Find user in our database
-    const user = await User.findOne({ clerkId: clerkUser.id });
+    const user = await User.findById(session.user.id) || await User.findOne({ email: session.user.email });
     
     if (!user) {
       return NextResponse.json(
