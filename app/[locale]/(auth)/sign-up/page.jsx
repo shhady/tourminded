@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { FcGoogle } from "react-icons/fc"
 
 export default function Page() {
   const pathname = usePathname();
@@ -152,9 +153,9 @@ export default function Page() {
 
           <button
             onClick={() => signIn('google', { callbackUrl: `/${locale}` })}
-            className="w-full border border-secondary-300 hover:bg-secondary-50 text-secondary-800 font-medium py-2 px-4 rounded-md transition-colors"
+            className="flex items-center justify-center w-full border border-secondary-300 hover:bg-secondary-50 text-secondary-800 font-medium py-2 px-4 rounded-md transition-colors"
           >
-            {locale === 'en' ? 'Continue with Google' : 'المتابعة باستخدام جوجل'}
+           <FcGoogle className='mr-2' size={20}/> {locale === 'en' ? 'Continue with Google' : 'المتابعة باستخدام جوجل'}
           </button>
 
           <div className="mt-6 text-center text-sm text-secondary-600">
