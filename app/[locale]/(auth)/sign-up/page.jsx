@@ -123,7 +123,7 @@ export default function Page() {
               />
             </div>
 
-            <div className="flex items-center">
+            {/* <div className="flex items-center">
               <input
                 id="becomeGuide"
                 type="checkbox"
@@ -134,7 +134,7 @@ export default function Page() {
               <label htmlFor="becomeGuide" className="ml-2 block text-sm text-secondary-700">
                 {locale === 'en' ? 'I want to become a guide' : 'أريد أن أصبح مرشدًا'}
               </label>
-            </div>
+            </div> */}
 
             <button
               type="submit"
