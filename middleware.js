@@ -4,6 +4,14 @@ import { getToken } from 'next-auth/jwt'
 export async function middleware(req) {
   const { pathname, search } = req.nextUrl
 
+  // Canonicalize host: force www to avoid OAuth state cookie mismatches
+  const host = req.headers.get('host')
+  if (host === 'watermelontours.com') {
+    const url = new URL(req.url)
+    url.host = 'www.watermelontours.com'
+    return NextResponse.redirect(url)
+  }
+
   // Redirect root to default locale
   if (pathname === '/') {
     return NextResponse.redirect(new URL('/en', req.url))
