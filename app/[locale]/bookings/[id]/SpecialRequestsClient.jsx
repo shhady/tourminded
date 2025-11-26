@@ -1,5 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SpecialRequestsClient({
   locale,
@@ -11,6 +12,7 @@ export default function SpecialRequestsClient({
   userAlreadyApproved = false,
   otherApproved = false,
 }) {
+  const router = useRouter();
   const [items, setItems] = useState(
     (initialItems || []).map((it) => ({
       specialRequest: it.specialRequest || '',
@@ -20,6 +22,10 @@ export default function SpecialRequestsClient({
     }))
   );
   const [submitting, setSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [userApproved, setUserApproved] = useState(!!userAlreadyApproved);
+  const [guideApproved, setGuideApproved] = useState(!!otherApproved);
 
   const basePrice = useMemo(() => {
     const t = Number(tourPrice) || 0;
@@ -47,12 +53,20 @@ export default function SpecialRequestsClient({
   const approve = async () => {
     try {
       setSubmitting(true);
-      await fetch(`/api/bookings/${bookingId}`, {
+      setErrorMsg('');
+      setSuccessMsg('');
+      const res = await fetch(`/api/bookings/${bookingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ approvedOfferUser: true }),
       });
-      window.location.reload();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg(data.message || (locale === 'en' ? 'Failed to approve booking.' : 'فشل في تأكيد الحجز.'));
+        return;
+      }
+      // Navigate straight to checkout after approval
+      router.push(`/en/checkout?bookingId=${bookingId}`);
     } finally {
       setSubmitting(false);
     }
@@ -61,6 +75,8 @@ export default function SpecialRequestsClient({
   const update = async () => {
     try {
       setSubmitting(true);
+      setErrorMsg('');
+      setSuccessMsg('');
       const filtered = items
         .filter((it) => it.checked)
         .map((it) => ({
@@ -68,7 +84,7 @@ export default function SpecialRequestsClient({
           specialRequestPrice: Number(it.specialRequestPrice) || 0,
           specialRequestPricePerGroupOrPerson: it.specialRequestPricePerGroupOrPerson === 'person' ? 'person' : 'group',
         }));
-      await fetch(`/api/bookings/${bookingId}`, {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,7 +93,19 @@ export default function SpecialRequestsClient({
           approvedOfferGuide: false,
         }),
       });
-      window.location.reload();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg(data.message || (locale === 'en' ? 'Failed to update booking.' : 'فشل في تحديث الحجز.'));
+        return;
+      }
+      // Reflect local state without reload
+      setUserApproved(true);
+      setGuideApproved(false);
+      setSuccessMsg(
+        locale === 'en'
+          ? 'Your update was sent. We emailed the guide to review and approve.'
+          : 'تم إرسال تحديثك. قمنا بإرسال بريد إلى المرشد للمراجعة والموافقة.'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -85,6 +113,8 @@ export default function SpecialRequestsClient({
 
   return (
     <div className="p-6 border-t border-secondary-200">
+      {errorMsg && <div className="mb-3 p-2 rounded bg-red-100 text-red-700">{errorMsg}</div>}
+      {successMsg && <div className="mb-3 p-2 rounded bg-green-100 text-green-700">{successMsg}</div>}
       <div className="text-sm text-secondary-600 mb-3">
         {locale === 'en' ? 'Special Requests' : 'الطلبات الخاصة'}
       </div>
@@ -107,12 +137,12 @@ export default function SpecialRequestsClient({
           {locale === 'en' ? 'Total' : 'الإجمالي'}: <span className="font-semibold text-secondary-900">${total}</span>
         </div>
         <div className="flex gap-2">
-          {!userAlreadyApproved && otherApproved && !hasChanges && (
+          {!userApproved && guideApproved && !hasChanges && (
             <button type="button" onClick={approve} disabled={submitting} className="px-4 py-2 rounded-md bg-black text-white hover:bg-black/90 disabled:opacity-60">
               {locale === 'en' ? 'Approve' : 'موافقة'}
             </button>
           )}
-          {!userAlreadyApproved && hasChanges && (
+          {!userApproved && hasChanges && (
             <button type="button" onClick={update} disabled={submitting} className="px-4 py-2 rounded-md bg-black text-white hover:bg-black/90 disabled:opacity-60">
               {locale === 'en' ? 'Update' : 'تحديث'}
             </button>

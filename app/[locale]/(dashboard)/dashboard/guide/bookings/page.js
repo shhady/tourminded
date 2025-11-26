@@ -132,7 +132,9 @@ export default function GuideBookingsPage({ params }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-secondary-200">
-              {bookings.map(b => (
+              {bookings.map(b => {
+                const isLocked = b.paymentStatus === 'paid';
+                return (
                 <React.Fragment key={b._id}>
                   <tr className="hover:bg-secondary-50">
                     <td className="px-4 py-3 text-sm text-secondary-900">{b.tour?.title?.en || b.tour?.title?.ar || 'Tour'}</td>
@@ -140,6 +142,11 @@ export default function GuideBookingsPage({ params }) {
                     <td className="px-4 py-3 text-sm text-secondary-700">{b.travelers}</td>
                     <td className="px-4 py-3 text-sm">
                       <div className="font-semibold text-primary-600">${b.totalPrice}</div>
+                      {isLocked && (
+                        <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs">
+                          {locale === 'en' ? 'Paid' : 'مدفوع'}
+                        </div>
+                      )}
                       {b.approvedOfferGuide && b.approvedOfferUser ? (
                         <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs">
                           {locale === 'en' ? 'Both approved' : 'تمت موافقة الطرفين'}
@@ -174,32 +181,45 @@ export default function GuideBookingsPage({ params }) {
                           </div>
                         </div>
                         <div className="mt-4">
-                          <div className="mb-2 text-sm font-medium text-secondary-700">{locale === 'en' ? 'Special Requests (editable)' : 'الطلبات الخاصة (قابلة للتعديل)'}</div>
+                          <div className="mb-2 text-sm font-medium text-secondary-700">
+                            {locale === 'en' ? 'Special Requests' : 'الطلبات الخاصة'}
+                            {isLocked ? (
+                              <span className="ml-2 text-xs text-secondary-500">
+                                {locale === 'en' ? '(locked after payment)' : '(مغلق بعد الدفع)'}
+                              </span>
+                            ) : (
+                              <span className="ml-2 text-xs text-secondary-500">
+                                {locale === 'en' ? '(editable)' : '(قابلة للتعديل)'}
+                              </span>
+                            )}
+                          </div>
                           <div className="space-y-2">
                             {(editing[b._id] || []).map((it, idx) => (
                               <div key={idx} className="grid grid-cols-8 gap-2 items-center">
-                                <input type="text" value={it.specialRequest} onChange={e => updateItem(b._id, idx, 'specialRequest', e.target.value)} placeholder={locale === 'en' ? 'Request' : 'طلب'} className="col-span-4 px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                    <div className="col-span-2 relative">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-secondary-500">$</span>
-                      <input type="number" min="0" step="0.01" value={it.specialRequestPrice} onChange={e => updateItem(b._id, idx, 'specialRequestPrice', e.target.value)} placeholder={locale === 'en' ? 'Price' : 'السعر'} className="w-full pl-6 pr-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                    </div>
-                    <select value={it.specialRequestPricePerGroupOrPerson} onChange={e => updateItem(b._id, idx, 'specialRequestPricePerGroupOrPerson', e.target.value)} className="col-span-2 px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <input disabled={isLocked} type="text" value={it.specialRequest} onChange={e => updateItem(b._id, idx, 'specialRequest', e.target.value)} placeholder={locale === 'en' ? 'Request' : 'طلب'} className="col-span-4 px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-secondary-100 disabled:text-secondary-500" />
+                <div className="col-span-2 relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-secondary-500">$</span>
+                  <input disabled={isLocked} type="number" min="0" step="0.01" value={it.specialRequestPrice} onChange={e => updateItem(b._id, idx, 'specialRequestPrice', e.target.value)} placeholder={locale === 'en' ? 'Price' : 'السعر'} className="w-full pl-6 pr-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-secondary-100 disabled:text-secondary-500" />
+                </div>
+                <select disabled={isLocked} value={it.specialRequestPricePerGroupOrPerson} onChange={e => updateItem(b._id, idx, 'specialRequestPricePerGroupOrPerson', e.target.value)} className="col-span-2 px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-secondary-100 disabled:text-secondary-500">
                       <option value="group">{locale === 'en' ? 'Per group' : 'للمجموعة'}</option>
                       <option value="person">{locale === 'en' ? 'Per person' : 'للشخص'}</option>
                     </select>
-                                {(editing[b._id] || []).length > 0 && (
+                                {(editing[b._id] || []).length > 0 && !isLocked && (
                                   <button type="button" onClick={() => removeItem(b._id, idx)} className="text-red-600 hover:text-red-800"><X className="w-4 h-4" /></button>
                                 )}
                               </div>
                             ))}
                           </div>
                           <div className="flex justify-between items-center mt-3 gap-2">
-                            <button type="button" onClick={() => addItem(b._id)} className="text-primary-600 hover:text-primary-700 flex items-center gap-1"><Plus className="w-4 h-4" />{locale === 'en' ? 'Add item' : 'إضافة عنصر'}</button>
+                            {!isLocked && (
+                              <button type="button" onClick={() => addItem(b._id)} className="text-primary-600 hover:text-primary-700 flex items-center gap-1"><Plus className="w-4 h-4" />{locale === 'en' ? 'Add item' : 'إضافة عنصر'}</button>
+                            )}
                             <div className="flex gap-2">
-                              <button type="button" onClick={() => approveBooking(b._id)} disabled={savingId === b._id || hasChanges(b) || !b.approvedOfferUser} className="px-4 py-2 rounded-md bg-secondary-100 text-secondary-900 hover:bg-secondary-200 disabled:opacity-60">
+                              <button type="button" onClick={() => approveBooking(b._id)} disabled={isLocked || savingId === b._id || hasChanges(b) || !b.approvedOfferUser} className="px-4 py-2 rounded-md bg-secondary-100 text-secondary-900 hover:bg-secondary-200 disabled:opacity-60">
                                 {locale === 'en' ? 'Approve' : 'موافقة'}
                               </button>
-                              <button type="button" onClick={() => updateBooking(b._id)} disabled={savingId === b._id || !hasChanges(b)} className="px-4 py-2 rounded-md bg-black text-white hover:bg-black/90 disabled:opacity-60 flex items-center gap-2">
+                              <button type="button" onClick={() => updateBooking(b._id)} disabled={isLocked || savingId === b._id || !hasChanges(b)} className="px-4 py-2 rounded-md bg-black text-white hover:bg-black/90 disabled:opacity-60 flex items-center gap-2">
                                 {savingId === b._id ? <Loader className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                 {locale === 'en' ? 'Update' : 'تحديث'}
                               </button>
@@ -210,7 +230,7 @@ export default function GuideBookingsPage({ params }) {
                     </tr>
                   )}
                 </React.Fragment>
-              ))}
+              )})}
             </tbody>
           </table>
           </div>

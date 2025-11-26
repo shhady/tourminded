@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Tour from '@/models/Tour';
+import Guide from '@/models/Guide';
+import { sendBookingNotifications } from '@/lib/mailer';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import User from '@/models/User';
@@ -158,11 +160,22 @@ export async function POST(request) {
       ...bookingData,
       user: user._id,
     });
-    
-    return NextResponse.json(
-      { success: true, data: booking },
-      { status: 201 }
-    );
+
+    // If user added free-form special requests, notify guide and user by email
+    const hasSpecial = typeof bookingData.specialRequests === 'string' && bookingData.specialRequests.trim().length > 0;
+    if (hasSpecial) {
+      try {
+        // Resolve guide user
+        const guide = await Guide.findById(tour.guide).populate('user', 'email name');
+        const guideUser = guide?.user;
+        const baseUrl = process.env.NEXTAUTH_URL || new URL(request.url).origin;
+        await sendBookingNotifications({ baseUrl, booking, user, guideUser, tour });
+      } catch (err) {
+        console.error('Failed to send booking notifications:', err);
+      }
+    }
+
+    return NextResponse.json({ success: true, data: booking }, { status: 201 });
   } catch (error) {
     console.error('Error creating booking:', error);
     return NextResponse.json(

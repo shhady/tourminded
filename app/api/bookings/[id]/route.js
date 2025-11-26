@@ -5,6 +5,7 @@ import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Tour from '@/models/Tour';
 import Guide from '@/models/Guide';
+import { sendGuideUpdatedBookingEmail, sendGuideApprovedEmail, sendUserUpdatedBookingEmail } from '@/lib/mailer';
 import User from '@/models/User';
 
 export async function PUT(request, { params }) {
@@ -25,6 +26,11 @@ export async function PUT(request, { params }) {
     const guide = await Guide.findOne({ user: user._id });
     const isGuideOwner = !!guide && booking.guide.toString() === guide._id.toString();
     const isBookingUser = booking.user.toString() === user._id.toString();
+
+    // Prevent non-admin edits to paid bookings
+    if (booking.paymentStatus === 'paid' && !isAdmin) {
+      return NextResponse.json({ success: false, message: 'Paid bookings cannot be modified' }, { status: 403 });
+    }
 
     const body = await request.json();
     const hasItemsInPayload = Array.isArray(body?.specialRequestsCheckBoxes);
@@ -128,6 +134,37 @@ export async function PUT(request, { params }) {
     }
 
     await booking.save();
+
+    const baseUrl = process.env.NEXTAUTH_URL || new URL(request.url).origin;
+
+    // If a guide/admin updated:
+    if ((isGuideOwner || isAdmin) && (hasItemsInPayload || typeof body.approvedOfferGuide === 'boolean')) {
+      try {
+        const bookingUser = await User.findById(booking.user).select('email name');
+        const tour = await Tour.findById(booking.tour).select('title');
+        if (typeof body.approvedOfferGuide === 'boolean' && booking.approvedOfferGuide && booking.approvedOfferUser) {
+          // Both approved after guide action → tell user to go to checkout
+          await sendGuideApprovedEmail({ baseUrl, booking: { ...booking.toObject?.() || booking, user: bookingUser } });
+        } else {
+          // Regular update → ask user to review
+          await sendGuideUpdatedBookingEmail({ baseUrl, booking, user: bookingUser, tour });
+        }
+      } catch (mailErr) {
+        console.error('Failed to send user notification about booking update:', mailErr);
+      }
+    }
+
+    // If the user updated or approved, notify the guide to review
+    if ((isBookingUser || isAdmin) && (hasItemsInPayload || typeof body.approvedOfferUser === 'boolean')) {
+      try {
+        const guide = await Guide.findById(booking.guide).populate('user', 'email name');
+        const guideUser = guide?.user;
+        const tour = await Tour.findById(booking.tour).select('title');
+        await sendUserUpdatedBookingEmail({ baseUrl, booking, guideUser, tour });
+      } catch (err2) {
+        console.error('Failed to notify guide about user update:', err2);
+      }
+    }
     return NextResponse.json({ success: true, data: booking });
   } catch (error) {
     console.error('Error updating booking:', error);

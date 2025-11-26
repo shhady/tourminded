@@ -42,6 +42,12 @@ export default async function BookingDetailsPage({ params }) {
     return null;
   }
 
+  // If both approved and not yet paid, go straight to checkout
+  if (booking.approvedOfferGuide && booking.approvedOfferUser && booking.paymentStatus !== 'paid') {
+    redirect(`/${locale}/checkout?bookingId=${bookingId}`);
+    return null;
+  }
+
   // Access control: only the user who booked can view this page
   if (String(booking.user?._id) !== String(user._id)) {
     redirect(`/${locale}/bookings`);

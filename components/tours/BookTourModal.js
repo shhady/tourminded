@@ -3,8 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { Loader, Plus, X } from 'lucide-react';
 import AvailabilityCalendar from '@/components/guides/AvailabilityCalendar';
+import { useRouter } from 'next/navigation';
 
 export default function BookTourModal({ locale = 'en', tourId, maxGroupSize = 10, pricePer = 'group', guideNotAvailable = [] }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -115,18 +117,36 @@ export default function BookTourModal({ locale = 'en', tourId, maxGroupSize = 10
           .map(it => ({ specialRequest: it.specialRequest, specialRequestPrice: it.specialRequestPrice ? Number(it.specialRequestPrice) : 0 })),
       };
 
-      const res = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to create booking');
-      setSuccess(locale === 'en' ? 'Booking submitted. We will contact you shortly.' : 'تم إرسال الحجز. سنتواصل معك قريبًا.');
-      resetForm();
-      // Keep modal open to show success, or close after short delay
-      setTimeout(() => setOpen(false), 1200);
+      const hasSpecial = String(notes).trim().length > 0;
+      if (hasSpecial) {
+        // Special requests: create a booking immediately and notify by email
+        const res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to create booking');
+
+        setSuccess(
+          locale === 'en'
+            ? 'Booking submitted. You will receive an email with an updated price.'
+            : 'تم إرسال الحجز. ستتلقى بريدًا إلكترونيًا بسعر محدث.'
+        );
+        resetForm();
+        setTimeout(() => setOpen(false), 1500);
+      } else {
+        // No special requests: skip creating a booking; go to checkout to pay
+        setOpen(false);
+        const qs = new URLSearchParams({
+          tourId: String(tourId || ''),
+          startDate,
+          endDate: endDate || '',
+          travelers: String(travelers),
+        }).toString();
+        router.push(`/${locale}/checkout?${qs}`);
+      }
     } catch (e) {
       setError(e.message || 'Error');
     } finally {
@@ -196,8 +216,28 @@ export default function BookTourModal({ locale = 'en', tourId, maxGroupSize = 10
                 <p className="mt-1 text-xs text-secondary-500">{locale === 'en' ? `Max ${maxGroupSize}` : `الحد الأقصى ${maxGroupSize}`}</p>
               </div>
               <div>
-                <label className="block text-sm text-secondary-700 mb-1">{locale === 'en' ? 'Notes (optional)' : 'ملاحظات (اختياري)'}</label>
-                <textarea type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder={locale === 'en' ? 'Any special requests...' : 'طلبات خاصة...'} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                <label className="block text-sm text-secondary-700 mb-1">
+                  {locale === 'en' ? 'Notes (optional)' : 'ملاحظات (اختياري)'}
+                </label>
+                <textarea
+                  type="text"
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  rows={5}
+                  placeholder={
+                    locale === 'en'
+                      ? 'Any special requests? (e.g., pickup, homestay, meals, extra stops, VIP services, or anything else you need)'
+                      : 'طلبات خاصة؟ (مثلاً: توصيلة من المطار/الميناء، سكن مع عائلة/فندق، إفطار/عشاء، أو أي شيء آخر ترغب به)'
+                  }
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[120px] resize-y leading-6 placeholder:text-secondary-500"
+                />
+                {String(notes).trim().length > 0 && (
+                  <p className="mt-1 text-xs text-secondary-600">
+                    {locale === 'en'
+                      ? 'You entered special requests. After submitting, you will receive an email with an updated price. The guide will be notified.'
+                      : 'لقد أدخلت طلبات خاصة. بعد الإرسال ستتلقى بريدًا إلكترونيًا بسعر محدث وسيتم إشعار المرشد.'}
+                  </p>
+                )}
               </div>
             </div>
 
