@@ -2,22 +2,21 @@
 
 import React, { useEffect, useState } from 'react';
 import { Loader, CheckCircle2, XCircle } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-export default function PaymentSuccessPage() {
+export default function PaymentSuccessPage({ searchParams }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [status, setStatus] = useState('processing'); // 'processing' | 'success' | 'error'
   const [message, setMessage] = useState('');
 
-  const bookingId = searchParams.get('bookingId') || '';
-  const tourId = searchParams.get('tourId') || '';
-  const startDate = searchParams.get('startDate') || '';
-  const endDate = searchParams.get('endDate') || '';
-  const travelers = searchParams.get('travelers') || '';
-  const amount = searchParams.get('amount');
-  const redirectStatus = searchParams.get('redirect_status');
+  const bookingId = searchParams?.bookingId || '';
+  const tourId = searchParams?.tourId || '';
+  const startDate = searchParams?.startDate || '';
+  const endDate = searchParams?.endDate || '';
+  const travelers = searchParams?.travelers || '';
+  const amount = searchParams?.amount;
+  const redirectStatus = searchParams?.redirect_status;
 
   useEffect(() => {
     const finalizeBooking = async () => {
