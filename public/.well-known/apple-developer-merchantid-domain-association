@@ -1,0 +1,11 @@
+REPLACE_THIS_CONTENT_WITH_YOUR_APPLE_PAY_DOMAIN_VERIFICATION_STRING
+
+// IMPORTANT:
+// 1. Go to your Stripe Dashboard → Payments → Apple Pay.
+// 2. Add the domain `watermelontours.com` and download the
+//    `apple-developer-merchantid-domain-association` file from Stripe.
+// 3. Replace the entire contents of this file with the exact contents
+//    from Stripe (no extra whitespace or comments).
+// 4. Commit and deploy, then click “Verify” in Stripe.
+
+
