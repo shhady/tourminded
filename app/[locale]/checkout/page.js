@@ -2,7 +2,12 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader, CheckCircle2 } from 'lucide-react';
+import { Loader } from 'lucide-react';
+import { Elements } from '@stripe/react-stripe-js';
+import getStripe from '@/lib/getStripe';
+import StripeCheckoutForm from '@/components/payments/StripeCheckoutForm';
+
+const stripePromise = getStripe();
 
 export default function CheckoutPage({ params }) {
   const localeParams = React.use(params);
@@ -19,8 +24,9 @@ export default function CheckoutPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [booking, setBooking] = useState(null);
-  const [paying, setPaying] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [tour, setTour] = useState(null);
+  const [amountCents, setAmountCents] = useState(null);
+  const [clientSecret, setClientSecret] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -32,6 +38,23 @@ export default function CheckoutPage({ params }) {
           const data = await res.json();
           if (!res.ok) throw new Error(data.message || 'Failed to load booking');
           setBooking(data.data);
+          const total = Number(data?.data?.totalPrice || 0);
+          if (total > 0) {
+            setAmountCents(Math.round(total * 100));
+          }
+        } else if (tourId) {
+          const res = await fetch(`/api/tours/${tourId}`);
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || 'Failed to load tour');
+          const tourData = data.data;
+          setTour(tourData);
+          const price = Number(tourData?.price || 0);
+          const pricePer = tourData?.pricePer || 'group';
+          const tr = Number(travelers || 1) || 1;
+          const total = pricePer === 'person' ? price * tr : price;
+          if (total > 0) {
+            setAmountCents(Math.round(total * 100));
+          }
         }
       } catch (e) {
         setError(e.message || 'Failed to load booking');
@@ -42,49 +65,39 @@ export default function CheckoutPage({ params }) {
     load();
   }, [bookingId]);
 
-  const payNow = async () => {
-    setPaying(true);
-    setError('');
-    try {
-      if (bookingId) {
-        const res = await fetch(`/api/bookings/${bookingId}/confirm-payment`, {
-          method: 'POST',
-          credentials: 'include',
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Payment failed');
-        setSuccess(true);
-        setBooking(data.data);
-      } else {
-        // No booking yet (no special requests): create and mark paid in one step
-        const res = await fetch('/api/checkout/confirm', {
+  // Create PaymentIntent when we know the total
+  useEffect(() => {
+    const createIntent = async () => {
+      try {
+        if (!amountCents || (!bookingId && !tourId)) return;
+        setClientSecret(null);
+        const res = await fetch('/api/create-payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            tour: tourId,
-            dates: {
-              startDate: startDate ? new Date(startDate) : null,
-              endDate: endDate ? new Date(endDate) : null,
-            },
-            travelers: Number(travelers || 1),
-          }),
+          body: JSON.stringify({ amount: amountCents, bookingId: bookingId || null }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Payment failed');
-        setSuccess(true);
-        setBooking(data.data);
+        if (!res.ok || !data.clientSecret) {
+          throw new Error(data.error || 'Failed to start payment');
+        }
+        setClientSecret(data.clientSecret);
+      } catch (err) {
+        console.error(err);
+        setError(err?.message || 'Failed to start payment');
       }
-    } catch (e) {
-      setError(e.message || 'Payment failed');
-    } finally {
-      setPaying(false);
-    }
-  };
+    };
+    createIntent();
+  }, [amountCents, bookingId]);
 
   const backToTour = () => {
-    if (booking?.tour?._id) router.push(`/${locale}/tours/${booking.tour._id}`);
-    else router.push(`/${locale}`);
+    // Prefer going back in history so the user returns to the page they came from
+    if (window.history.length > 1) {
+      router.back();
+    } else if (booking?.tour?._id) {
+      router.push(`/${locale}/tours/${booking.tour._id}`);
+    } else {
+      router.push(`/${locale}`);
+    }
   };
 
   return (
@@ -95,8 +108,8 @@ export default function CheckoutPage({ params }) {
 
       <div className="mb-4 p-3 rounded bg-secondary-50 text-secondary-700">
         {locale === 'en'
-          ? 'This is a demo checkout page. We will integrate Stripe later.'
-          : 'هذه صفحة دفع تجريبية. سنقوم بدمج Stripe لاحقاً.'}
+          ? 'Secure payment powered by Stripe. Enter your details below to complete your booking.'
+          : 'دفع آمن عبر Stripe. أدخل بياناتك أدناه لإتمام الحجز.'}
       </div>
 
       {!bookingId && !tourId && (
@@ -115,7 +128,7 @@ export default function CheckoutPage({ params }) {
           {locale === 'en' ? 'Loading booking...' : 'جاري تحميل الحجز...'}
         </div>
       ) : bookingId ? (
-        // Existing booking flow
+        // Existing booking flow with Stripe
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="mb-4">
             <div className="text-sm text-secondary-600 mb-1">
@@ -157,62 +170,47 @@ export default function CheckoutPage({ params }) {
             </div>
           </div>
 
-          {success ? (
-            <div className="mt-6 p-4 rounded border border-green-200 bg-green-50 text-green-800 flex items-start gap-2">
-              <CheckCircle2 className="w-5 h-5 mt-0.5" />
-              <div>
-                <div className="font-semibold">
-                  {locale === 'en' ? 'Payment successful.' : 'تم الدفع بنجاح.'}
-                </div>
-                <div className="text-sm mt-1">
-                  {locale === 'en'
-                    ? 'Confirmation emails have been sent to you and the guide.'
-                    : 'تم إرسال رسائل تأكيد إلى بريدك وإلى المرشد.'}
-                </div>
+          <div className="mt-6">
+            {clientSecret ? (
+              <Elements stripe={stripePromise} options={{ clientSecret }}>
+                <StripeCheckoutForm
+                  locale={locale}
+                  bookingId={bookingId}
+                  booking={booking}
+                  amount={amountCents}
+                />
+              </Elements>
+            ) : (
+              <div className="flex items-center gap-2 text-secondary-600">
+                <Loader className="w-4 h-4 animate-spin" />
+                {locale === 'en' ? 'Preparing secure payment…' : 'جاري تجهيز عملية الدفع الآمنة...'}
               </div>
-            </div>
-          ) : null}
-
-          <div className="mt-6 flex flex-wrap gap-2">
-            {!success && (
-              <button
-                onClick={payNow}
-                disabled={paying}
-                className="px-4 py-2 rounded-md bg-black text-white hover:bg-black/90 disabled:opacity-60"
-              >
-                {paying ? (
-                  <span className="flex items-center gap-2">
-                    <Loader className="w-4 h-4 animate-spin" />
-                    {locale === 'en' ? 'Processing…' : 'جار المعالجة...'}
-                  </span>
-                ) : (
-                  locale === 'en' ? 'Pay Now (Demo)' : 'ادفع الآن (تجريبي)'
-                )}
-              </button>
             )}
-            <button
-              onClick={backToTour}
-              className="px-4 py-2 rounded-md border border-secondary-300 text-secondary-700 hover:bg-secondary-50"
-            >
-              {locale === 'en' ? 'Back' : 'رجوع'}
-            </button>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={backToTour}
+                className="px-4 py-2 rounded-md border border-secondary-300 text-secondary-700 hover:bg-secondary-50"
+              >
+                {locale === 'en' ? 'Back' : 'رجوع'}
+              </button>
+            </div>
           </div>
 
           <div className="mt-6 text-xs text-secondary-500">
             {locale === 'en'
-              ? 'After we integrate Stripe, this button will redirect to a Stripe Checkout session.'
-              : 'بعد دمج Stripe سيتم تحويلك إلى صفحة الدفع في Stripe.'}
+              ? 'Your card will be charged securely by Stripe. You will see a confirmation page after payment.'
+              : 'سيتم خصم المبلغ من بطاقتك بأمان عبر Stripe وستظهر لك صفحة تأكيد بعد الدفع.'}
           </div>
         </div>
       ) : tourId ? (
-        // Intent flow (no booking yet)
+        // Intent flow (no booking yet) – Stripe payment for tour selection
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="mb-4">
             <div className="text-sm text-secondary-600 mb-1">
               {locale === 'en' ? 'Tour' : 'الجولة'}
             </div>
             <div className="text-lg font-semibold text-secondary-900">
-              {locale === 'en' ? 'Selected Tour' : 'الجولة المحددة'}
+              {tour?.title?.en || tour?.title?.ar || (locale === 'en' ? 'Selected Tour' : 'الجولة المحددة')}
             </div>
           </div>
 
@@ -238,58 +236,53 @@ export default function CheckoutPage({ params }) {
             <div className="text-sm text-secondary-600 mb-1">
               {locale === 'en' ? 'Total' : 'الإجمالي'}
             </div>
-            <div className="text-secondary-700">
-              {locale === 'en'
-                ? 'Total will be calculated at confirmation.'
-                : 'سيتم حساب الإجمالي عند التأكيد.'}
-            </div>
+            {amountCents ? (
+              <div className="text-2xl font-bold text-primary-600">
+                ${(amountCents / 100).toFixed(2)}
+              </div>
+            ) : (
+              <div className="text-secondary-700">
+                {locale === 'en'
+                  ? 'Total will be calculated when pricing is available.'
+                  : 'سيتم حساب الإجمالي عند توفر التسعير.'}
+              </div>
+            )}
           </div>
 
-          {success ? (
-            <div className="mt-6 p-4 rounded border border-green-200 bg-green-50 text-green-800 flex items-start gap-2">
-              <CheckCircle2 className="w-5 h-5 mt-0.5" />
-              <div>
-                <div className="font-semibold">
-                  {locale === 'en' ? 'Payment successful.' : 'تم الدفع بنجاح.'}
-                </div>
-                <div className="text-sm mt-1">
-                  {locale === 'en'
-                    ? 'Confirmation emails have been sent to you and the guide.'
-                    : 'تم إرسال رسائل تأكيد إلى بريدك وإلى المرشد.'}
-                </div>
+          <div className="mt-6">
+            {clientSecret ? (
+              <Elements stripe={stripePromise} options={{ clientSecret }}>
+                <StripeCheckoutForm
+                  locale={locale}
+                  bookingId={null}
+                  booking={null}
+                  amount={amountCents}
+                  tourId={tourId}
+                  startDate={startDate}
+                  endDate={endDate}
+                  travelers={travelers || 1}
+                />
+              </Elements>
+            ) : (
+              <div className="flex items-center gap-2 text-secondary-600">
+                <Loader className="w-4 h-4 animate-spin" />
+                {locale === 'en' ? 'Preparing secure payment…' : 'جاري تجهيز عملية الدفع الآمنة...'}
               </div>
-            </div>
-          ) : null}
-
-          <div className="mt-6 flex flex-wrap gap-2">
-            {!success && (
-              <button
-                onClick={payNow}
-                disabled={paying || !tourId || !startDate}
-                className="px-4 py-2 rounded-md bg-black text-white hover:bg-black/90 disabled:opacity-60"
-              >
-                {paying ? (
-                  <span className="flex items-center gap-2">
-                    <Loader className="w-4 h-4 animate-spin" />
-                    {locale === 'en' ? 'Processing…' : 'جار المعالجة...'}
-                  </span>
-                ) : (
-                  locale === 'en' ? 'Pay Now (Demo)' : 'ادفع الآن (تجريبي)'
-                )}
-              </button>
             )}
-            <button
-              onClick={backToTour}
-              className="px-4 py-2 rounded-md border border-secondary-300 text-secondary-700 hover:bg-secondary-50"
-            >
-              {locale === 'en' ? 'Back' : 'رجوع'}
-            </button>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={backToTour}
+                className="px-4 py-2 rounded-md border border-secondary-300 text-secondary-700 hover:bg-secondary-50"
+              >
+                {locale === 'en' ? 'Back' : 'رجوع'}
+              </button>
+            </div>
           </div>
 
           <div className="mt-6 text-xs text-secondary-500">
             {locale === 'en'
-              ? 'After we integrate Stripe, this button will redirect to a Stripe Checkout session.'
-              : 'بعد دمج Stripe سيتم تحويلك إلى صفحة الدفع في Stripe.'}
+              ? 'Your card will be charged securely by Stripe. You will see a confirmation page after payment.'
+              : 'سيتم خصم المبلغ من بطاقتك بأمان عبر Stripe وستظهر لك صفحة تأكيد بعد الدفع.'}
           </div>
         </div>
       ) : null}
