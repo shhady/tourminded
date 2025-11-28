@@ -641,6 +641,10 @@ export default async function TourPage({ params }) {
                           </div>
                         </div>
                       )}
+                      <Link 
+                          href={`/${locale}/guides/${tourData.guide._id}`}
+                          className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                        >
                       <div>
                         <h4 className="font-semibold text-secondary-900">{tourData.guide.name || ''}</h4>
                         <div className="flex items-center">
@@ -655,13 +659,11 @@ export default async function TourPage({ params }) {
                             })()}
                           </span>
                         </div>
-                        <Link 
-                          href={`/${locale}/guides/${tourData.guide._id}`}
-                          className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                        >
+                        
                           {locale === 'en' ? 'View Profile' : 'عرض الملف الشخصي'}
-                        </Link>
+                    
                       </div>
+                      </Link>
                     </div>
                     
                  
