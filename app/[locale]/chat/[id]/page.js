@@ -25,55 +25,59 @@ const ChatPage = ({ params }) => {
   useEffect(() => {
     const fetchData = async () => {
       if (status !== 'authenticated') return;
-      
+
       try {
         setLoading(true);
-        
-        // Get current user data
-        const userResponse = await fetch('/api/users/me');
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          setCurrentUser(userData.user);
-          
-          // Get target user data (the other person we're chatting with)
-          const targetUserResponse = await fetch(`/api/users/profile/${id}`);
-          if (targetUserResponse.ok) {
-            const targetUserData = await targetUserResponse.json();
-            if (targetUserData.success && targetUserData.user) {
-              setTargetGuide(targetUserData.user);
-              
-              // Try to find existing chat (don't create if it doesn't exist)
-              try {
-                const chatResponse = await fetch(`/api/chats/with/${id}`);
-                if (chatResponse.ok) {
-                  const chatData = await chatResponse.json();
-                  if (chatData.success && chatData.chat) {
-                    setChat(chatData.chat);
-                    
-                    // Fetch messages for this chat
-                    const messagesResponse = await fetch(`/api/chats/${chatData.chat._id}`);
-                    if (messagesResponse.ok) {
-                      const messagesData = await messagesResponse.json();
-                      if (messagesData.success) {
-                        // Messages already have correct isCurrentUser flag from API
-                        setMessages(messagesData.chat.messages);
-                        
-                        // Mark messages as read and trigger header update
-                        fetch(`/api/chats/${chatData.chat._id}/mark-read`, {
-                          method: 'POST',
-                        }).then(() => {
-                          // Trigger a custom event to refresh header unread count
-                          window.dispatchEvent(new CustomEvent('refreshUnreadCount'));
-                        }).catch(console.error);
-                      }
+
+        // Fetch current user and target user in parallel to reduce wait time
+        const [userResponse, targetUserResponse] = await Promise.all([
+          fetch('/api/users/me'),
+          fetch(`/api/users/profile/${id}`),
+        ]);
+
+        if (!userResponse.ok) throw new Error('Failed to load current user');
+        const userData = await userResponse.json();
+        setCurrentUser(userData.user);
+
+        if (targetUserResponse.ok) {
+          const targetUserData = await targetUserResponse.json();
+          if (targetUserData.success && targetUserData.user) {
+            setTargetGuide(targetUserData.user);
+
+            // Try to find existing chat (don't create if it doesn't exist)
+            try {
+              const chatResponse = await fetch(`/api/chats/with/${id}`);
+              if (chatResponse.ok) {
+                const chatData = await chatResponse.json();
+                if (chatData.success && chatData.chat) {
+                  setChat(chatData.chat);
+
+                  // Fetch messages and mark as read in parallel
+                  const [messagesResponse] = await Promise.all([
+                    fetch(`/api/chats/${chatData.chat._id}`),
+                    fetch(`/api/chats/${chatData.chat._id}/mark-read`, {
+                      method: 'POST',
+                    })
+                      .then(() => {
+                        // Trigger a custom event to refresh header unread count
+                        window.dispatchEvent(new CustomEvent('refreshUnreadCount'));
+                      })
+                      .catch(console.error),
+                  ]);
+
+                  if (messagesResponse.ok) {
+                    const messagesData = await messagesResponse.json();
+                    if (messagesData.success) {
+                      // Messages already have correct isCurrentUser flag from API
+                      setMessages(messagesData.chat.messages);
                     }
                   }
-                } else {
-                  console.log('No existing chat found');
                 }
-              } catch (chatError) {
-                console.log('No existing chat:', chatError);
+              } else {
+                console.log('No existing chat found');
               }
+            } catch (chatError) {
+              console.log('No existing chat:', chatError);
             }
           }
         }
