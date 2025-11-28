@@ -91,7 +91,7 @@ export async function POST(request, { params }) {
         await sendChatMessageNotificationEmail({
           fromUser: user,
           toUser: recipient,
-          chatId: chat._id,
+          otherUserId: user._id,
           message: trimmedMessage,
           baseUrl,
         });
