@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Calendar, Map, MessageSquare, Settings, Home, Menu, X, HomeIcon, Compass, Users } from 'lucide-react';
+import { User, Calendar, Map, MessageSquare, Settings, Home, Menu, X, HomeIcon, Compass, Users, HelpCircle } from 'lucide-react';
 
 export default function DashboardSidebar({ locale, userRole }) {
   const pathname = usePathname();
@@ -76,6 +76,11 @@ export default function DashboardSidebar({ locale, userRole }) {
       href: `/${locale}/dashboard/admin/messages`,
       icon: <MessageSquare className="w-5 h-5" />,
       label: locale === 'en' ? 'User Messages' : 'رسائل المستخدمين',
+    },
+    {
+      href: `/${locale}/dashboard/admin/faq`,
+      icon: <HelpCircle className="w-5 h-5" />,
+      label: locale === 'en' ? 'FAQ' : 'الأسئلة الشائعة',
     },
     {
       href: `/`,

@@ -209,7 +209,8 @@ export default async function DashboardPage({ params }) {
           </h2>
         </div>
         
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="overflow-x-auto hidden md:block w-full mx-auto">
           {stats.upcomingBookings.length > 0 ? (
             <table className="min-w-full divide-y divide-secondary-200">
               <thead className="bg-secondary-50">
@@ -275,6 +276,37 @@ export default async function DashboardPage({ params }) {
             </div>
           )}
         </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden px-4 py-4 space-y-4">
+          {stats.upcomingBookings.length > 0 ? (
+            stats.upcomingBookings.map((booking) => (
+              <div
+                key={booking._id}
+                className="border border-secondary-200 rounded-lg p-4 bg-white shadow-sm"
+              >
+                <div className="text-sm font-semibold text-secondary-900 mb-1">
+                  {booking.tour.title?.en || booking.tour.title}
+                </div>
+                <div className="text-xs text-secondary-500 mb-1">
+                  {userData.role === 'admin' || userData.role === 'guide'
+                    ? (booking.user?.name || booking.user?.email || '-')
+                    : (booking.guide?.nickname || booking.guide?.names?.[0]?.value || '-')}
+                </div>
+                <div className="text-xs text-secondary-500 mb-2">
+                  {formatDate(booking.dates.startDate)}
+                </div>
+                <span className="inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 px-2 py-0.5">
+                  {locale === 'en' ? 'Confirmed' : 'مؤكد'}
+                </span>
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-secondary-500 text-sm">
+              {locale === 'en' ? 'No upcoming bookings' : 'لا توجد حجوزات قادمة'}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Recent Bookings */}
@@ -284,7 +316,8 @@ export default async function DashboardPage({ params }) {
             {locale === 'en' ? 'Recent Bookings' : 'أحدث الحجوزات'}
           </h2>
         </div>
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="overflow-x-auto hidden md:block">
           {stats.recentBookings.length > 0 ? (
             <table className="min-w-full divide-y divide-secondary-200">
               <thead className="bg-secondary-50">
@@ -336,6 +369,57 @@ export default async function DashboardPage({ params }) {
             </table>
           ) : (
             <div className="px-6 py-4 text-center text-secondary-500">
+              {locale === 'en' ? 'No recent bookings' : 'لا توجد حجوزات حديثة'}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden px-4 py-4 space-y-4">
+          {stats.recentBookings.length > 0 ? (
+            stats.recentBookings.map((b) => (
+              <div
+                key={b._id}
+                className="border border-secondary-200 rounded-lg p-4 bg-white shadow-sm"
+              >
+                <div className="text-sm font-semibold text-secondary-900 mb-1">
+                  {b.tour?.title?.en || b.tour?.title?.ar || '-'}
+                </div>
+                <div className="text-xs text-secondary-500 mb-1">
+                  {userData.role === 'admin' || userData.role === 'guide'
+                    ? (b.user?.name || b.user?.email || '-')
+                    : (b.guide?.nickname || b.guide?.names?.[0]?.value || '-')}
+                </div>
+                <div className="text-xs text-secondary-500 mb-1">
+                  {formatDate(b.createdAt)}
+                </div>
+                <div className="flex justify-between items-center mt-1 text-xs text-secondary-600">
+                  <span>
+                    {locale === 'en' ? 'Travelers:' : 'المسافرون:'} {b.travelers}
+                  </span>
+                  <span>
+                    {locale === 'en' ? 'Total:' : 'الإجمالي:'} ${b.totalPrice}
+                  </span>
+                </div>
+                <div className="mt-2">
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      b.status === 'confirmed'
+                        ? 'bg-green-100 text-green-800'
+                        : b.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : b.status === 'cancelled'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {b.status}
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-secondary-500 text-sm">
               {locale === 'en' ? 'No recent bookings' : 'لا توجد حجوزات حديثة'}
             </div>
           )}
