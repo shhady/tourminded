@@ -18,7 +18,8 @@ export default function FaqSection({ locale = 'en' }) {
       try {
         setLoading(true);
         setError('');
-        const res = await fetch('/api/admin/faq', { cache: 'no-store' });
+        // Public read-only FAQ endpoint; admin-only routes are used just for CRUD
+        const res = await fetch('/api/faq', { cache: 'no-store' });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || !data?.success) {
           throw new Error(data?.message || t('Failed to load FAQs.', 'فشل تحميل الأسئلة الشائعة.'));
