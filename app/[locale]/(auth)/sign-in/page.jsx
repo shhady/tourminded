@@ -22,7 +22,7 @@ export default function Page() {
     setLoading(true);
     try {
       const res = await signIn('credentials', {
-        email,
+        email: email.toLowerCase(),
         password,
         redirect: false,
       });
