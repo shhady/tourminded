@@ -171,12 +171,12 @@ const TourTypeCarousel = ({ locale }) => {
           </p>
         </div>
 
-        <div className="relative">
+        <div className="relative overflow-hidden">
           {/* Previous Button */}
           <button
             onClick={handlePrevious}
             disabled={disablePrevious}
-            className={`absolute ${isRTL ? 'right' : 'left'}-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-primary-600 w-10 h-10 rounded-full flex items-center justify-center shadow-md ${isRTL ? '-mr-5' : '-ml-5'} ${
+            className={`absolute ${isRTL ? 'right-2' : 'left-2'} top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-primary-600 w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
               disablePrevious ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
             }`}
             aria-label={locale === 'en' ? 'Previous' : 'السابق'}
@@ -226,7 +226,7 @@ const TourTypeCarousel = ({ locale }) => {
           <button
             onClick={handleNext}
             disabled={disableNext}
-            className={`absolute ${isRTL ? 'left' : 'right'}-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-primary-600 w-10 h-10 rounded-full flex items-center justify-center shadow-md ${isRTL ? '-ml-5' : '-mr-5'} ${
+            className={`absolute ${isRTL ? 'left-2' : 'right-2'} top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-primary-600 w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
               disableNext ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
             }`}
             aria-label={locale === 'en' ? 'Next' : 'التالي'}

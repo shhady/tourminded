@@ -121,7 +121,7 @@ export default function RootLayout({ children, params }) {
         <meta name="theme-color" content="#08171f" />
         <meta property="og:site_name" content="Watermelon Tours - Connect with Expert Local Guides" />
       </head>
-      <body className={`${inter.variable} ${tajawal.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${tajawal.variable} font-sans antialiased overflow-x-hidden`}>
         {process.env.NODE_ENV === 'development' && (
           <script
             dangerouslySetInnerHTML={{

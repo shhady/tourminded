@@ -74,13 +74,8 @@ export default function FaqSection({ locale = 'en' }) {
   };
 
   return (
-    <section className="py-20 bg-gray-50 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-32 -left-24 w-72 h-72 rounded-full bg-primary-100 opacity-40" />
-        <div className="absolute -bottom-24 right-0 w-80 h-80 rounded-full bg-primary-100 opacity-30" />
-      </div>
-
-      <div className="container mx-auto px-4 relative z-10">
+    <section className="py-20 bg-gray-50">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 text-primary-600 mb-4">
             <HelpCircle className="w-6 h-6" />
