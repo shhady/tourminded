@@ -27,9 +27,9 @@ export default async function TermsPage({ params }) {
 
           <div className="prose prose-lg max-w-none">
             <p>
-              These terms apply to any tour, activity, or service booked through Watermelon Tours OÜ (“Watermelon Tours,” "we,"
-              "our," or "us"), whether directly through our website, through a partner platform, or when Watermelon Tours acts as
-              an agent for an independent guide or tour operator.
+              These terms apply to any tour, activity, or service booked through Watermelon Tours OÜ (“Watermelon Tours,”
+              &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;), whether directly through our website, through a partner
+              platform, or when Watermelon Tours acts as an agent for an independent guide or tour operator.
             </p>
             <p>
               By making a reservation, all persons or organizations agree to the following terms:
