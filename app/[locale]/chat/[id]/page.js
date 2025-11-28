@@ -20,6 +20,7 @@ const ChatPage = ({ params }) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sending, setSending] = useState(false);
 
   // Fetch data and set up chat
   useEffect(() => {
@@ -100,12 +101,14 @@ const ChatPage = ({ params }) => {
   // Handle sending messages via API
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    
-    if (!newMessage.trim() || !currentUser) return;
-    
+
+    if (!newMessage.trim() || !currentUser || sending) return;
+
+    setSending(true);
+
     try {
       let chatId = chat?._id;
-      
+
       // If no chat exists, create one first via API
       if (!chatId) {
         const createChatResponse = await fetch('/api/chats', {
@@ -115,7 +118,7 @@ const ChatPage = ({ params }) => {
           },
           body: JSON.stringify({ otherUserId: id }),
         });
-        
+
         if (createChatResponse.ok) {
           const createChatData = await createChatResponse.json();
           if (createChatData.success) {
@@ -124,7 +127,7 @@ const ChatPage = ({ params }) => {
           }
         }
       }
-      
+
       if (chatId && currentUser) {
         // Send message via API
         const sendMessageResponse = await fetch(`/api/chats/${chatId}/messages`, {
@@ -137,16 +140,16 @@ const ChatPage = ({ params }) => {
             senderId: currentUser._id,
           }),
         });
-        
+
         if (sendMessageResponse.ok) {
           const messageData = await sendMessageResponse.json();
           if (messageData.success) {
             // Add the new message to the local state
             const newMsg = {
               ...messageData.newMessage,
-              isCurrentUser: true
+              isCurrentUser: true,
             };
-            setMessages(prev => [...prev, newMsg]);
+            setMessages((prev) => [...prev, newMsg]);
             setNewMessage('');
           }
         }
@@ -154,6 +157,8 @@ const ChatPage = ({ params }) => {
     } catch (err) {
       console.error('Error sending message:', err);
       setError('Failed to send message. Please try again.');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -202,13 +207,7 @@ const ChatPage = ({ params }) => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-5xl mx-auto py-6 px-4">
         {/* Back Link */}
-        <Link
-          href={`/${locale}/chat`}
-          className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-6 font-medium transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          {locale === 'en' ? 'Back to Chats' : 'العودة إلى المحادثات'}
-        </Link>
+       
 
         {/* Chat Container */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
@@ -236,11 +235,13 @@ const ChatPage = ({ params }) => {
                 </div> */}
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-primary-200">
-                {locale === 'en' ? 'Tour Guide' : 'مرشد سياحي'}
-              </p>
-            </div>
+            <Link
+          href={`/${locale}/chat`}
+          className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors"
+        >
+          {/* <ArrowLeft className="w-4 h-4 mr-2" /> */}
+          {locale === 'en' ? 'Back to Chats' : 'العودة إلى المحادثات'}
+        </Link>
           </div>
 
           {/* Messages Area */}
@@ -264,7 +265,7 @@ const ChatPage = ({ params }) => {
               <div className="space-y-4">
                 {messages.map((message, index) => (
                   <div
-                    key={message._id || index}
+                    key={`${message._id || index}-${index}`}
                     className={`flex ${message.isCurrentUser ? 'justify-end' : 'justify-start'}`}
                   >
                     <div className={`group max-w-sm lg:max-w-md`}>
@@ -320,12 +321,6 @@ const ChatPage = ({ params }) => {
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage(e);
-                      }
-                    }}
                     placeholder={locale === 'en' ? 'Type your message...' : 'اكتب رسالتك...'}
                     className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all placeholder-gray-400"
                   />
@@ -333,10 +328,14 @@ const ChatPage = ({ params }) => {
               </div>
               <button
                 type="submit"
-                disabled={!newMessage.trim()}
+                disabled={sending || !newMessage.trim()}
                 className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-600 text-black rounded-xl hover:from-primary-600 hover:to-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-primary-500 disabled:hover:to-primary-600 shadow-lg"
               >
-                <Send className="w-5 h-5" />
+                {sending ? (
+                  <div className="h-5 w-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
               </button>
             </form>
             <p className="text-xs text-gray-400 mt-2 px-1">

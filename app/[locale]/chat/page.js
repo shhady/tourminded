@@ -134,21 +134,21 @@ const UserChatPage = ({ params }) => {
           {/* Content */}
           <div className="bg-white rounded-lg shadow-md">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
                 <div className="flex items-center">
                   <MessageCircle className="w-6 h-6 mr-3 text-primary-600" />
                   <h2 className="text-xl font-semibold">
                     {locale === 'en' ? 'Messages' : 'الرسائل'}
                   </h2>
                 </div>
-                
+
                 {/* Search Bar (for future enhancement) */}
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <div className="relative w-full md:w-auto md:min-w-[16rem]">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
                     placeholder={locale === 'en' ? 'Search conversations...' : 'البحث في المحادثات...'}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 w-64"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>

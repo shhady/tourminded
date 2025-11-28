@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Chat from '@/models/Chat';
 import User from '@/models/User';
+import { sendChatMessageNotificationEmail } from '@/lib/mailer';
 
 // POST - Send a new message to a chat
 export async function POST(request, { params }) {
@@ -51,12 +52,14 @@ export async function POST(request, { params }) {
       );
     }
 
+    const trimmedMessage = message.trim();
+
     // Add the message to the chat
-    await chat.addMessage(message.trim(), user._id);
+    await chat.addMessage(trimmedMessage, user._id);
 
     // Populate the sender information for the response
     const updatedChat = await Chat.findById(id)
-      .populate('messages.senderId', 'firstName lastName name');
+      .populate('messages.senderId', 'firstName lastName name email');
 
     // Get the last message (the one we just added)
     const lastMessage = updatedChat.messages[updatedChat.messages.length - 1];
@@ -72,6 +75,30 @@ export async function POST(request, { params }) {
       createdAt: lastMessage.createdAt,
       status: lastMessage.status,
     };
+
+    // Send notification email to the other participant (guide or user)
+    try {
+      const recipientId = chat.participants.find(
+        (participantId) => participantId.toString() !== user._id.toString()
+      );
+      if (recipientId) {
+        const recipient = await User.findById(recipientId).select('email name firstName lastName');
+        const baseUrl =
+          process.env.NEXTAUTH_URL ||
+          process.env.NEXT_PUBLIC_APP_URL ||
+          (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : new URL(request.url).origin);
+
+        await sendChatMessageNotificationEmail({
+          fromUser: user,
+          toUser: recipient,
+          chatId: chat._id,
+          message: trimmedMessage,
+          baseUrl,
+        });
+      }
+    } catch (notifyErr) {
+      console.error('Failed to send chat notification email:', notifyErr);
+    }
 
     return NextResponse.json({
       success: true,
