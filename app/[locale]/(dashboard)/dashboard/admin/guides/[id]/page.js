@@ -5,6 +5,7 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Guide from '@/models/Guide';
 import Link from 'next/link';
+import Image from 'next/image';
 import ToggleActiveButton from './ToggleActiveButton';
 
 // Helper to safely extract image URL
@@ -307,9 +308,11 @@ export default async function GuideDetailsPage({ params }) {
                   <label className="block text-sm font-medium text-gray-600 mb-2">
                     Profile Image
                   </label>
-                  <img
+                  <Image
                     src={guide.profileImage.url}
                     alt="Profile"
+                    width={400}
+                    height={128}
                     className="w-full h-32 object-cover rounded"
                   />
                 </div>
@@ -320,9 +323,11 @@ export default async function GuideDetailsPage({ params }) {
                   <label className="block text-sm font-medium text-gray-600 mb-2">
                     Cover Image
                   </label>
-                  <img
+                  <Image
                     src={guide.coverImage.url}
                     alt="Cover"
+                    width={400}
+                    height={128}
                     className="w-full h-32 object-cover rounded"
                   />
                 </div>
@@ -426,9 +431,11 @@ export default async function GuideDetailsPage({ params }) {
                     <label className="block text-sm font-medium text-gray-600 mb-2">
                       Vehicle Image
                     </label>
-                    <img
+                    <Image
                       src={guide.vehicle.image.url}
                       alt="Vehicle"
+                      width={800}
+                      height={192}
                       className="w-full h-48 object-cover rounded"
                     />
                   </div>

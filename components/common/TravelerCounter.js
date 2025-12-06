@@ -16,19 +16,16 @@ const TravelerCounter = ({ onChange, locale }) => {
     return updatedCounts.adults + updatedCounts.children + updatedCounts.infants + updatedCounts.pets;
   };
 
-  // Initialize with default values
+  // Sync parent whenever traveler counts or service animal flag change
   useEffect(() => {
     const total = calculateTotal(counts);
     onChange(total, counts, serviceAnimal);
-  }, []);
+  }, [counts, serviceAnimal, onChange]);
 
   const handleIncrement = (type) => {
     const newCounts = { ...counts };
     newCounts[type] += 1;
     setCounts(newCounts);
-    
-    const total = calculateTotal(newCounts);
-    onChange(total, newCounts, serviceAnimal);
   };
 
   const handleDecrement = (type) => {
@@ -40,15 +37,11 @@ const TravelerCounter = ({ onChange, locale }) => {
     const newCounts = { ...counts };
     newCounts[type] -= 1;
     setCounts(newCounts);
-    
-    const total = calculateTotal(newCounts);
-    onChange(total, newCounts, serviceAnimal);
   };
   
   const handleServiceAnimalChange = (e) => {
     const checked = e.target.checked;
     setServiceAnimal(checked);
-    onChange(calculateTotal(counts), counts, checked);
   };
 
   return (

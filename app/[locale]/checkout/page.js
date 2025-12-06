@@ -63,7 +63,7 @@ export default function CheckoutPage({ params }) {
       }
     };
     load();
-  }, [bookingId]);
+  }, [bookingId, tourId, travelers]);
 
   // Create PaymentIntent when we know the total
   useEffect(() => {
@@ -87,7 +87,7 @@ export default function CheckoutPage({ params }) {
       }
     };
     createIntent();
-  }, [amountCents, bookingId]);
+  }, [amountCents, bookingId, tourId]);
 
   const backToTour = () => {
     // Prefer going back in history so the user returns to the page they came from

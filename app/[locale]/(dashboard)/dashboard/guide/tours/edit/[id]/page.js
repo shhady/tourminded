@@ -6,10 +6,11 @@ import { useForm } from 'react-hook-form';
 import Button from '@/components/ui/Button';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Loader, Plus, Minus } from 'lucide-react';
+import Image from 'next/image';
 
 export default function EditTourPage({ params }) {
   const router = useRouter();
-  const paramsData = React.use(params);
+  const paramsData = params;
   const { id, locale } = paramsData;
   
   const [isLoading, setIsLoading] = useState(false);
@@ -97,7 +98,7 @@ export default function EditTourPage({ params }) {
     } else if (durationUnit === 'hours') {
       setTourPlan([]);
     }
-  }, [duration, durationUnit]);
+  }, [duration, durationUnit, tourPlan]);
   
   // Handle tour plan updates
   const updateTourPlanDay = (dayIndex, field, language, value) => {
@@ -152,7 +153,6 @@ export default function EditTourPage({ params }) {
     };
     
     fetchTour();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
   
   const handleCoverImageUploaded = (url) => {
@@ -1018,7 +1018,13 @@ export default function EditTourPage({ params }) {
               </label>
               {coverImage && (
                 <div className="mb-2 relative h-40 w-full md:w-1/2 rounded-md overflow-hidden">
-                  <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+                  <Image 
+                    src={coverImage} 
+                    alt="Cover" 
+                    width={800}
+                    height={160}
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
               )}
               <ImageUploader
@@ -1040,7 +1046,13 @@ export default function EditTourPage({ params }) {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 {galleryImages.map((image, index) => (
                   <div key={index} className="relative h-40 rounded-md overflow-hidden">
-                    <img src={image} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                    <Image 
+                      src={image} 
+                      alt={`Gallery ${index + 1}`} 
+                      width={800}
+                      height={160}
+                      className="w-full h-full object-cover" 
+                    />
                     <button
                       type="button"
                       onClick={() => removeGalleryImage(index)}

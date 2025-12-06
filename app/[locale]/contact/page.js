@@ -1,4 +1,3 @@
-import { Metadata } from 'next';
 import MainLayout from '@/components/layout/MainLayout';
 import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 import ContactForm from '@/components/contact/ContactForm';

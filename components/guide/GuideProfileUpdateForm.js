@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Loader, Plus, X, Save } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -471,9 +472,11 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
         </label>
         {profileImage && (
           <div className="relative w-32 h-32 mb-4 rounded-full overflow-hidden">
-            <img 
+            <Image 
               src={profileImage} 
               alt="Profile" 
+              width={128}
+              height={128}
               className="w-full h-full object-cover"
             />
           </div>
@@ -497,9 +500,11 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
         </label>
         {coverImage && (
           <div className="relative w-full h-40 mb-4 rounded-lg overflow-hidden">
-            <img 
+            <Image 
               src={coverImage} 
               alt="Cover" 
+              width={800}
+              height={160}
               className="w-full h-full object-cover"
             />
           </div>
@@ -583,9 +588,11 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
           </label>
           {vehicleImage && (
             <div className="relative w-full h-40 mb-4 rounded-lg overflow-hidden">
-              <img 
+              <Image 
                 src={vehicleImage} 
                 alt="Vehicle" 
+                width={800}
+                height={160}
                 className="w-full h-full object-cover"
               />
             </div>

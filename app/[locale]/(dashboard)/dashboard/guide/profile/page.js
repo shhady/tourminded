@@ -9,7 +9,7 @@ import { Loader } from 'lucide-react';
 
 
 export default function GuideProfilePage({ params }) {
-  const localeParams = React.use(params);
+  const localeParams = params;
   const locale = localeParams?.locale || 'en';
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -151,9 +151,11 @@ export default function GuideProfilePage({ params }) {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <div className="w-32 h-32 rounded-full overflow-hidden bg-white border-4 border-white shadow-md">
               {guide.profileImage?.url ? (
-                <img 
+                <Image 
                   src={guide.profileImage.url} 
                   alt={getLocalizedName() || 'Guide'} 
+                  width={128}
+                  height={128}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -325,9 +327,11 @@ export default function GuideProfilePage({ params }) {
                   
                   {guide.vehicle.image?.url && (
                     <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4">
-                      <img 
+                      <Image 
                         src={guide.vehicle.image.url} 
                         alt="Vehicle" 
+                        width={400}
+                        height={160}
                         className="w-full h-full object-cover"
                       />
                     </div>

@@ -4,7 +4,6 @@ import MainLayout from '@/components/layout/MainLayout';
 import { getCurrentUser } from '@/lib/auth';
 import { Check, ArrowRight, Star } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { Metadata } from 'next';
 import ComparisonTable from '@/components/common/ComparisonTable';
 import CallToAction from '@/components/common/CallToAction';
 

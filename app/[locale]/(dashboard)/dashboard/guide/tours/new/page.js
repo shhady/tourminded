@@ -7,9 +7,10 @@ import Button from '@/components/ui/Button';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Loader, Plus, Minus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import Image from 'next/image';
 
 export default function NewTourPage({ params }) {
-  const localeParams = React.use(params);
+  const localeParams = params;
   const locale = localeParams?.locale || 'en';
   const router = useRouter();
   
@@ -130,7 +131,7 @@ export default function NewTourPage({ params }) {
     } else {
       setTourPlan([]);
     }
-  }, [duration, durationUnit]);
+  }, [duration, durationUnit, tourPlan]);
   
   // Handle tour plan updates
   const updateTourPlanDay = (dayIndex, field, language, value) => {
@@ -946,7 +947,13 @@ export default function NewTourPage({ params }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               {galleryImages.map((image, index) => (
                 <div key={index} className="relative h-40 rounded-md overflow-hidden">
-                  <img src={image} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                  <Image 
+                    src={image} 
+                    alt={`Gallery ${index + 1}`} 
+                    width={800}
+                    height={160}
+                    className="w-full h-full object-cover" 
+                  />
                   <button
                     type="button"
                     onClick={() => removeGalleryImage(index)}

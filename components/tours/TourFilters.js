@@ -389,7 +389,7 @@ export default function TourFilters({ locale, initialFilters = {} }) {
         setSearchInput(urlFilters.search);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, filters, searchInput]);
   
   return (
     <div className="bg-white rounded-lg shadow-sm mb-8">

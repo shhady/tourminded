@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 
 export default function FaqSection({ locale = 'en' }) {
@@ -9,7 +9,10 @@ export default function FaqSection({ locale = 'en' }) {
   const [error, setError] = useState('');
   const [openId, setOpenId] = useState(null);
 
-  const t = (en, ar) => (locale === 'en' ? en : ar);
+  const t = useCallback(
+    (en, ar) => (locale === 'en' ? en : ar),
+    [locale]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -42,7 +45,7 @@ export default function FaqSection({ locale = 'en' }) {
     return () => {
       cancelled = true;
     };
-  }, [locale]);
+  }, [t]);
 
   if (loading && !faqs.length) {
     return (
