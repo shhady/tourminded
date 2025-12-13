@@ -1,20 +1,13 @@
-import { Inter, Tajawal } from "next/font/google";
+import { MuseoModerno } from "next/font/google";
 import "./globals.css";
 import { getDirection } from "@/lib/i18n";
 import { UserProvider } from "@/contexts/UserContext";
 import { GuideProvider } from "@/contexts/GuideContext";
 import { Analytics } from "@vercel/analytics/next"
 import NextAuthProvider from '@/components/providers/NextAuthProvider';
-const inter = Inter({
+const museoModerno = MuseoModerno({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const tajawal = Tajawal({
-  subsets: ["arabic"],
-  weight: ["400", "500", "700"],
-  variable: "--font-tajawal",
+  variable: "--font-museo-moderno",
   display: "swap",
 });
 
@@ -121,7 +114,7 @@ export default function RootLayout({ children, params }) {
         <meta name="theme-color" content="#08171f" />
         <meta property="og:site_name" content="Watermelon Tours - Connect with Expert Local Guides" />
       </head>
-      <body className={`${inter.variable} ${tajawal.variable} font-sans antialiased overflow-x-hidden`}>
+      <body className={` ${museoModerno.variable} font-sans antialiased overflow-x-hidden`}>
         {process.env.NODE_ENV === 'development' && (
           <script
             dangerouslySetInnerHTML={{

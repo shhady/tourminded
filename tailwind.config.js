@@ -75,7 +75,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)'],
+        sans: ['var(--font-museo-moderno)'],
         arabic: ['var(--font-tajawal)'],
       },
       borderRadius: {

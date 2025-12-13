@@ -12,7 +12,7 @@ export default function ComparisonTable({ locale }) {
         en: 'Licensed guides',
         ar: 'مرشدون مرخصون'
       },
-      tourminded: true,
+      watermelontours: true,
       others: false,
       description: {
         en: 'All our guides are professionally licensed and verified',
@@ -24,7 +24,7 @@ export default function ComparisonTable({ locale }) {
         en: 'Private, customizable tours',
         ar: 'جولات خاصة قابلة للتخصيص'
       },
-      tourminded: true,
+      watermelontours: true,
       others: false,
       description: {
         en: 'Create your perfect itinerary with your guide',
@@ -36,7 +36,7 @@ export default function ComparisonTable({ locale }) {
         en: 'Choose guide based on expertise',
         ar: 'اختر المرشد بناءً على خبرته'
       },
-      tourminded: true,
+      watermelontours: true,
       others: false,
       description: {
         en: 'Find guides specialized in your areas of interest',
@@ -48,7 +48,7 @@ export default function ComparisonTable({ locale }) {
         en: 'Verified language proficiency',
         ar: 'إتقان لغوي موثق'
       },
-      tourminded: true,
+      watermelontours: true,
       others: false,
       description: {
         en: 'All language skills are verified and rated',
@@ -60,7 +60,7 @@ export default function ComparisonTable({ locale }) {
         en: 'Trusted reviews of the guide',
         ar: 'تقييمات موثوقة للمرشد'
       },
-      tourminded: true,
+      watermelontours: true,
       others: false,
       description: {
         en: 'Read authentic reviews from real travelers',
@@ -72,7 +72,7 @@ export default function ComparisonTable({ locale }) {
         en: 'Price',
         ar: 'السعر'
       },
-      tourminded: '$',
+      watermelontours: '$',
       others: '$$$',
       description: {
         en: 'Better value with direct booking',
@@ -97,7 +97,7 @@ export default function ComparisonTable({ locale }) {
                 {locale === 'en' ? 'Feature' : 'الميزة'}
               </th>
               <th className="py-4 px-6 text-center font-semibold text-primary-700 border-b">
-                Tourminded
+                watermelontours
               </th>
               <th className="py-4 px-6 text-center font-semibold text-gray-700 border-b">
                 {locale === 'en' ? 'Other travel agencies' : 'وكالات السفر الأخرى'}
@@ -115,8 +115,8 @@ export default function ComparisonTable({ locale }) {
                 </td>
                 <td className="py-4 px-6 text-center border-b">
                   {feature.isPrice ? (
-                    <span className="font-bold text-primary-600">{feature.tourminded}</span>
-                  ) : feature.tourminded ? (
+                    <span className="font-bold text-primary-600">{feature.watermelontours}</span>
+                  ) : feature.watermelontours ? (
                     <Check className="w-6 h-6 text-green-500 mx-auto" />
                   ) : (
                     <X className="w-6 h-6 text-red-500 mx-auto" />
@@ -165,8 +165,8 @@ export default function ComparisonTable({ locale }) {
             </div>
             <div className="col-span-1 flex justify-center items-center">
               {feature.isPrice ? (
-                <span className="font-bold text-primary-600">{feature.tourminded}</span>
-              ) : feature.tourminded ? (
+                <span className="font-bold text-primary-600">{feature.watermelontours}</span>
+              ) : feature.watermelontours ? (
                 <Check className="w-5 h-5 text-green-500" />
               ) : (
                 <X className="w-5 h-5 text-red-500" />
