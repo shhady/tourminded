@@ -5,7 +5,7 @@ export default async function sitemap() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.watermelontours.com';
   
   // Explicitly include all supported languages for SEO
-  const languages = ['en', 'ar', 'he'];
+  const languages = ['en', 'ar'];
 
   // 1. Define Static Routes
   const staticPages = [
