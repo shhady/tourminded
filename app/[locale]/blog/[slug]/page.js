@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, User, Clock, Share2, ArrowRight } from 'lucide-rea
 import connectDB from '@/lib/mongodb';
 import Blog from '@/models/Blog';
 import { notFound } from 'next/navigation';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 async function getBlogPost(slug) {
   try {
@@ -60,6 +61,8 @@ export default async function BlogPostPage({ params }) {
       day: 'numeric'
     });
   };
+
+  const sanitizedContent = sanitizeHtml(post.content);
 
   return (
     <MainLayout locale={locale}>
@@ -126,28 +129,25 @@ export default async function BlogPostPage({ params }) {
                             prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline
                             prose-img:rounded-xl prose-img:shadow-md
                             prose-strong:text-secondary-900"
-                            dangerouslySetInnerHTML={{ __html: post.content }}
+                            dangerouslySetInnerHTML={{ __html: sanitizedContent }}
                         />
                     </div>
                 </div>
 
                 {/* Sidebar */}
-                <div className="lg:col-span-4 space-y-8">
-                    {/* Share */}
+                {/* <div className="lg:col-span-4 space-y-8">
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-secondary-100">
                         <h3 className="text-lg font-bold text-secondary-900 mb-4 flex items-center gap-2">
                             <Share2 className="w-5 h-5" />
                             {locale === 'en' ? 'Share this article' : 'شارك هذا المقال'}
                         </h3>
                         <div className="flex gap-2">
-                            {/* Simple share buttons logic would go here */}
                             <button className="flex-1 py-2 bg-[#1877F2] text-white rounded hover:opacity-90 transition-opacity text-sm font-medium">Facebook</button>
-                            {/* <button className="flex-1 py-2 bg-[#1DA1F2] text-white rounded hover:opacity-90 transition-opacity text-sm font-medium">Twitter</button> */}
+                            <button className="flex-1 py-2 bg-[#1DA1F2] text-white rounded hover:opacity-90 transition-opacity text-sm font-medium">Twitter</button>
                             <button className="flex-1 py-2 bg-[#25D366] text-white rounded hover:opacity-90 transition-opacity text-sm font-medium">WhatsApp</button>
                         </div>
                     </div>
 
-                    {/* Tags */}
                     {post.tags && post.tags.length > 0 && (
                         <div className="bg-white rounded-xl p-6 shadow-sm border border-secondary-100">
                             <h3 className="text-lg font-bold text-secondary-900 mb-4">
@@ -162,7 +162,7 @@ export default async function BlogPostPage({ params }) {
                             </div>
                         </div>
                     )}
-                </div>
+                </div> */}
             </div>
         </div>
       </article>

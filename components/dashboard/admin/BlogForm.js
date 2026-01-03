@@ -286,7 +286,7 @@ export default function BlogForm({ initialData = {}, isEdit = false }) {
                 <h3 className="text-base font-bold text-gray-900 mb-3">How to fill the form (5 steps)</h3>
                 <ol className="space-y-2 text-sm text-gray-700 list-decimal pl-5">
                   <li><span className="font-bold">Title:</span> 6–12 words, clear and focused.</li>
-                  <li><span className="font-bold">Slug:</span> Click "Generate automatically from title".</li>
+                  <li><span className="font-bold">Slug:</span> Click &quot;Generate automatically from title&quot;.</li>
                   <li><span className="font-bold">Content:</span> Paste plain text into the editor and then (if needed) mark headers/lists via the toolbar.</li>
                   <li><span className="font-bold">Excerpt:</span> 1–2 sentences — this is also the default Google Description.</li>
                   <li><span className="font-bold">Tags:</span> 3–7 tags separated by commas.</li>
@@ -326,7 +326,7 @@ export default function BlogForm({ initialData = {}, isEdit = false }) {
 
                 <details className="mt-4 rounded-2xl border border-gray-200 bg-white p-4">
                   <summary className="cursor-pointer text-sm font-bold text-gray-900">
-                    Advanced: Want headers/lists to arrive "ready" without manual formatting?
+                    Advanced: Want headers/lists to arrive &quot;ready&quot; without manual formatting?
                   </summary>
                   <div className="mt-4">
                     <p className="text-sm text-gray-600">
@@ -363,7 +363,7 @@ export default function BlogForm({ initialData = {}, isEdit = false }) {
 {guideTemplateLiteral}
                         </pre>
                         <p className="mt-2 text-xs text-gray-500">
-                          In the editor itself, paste only the HTML (what's between the backticks), without the <span className="font-mono">`</span>.
+                          In the editor itself, paste only the HTML (what&apos;s between the backticks), without the <span className="font-mono">`</span>.
                         </p>
                       </div>
                     </div>
@@ -373,15 +373,15 @@ export default function BlogForm({ initialData = {}, isEdit = false }) {
 
               {/* SEO */}
               <section className="rounded-2xl border border-gray-200 bg-white p-5">
-                <h3 className="text-base font-bold text-gray-900 mb-3">SEO (For those who don't know — simply put)</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-3">SEO (For those who don&apos;t know — simply put)</h3>
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                     <p className="text-sm font-bold text-gray-800">SEO Title</p>
-                    <p className="mt-1 text-sm text-gray-600">The title that appears in Google. If left empty — we'll use the article title.</p>
+                    <p className="mt-1 text-sm text-gray-600">The title that appears in Google. If left empty — we&apos;ll use the article title.</p>
                   </div>
                   <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                     <p className="text-sm font-bold text-gray-800">SEO Description</p>
-                    <p className="mt-1 text-sm text-gray-600">The line below the title in Google. If left empty — we'll use the excerpt.</p>
+                    <p className="mt-1 text-sm text-gray-600">The line below the title in Google. If left empty — we&apos;ll use the excerpt.</p>
                   </div>
                 </div>
                 <p className="mt-3 text-sm text-gray-600">
