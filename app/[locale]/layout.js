@@ -1,4 +1,5 @@
 import { getDirection } from "@/lib/i18n";
+import CookieBanner from "@/components/common/CookieBanner";
 
 export default async function LocaleLayout({ children, params }) {
   const localeParams = await params;
@@ -8,6 +9,7 @@ export default async function LocaleLayout({ children, params }) {
   return (
     <div className={`locale-layout ${locale === "ar" ? "font-arabic" : ""}`} dir={dir} lang={locale}>
       {children}
+      <CookieBanner locale={locale} />
     </div>
   );
-} 
+}
