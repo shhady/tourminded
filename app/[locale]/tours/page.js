@@ -203,10 +203,22 @@ const getTourDescription = (tour, locale) => {
   
   const description = tour.description[locale] || tour.description.en || '';
   
+  // Strip HTML tags
+  let cleanDescription = description.replace(/<[^>]*>?/gm, '');
+  
+  // Replace HTML entities
+  cleanDescription = cleanDescription
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+  
   // Return first 100 characters with ellipsis
-  return description.length > 100 
-    ? description.substring(0, 100) + '...'
-    : description;
+  return cleanDescription.length > 100 
+    ? cleanDescription.substring(0, 100) + '...'
+    : cleanDescription;
 };
 
 // Helper function to get guide name based on locale
@@ -387,7 +399,7 @@ export default async function ToursPage({ searchParams, params }) {
                     </div>
                     
                     <div className="p-5">
-                      <h3 className="text-xl font-semibold mb-2 group-hover:text-primary-600 transition-colors">
+                      <h3 className="text-xl text-black font-semibold mb-2 group-hover:text-primary-600 transition-colors">
                         {getTourTitle(tour, locale)}
                       </h3>
                       

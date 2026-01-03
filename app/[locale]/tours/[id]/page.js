@@ -29,6 +29,7 @@ import dynamic from 'next/dynamic';
 import GalleryLightbox from './GalleryLightbox';
 import BookTourModal from '@/components/tours/BookTourModal';
 import LightboxImage from '@/components/common/LightboxImage';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 // Dynamically import the ShareTourButton component with no SSR
 const ShareTourButton = dynamic(() => import('./ShareTourButton'));
@@ -51,11 +52,17 @@ export async function generateMetadata({ params }) {
       ? (locale === 'en' ? tour.title.en : tour.title.ar) || tour.title.en
       : tour.title;
     
+    // For description, we need to strip HTML tags for metadata
+    const rawDescription = typeof tour.description === 'object'
+      ? (locale === 'en' ? tour.description.en : tour.description.ar) || tour.description.en
+      : tour.description;
+      
+    // Simple tag stripping for metadata description
+    const description = rawDescription?.replace(/<[^>]*>?/gm, '') || '';
+    
     return {
       title: `${title} | Watermelon Tours`,
-      description: typeof tour.description === 'object'
-        ? (locale === 'en' ? tour.description.en : tour.description.ar) || tour.description.en
-        : tour.description,
+      description: description.substring(0, 160), // Limit length for SEO
     };
   } catch (error) {
     console.error('Error generating metadata:', error);
@@ -346,9 +353,12 @@ export default async function TourPage({ params }) {
                 <h2 className="text-2xl font-bold mb-4 text-secondary-900">
                   {locale === 'en' ? 'About This Tour' : 'عن هذه الجولة'}
                 </h2>
-                <div className="prose max-w-none text-gray-700">
-                  <p>{description}</p>
-                </div>
+                <div 
+                  className="prose max-w-none text-gray-700 break-words"
+                  dangerouslySetInnerHTML={{ 
+                    __html: sanitizeHtml(description?.replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ')) 
+                  }}
+                />
               </div>
       {/* CTA: Message the guide to customize */}
       {tourData.guide?.userId && (
@@ -396,10 +406,16 @@ export default async function TourPage({ params }) {
                               {day.title[locale]}
                             </h4>
                           )}
-                          <div className="prose max-w-none text-gray-700">
-                            <p className="whitespace-pre-line">
-                              {day.content && day.content[locale] ? day.content[locale] : day.content?.en || ''}
-                            </p>
+                          <div className="prose max-w-none text-gray-700 break-words">
+                            <p 
+                              className="whitespace-pre-line"
+                              dangerouslySetInnerHTML={{ 
+                                __html: sanitizeHtml(
+                                  (day.content && day.content[locale] ? day.content[locale] : day.content?.en || '')
+                                  .replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ')
+                                ) 
+                              }}
+                            />
                           </div>
                         </div>
                       </details>
@@ -740,4 +756,4 @@ export default async function TourPage({ params }) {
     console.error('Error fetching tour:', error);
     notFound();
   }
-} 
+}

@@ -264,7 +264,7 @@ export default async function GuidesPage({ searchParams, params }) {
                 id="expertise"
                 name="expertise"
                 defaultValue={awaitedSearchParams.expertise || ''}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
               >
                 {expertiseOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -283,7 +283,7 @@ export default async function GuidesPage({ searchParams, params }) {
                 id="language"
                 name="language"
                 defaultValue={awaitedSearchParams.language || ''}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
               >
                 {languageOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -302,7 +302,7 @@ export default async function GuidesPage({ searchParams, params }) {
                 id="rating"
                 name="rating"
                 defaultValue={awaitedSearchParams.rating || ''}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
               >
                 {ratingOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -368,7 +368,7 @@ export default async function GuidesPage({ searchParams, params }) {
                       </div>
                       
                       <div className="p-5 pt-12">
-                        <h3 className="text-xl font-semibold mb-2 group-hover:text-primary-600 transition-colors">
+                        <h3 className="text-xl text-black font-semibold mb-2 group-hover:text-primary-600 transition-colors">
                           {getGuideName(guide, locale)}
                         </h3>
                         
@@ -377,7 +377,7 @@ export default async function GuidesPage({ searchParams, params }) {
                             {[...Array(5)].map((_, i) => (
                               <Star 
                                 key={i} 
-                                className={`w-4 h-4 ${(guide.reviewCount > 0 && i < Math.floor(guide.rating)) ? 'fill-current' : ''}`} 
+                                className={`w-4 h-4  ${(guide.reviewCount > 0 && i < Math.floor(guide.rating)) ? 'fill-current' : ''}`} 
                               />
                             ))}
                           </div>
@@ -454,7 +454,7 @@ export default async function GuidesPage({ searchParams, params }) {
                     href={`/${locale}/guides?${params.toString()}`}
                     className={`px-4 py-2 border ${
                       page === pagination.page
-                        ? 'bg-primary-600 text-black border-primary-600'
+                        ? 'bg-primary-600 text-white border-primary-600'
                         : 'bg-white text-secondary-700 border-secondary-300 hover:bg-secondary-50'
                     }`}
                   >

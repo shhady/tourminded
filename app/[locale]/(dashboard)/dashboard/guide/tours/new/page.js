@@ -1,17 +1,23 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import Button from '@/components/ui/Button';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Loader, Plus, Minus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
+import 'react-quill-new/dist/quill.snow.css';
+
+// Dynamic import for ReactQuill to avoid SSR issues
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 export default function NewTourPage({ params }) {
-  const localeParams = params;
-  const locale = localeParams?.locale || 'en';
+  // Use React.use() to unwrap params in Next.js 15+
+  const resolvedParams = use(params);
+  const locale = resolvedParams?.locale || 'en';
   const router = useRouter();
   
   const { user } = useUser();
@@ -30,6 +36,24 @@ export default function NewTourPage({ params }) {
   const [selectedExpertise, setSelectedExpertise] = useState([]);
   const [faqs, setFaqs] = useState([{ question: { en: '', ar: '' }, answer: { en: '', ar: '' } }]);
   
+  // ReactQuill modules and formats
+  const modules = useMemo(() => ({
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link'],
+      ['clean']
+    ],
+  }), []);
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list',
+    'link'
+  ];
+
   // Hardcoded locations in Palestine and Israel
   const locations = [
     { _id: 'Jerusalem', name: { en: 'Jerusalem', ar: 'القدس' } },
@@ -94,7 +118,7 @@ export default function NewTourPage({ params }) {
     'All-inclusive': { en: 'All-inclusive', ar: 'شامل' },
   };
   
-  const { register, handleSubmit, setValue, formState: { errors }, watch } = useForm();
+  const { register, handleSubmit, setValue, control, formState: { errors }, watch } = useForm();
   
   // Set default pricePer
   useEffect(() => {
@@ -110,6 +134,10 @@ export default function NewTourPage({ params }) {
   useEffect(() => {
     if (duration && durationUnit === 'days' && Math.floor(duration) > 0) {
       const days = Math.floor(duration);
+      
+      // Prevent infinite loop by checking if we need to update
+      if (tourPlan.length === days) return;
+
       const newTourPlan = [];
       
       for (let i = 1; i <= days; i++) {
@@ -128,8 +156,10 @@ export default function NewTourPage({ params }) {
       }
       
       setTourPlan(newTourPlan);
-    } else {
-      setTourPlan([]);
+    } else if (durationUnit === 'hours') {
+      if (tourPlan.length > 0) {
+        setTourPlan([]);
+      }
     }
   }, [duration, durationUnit, tourPlan]);
   
@@ -446,7 +476,7 @@ export default function NewTourPage({ params }) {
                 {...register('titleEn', {
                   required: locale === 'en' ? 'English title is required' : 'العنوان بالإنجليزية مطلوب',
                 })}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"
               />
               {errors.titleEn && (
                 <p className="mt-1 text-sm text-red-600">{errors.titleEn.message}</p>
@@ -461,7 +491,7 @@ export default function NewTourPage({ params }) {
                 id="titleAr"
                 type="text"
                 {...register('titleAr')}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"
                 dir="rtl"
               />
             </div>
@@ -473,14 +503,26 @@ export default function NewTourPage({ params }) {
               <label htmlFor="descriptionEn" className="block text-sm font-medium text-secondary-700 mb-1">
                 {locale === 'en' ? 'Description (English)' : 'الوصف (بالإنجليزية)'}*
               </label>
-              <textarea
-                id="descriptionEn"
-                rows="5"
-                {...register('descriptionEn', {
-                  required: locale === 'en' ? 'English description is required' : 'الوصف بالإنجليزية مطلوب',
-                })}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              ></textarea>
+              <Controller
+                name="descriptionEn"
+                control={control}
+                rules={{ 
+                  required: locale === 'en' ? 'English description is required' : 'الوصف بالإنجليزية مطلوب' 
+                }}
+                defaultValue=""
+                render={({ field }) => (
+                  <div className="bg-white text-black">
+                    <ReactQuill 
+                      theme="snow"
+                      value={field.value}
+                      onChange={field.onChange}
+                      modules={modules}
+                      formats={formats}
+                      className="h-64 mb-12"
+                    />
+                  </div>
+                )}
+              />
               {errors.descriptionEn && (
                 <p className="mt-1 text-sm text-red-600">{errors.descriptionEn.message}</p>
               )}
@@ -490,13 +532,23 @@ export default function NewTourPage({ params }) {
               <label htmlFor="descriptionAr" className="block text-sm font-medium text-secondary-700 mb-1">
                 {locale === 'en' ? 'Description (Arabic)' : 'الوصف (بالعربية)'}
               </label>
-              <textarea
-                id="descriptionAr"
-                rows="5"
-                {...register('descriptionAr')}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                dir="rtl"
-              ></textarea>
+              <Controller
+                name="descriptionAr"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <div className="bg-white text-black" dir="rtl">
+                    <ReactQuill 
+                      theme="snow"
+                      value={field.value}
+                      onChange={field.onChange}
+                      modules={modules}
+                      formats={formats}
+                      className="h-64 mb-12"
+                    />
+                  </div>
+                )}
+              />
             </div>
           </div>
           
@@ -530,7 +582,7 @@ export default function NewTourPage({ params }) {
                           value={day.title.en}
                           onChange={(e) => updateTourPlanDay(index, 'title', 'en', e.target.value)}
                           placeholder={locale === 'en' ? 'e.g., Jerusalem Old City Tour' : 'مثل: جولة البلدة القديمة في القدس'}
-                          className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"
                         />
                       </div>
                       
@@ -543,7 +595,7 @@ export default function NewTourPage({ params }) {
                           value={day.title.ar}
                           onChange={(e) => updateTourPlanDay(index, 'title', 'ar', e.target.value)}
                           placeholder={locale === 'en' ? 'e.g., جولة البلدة القديمة في القدس' : 'مثل: جولة البلدة القديمة في القدس'}
-                          className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"
                           dir="rtl"
                         />
                       </div>
@@ -562,7 +614,7 @@ export default function NewTourPage({ params }) {
                           placeholder={locale === 'en' 
                             ? 'Describe the activities, locations, meals, and experiences for this day...' 
                             : 'اوصف الأنشطة والمواقع والوجبات والتجارب لهذا اليوم...'}
-                          className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"
                           required
                         ></textarea>
                       </div>
@@ -578,7 +630,7 @@ export default function NewTourPage({ params }) {
                           placeholder={locale === 'en' 
                             ? 'اوصف الأنشطة والمواقع والوجبات والتجارب لهذا اليوم...' 
                             : 'اوصف الأنشطة والمواقع والوجبات والتجارب لهذا اليوم...'}
-                          className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"
                           dir="rtl"
                           required
                         ></textarea>
@@ -608,7 +660,7 @@ export default function NewTourPage({ params }) {
                     message: locale === 'en' ? 'Price must be positive' : 'يجب أن يكون السعر موجبًا',
                   },
                 })}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"
               />
               {errors.price && (
                 <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
@@ -665,11 +717,11 @@ export default function NewTourPage({ params }) {
                       message: locale === 'en' ? 'Duration must be at least 0.5' : 'يجب أن تكون المدة 0.5 على الأقل',
                     },
                   })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"
                 />
                 <select
                   {...register('durationUnit')}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                 >
                   <option value="hours">{locale === 'en' ? 'Hours' : 'ساعات'}</option>
                   <option value="days">{locale === 'en' ? 'Days' : 'أيام'}</option>
@@ -695,7 +747,7 @@ export default function NewTourPage({ params }) {
                     message: locale === 'en' ? 'Group size must be at least 1' : 'يجب أن يكون حجم المجموعة 1 على الأقل',
                   },
                 })}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"
               />
               {errors.maxGroupSize && (
                 <p className="mt-1 text-sm text-red-600">{errors.maxGroupSize.message}</p>
@@ -739,7 +791,7 @@ export default function NewTourPage({ params }) {
                 {...register('activityLevel', {
                   required: locale === 'en' ? 'Activity level is required' : 'مستوى النشاط مطلوب',
                 })}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
               >
                 <option value="">{locale === 'en' ? 'Select activity level' : 'اختر مستوى النشاط'}</option>
                 <option value="easy">{locale === 'en' ? 'Easy' : 'سهل'}</option>
@@ -805,7 +857,7 @@ export default function NewTourPage({ params }) {
               <select
                 id="transportation"
                 {...register('transportation')}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
               >
                 <option value="walking">{locale === 'en' ? 'Walking' : 'مشي'}</option>
                 <option value="public">{locale === 'en' ? 'Public Transport' : 'وسائل النقل العامة'}</option>
@@ -846,7 +898,7 @@ export default function NewTourPage({ params }) {
             </label>
             
             {includesItems.map((item, index) => (
-              <div key={`includes-${index}`} className="mb-4 p-4 border border-secondary-200 rounded-md">
+              <div key={`includes-${index}`} className="mb-4 p-4 border border-secondary-200 rounded-md text-black">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-medium">
                     {locale === 'en' ? `Item ${index + 1}` : `العنصر ${index + 1}`}
@@ -865,7 +917,7 @@ export default function NewTourPage({ params }) {
                   type="text"
                   value={item}
                   onChange={(e) => updateIncludesItem(index, e.target.value)}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"
                   placeholder={locale === 'en' ? 'E.g., Professional guide, Transportation, Lunch' : 'مثال: دليل محترف، النقل، الغداء'}
                 />
               </div>
@@ -890,7 +942,7 @@ export default function NewTourPage({ params }) {
               {locale === 'en' ? 'Add common questions travelers ask. Either language is fine.' : 'أضف الأسئلة الشائعة. أي لغة مقبولة.'}
             </p>
             {faqs.map((f, idx) => (
-              <div key={`faq-${idx}`} className="mb-4 p-4 border border-secondary-200 rounded-md">
+              <div key={`faq-${idx}`} className="mb-4 p-4 border border-secondary-200 rounded-md text-black">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-medium">{locale === 'en' ? `FAQ ${idx + 1}` : `سؤال ${idx + 1}`}</h3>
                   <button type="button" onClick={() => removeFaq(idx)} className="text-red-500 hover:text-red-700" disabled={faqs.length === 1}>
@@ -900,19 +952,19 @@ export default function NewTourPage({ params }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Question (English)' : 'السؤال (بالإنجليزية)'}</label>
-                    <input type="text" value={f.question.en} onChange={(e) => updateFaq(idx, 'question', 'en', e.target.value)} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    <input type="text" value={f.question.en} onChange={(e) => updateFaq(idx, 'question', 'en', e.target.value)} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Question (Arabic)' : 'السؤال (بالعربية)'}</label>
-                    <input type="text" value={f.question.ar} onChange={(e) => updateFaq(idx, 'question', 'ar', e.target.value)} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    <input type="text" value={f.question.ar} onChange={(e) => updateFaq(idx, 'question', 'ar', e.target.value)} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Answer (English)' : 'الإجابة (بالإنجليزية)'}</label>
-                    <textarea rows="3" value={f.answer.en} onChange={(e) => updateFaq(idx, 'answer', 'en', e.target.value)} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                    <textarea rows="3" value={f.answer.en} onChange={(e) => updateFaq(idx, 'answer', 'en', e.target.value)} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"></textarea>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Answer (Arabic)' : 'الإجابة (بالعربية)'}</label>
-                    <textarea rows="3" value={f.answer.ar} onChange={(e) => updateFaq(idx, 'answer', 'ar', e.target.value)} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                    <textarea rows="3" value={f.answer.ar} onChange={(e) => updateFaq(idx, 'answer', 'ar', e.target.value)} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black placeholder:text-gray-900"></textarea>
                   </div>
                 </div>
               </div>
@@ -978,7 +1030,7 @@ export default function NewTourPage({ params }) {
             <Button
               type="submit"
               disabled={isLoading}
-              className="text-black"
+              className="text-white"
             >
               {isLoading ? (
                 <span className="flex items-center">
@@ -994,4 +1046,4 @@ export default function NewTourPage({ params }) {
       </div>
     </div>
   );
-} 
+}

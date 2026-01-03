@@ -94,10 +94,13 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children, params }) {
-  const direction = getDirection?.(params?.locale || 'en') || 'ltr';
+export default async function RootLayout({ children, params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams?.locale || 'en';
+  const direction = getDirection?.(locale) || 'ltr';
+
   return (
-    <html lang={params?.locale || 'en'} dir={direction}>
+    <html lang={locale} dir={direction} suppressHydrationWarning>
       <head>
         <meta name="robots" content="index, follow" />
         <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
@@ -109,7 +112,10 @@ export default function RootLayout({ children, params }) {
         <meta name="theme-color" content="#08171f" />
         <meta property="og:site_name" content="Watermelon Tours - Connect with Expert Local Guides" />
       </head>
-      <body className={` ${museoModerno.variable} ${montserrat.variable} font-sans antialiased overflow-x-hidden`}>
+      <body 
+        className={` ${museoModerno.variable} ${montserrat.variable} font-sans antialiased overflow-x-hidden`}
+        suppressHydrationWarning={true}
+      >
         {process.env.NODE_ENV === 'development' && (
           <script
             dangerouslySetInnerHTML={{

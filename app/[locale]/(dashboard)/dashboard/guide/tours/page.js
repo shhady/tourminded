@@ -86,7 +86,7 @@ export default async function GuideToursPage({ params }) {
         <Button 
           href={`/${locale}/dashboard/guide/tours/new`}
           variant="primary"
-          className="text-black"
+          className="text-white"
         >
           {locale === 'en' ? 'Create New Tour' : 'إنشاء جولة جديدة'}
         </Button>
@@ -105,7 +105,7 @@ export default async function GuideToursPage({ params }) {
           <Button 
             href={`/${locale}/dashboard/guide/tours/new`}
             variant="primary"
-            className="text-black"
+            className="text-white"
           >
             {locale === 'en' ? 'Create Your First Tour' : 'إنشاء جولتك الأولى'}
           </Button>

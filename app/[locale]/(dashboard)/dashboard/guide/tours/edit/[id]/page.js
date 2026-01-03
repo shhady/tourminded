@@ -1,17 +1,24 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import Button from '@/components/ui/Button';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Loader, Plus, Minus } from 'lucide-react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
+import 'react-quill-new/dist/quill.snow.css';
+
+// Dynamic import for ReactQuill to avoid SSR issues
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 export default function EditTourPage({ params }) {
   const router = useRouter();
-  const paramsData = params;
-  const { id, locale } = paramsData;
+  
+  // Use React.use() to unwrap params in Next.js 15+
+  const resolvedParams = use(params);
+  const { id, locale } = resolvedParams;
   
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
@@ -27,6 +34,24 @@ export default function EditTourPage({ params }) {
   const [selectedExpertise, setSelectedExpertise] = useState([]);
   const [faqs, setFaqs] = useState([{ question: { en: '', ar: '' }, answer: { en: '', ar: '' } }]);
   
+  // ReactQuill modules and formats
+  const modules = useMemo(() => ({
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link'],
+      ['clean']
+    ],
+  }), []);
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list',
+    'link'
+  ];
+
   // Hardcoded locations in Palestine and Israel
   const locations = [
     { _id: 'Jerusalem', name: { en: 'Jerusalem', ar: 'القدس' } },
@@ -59,7 +84,7 @@ export default function EditTourPage({ params }) {
     { _id: 'Taybeh', name: { en: 'Taybeh', ar: 'الطيبة' } },
   ];
   
-  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm();
+  const { register, handleSubmit, control, formState: { errors }, reset, watch, setValue } = useForm();
 
   // Watch duration and durationUnit to update tour plan
   const duration = watch('duration');
@@ -77,6 +102,10 @@ export default function EditTourPage({ params }) {
   useEffect(() => {
     if (duration && durationUnit === 'days' && Math.floor(duration) > 0) {
       const days = Math.floor(duration);
+      
+      // Prevent infinite loop by checking if we need to update
+      if (tourPlan.length === days) return;
+
       const newTourPlan = [];
       
       for (let i = 1; i <= days; i++) {
@@ -96,7 +125,9 @@ export default function EditTourPage({ params }) {
       
       setTourPlan(newTourPlan);
     } else if (durationUnit === 'hours') {
-      setTourPlan([]);
+      if (tourPlan.length > 0) {
+        setTourPlan([]);
+      }
     }
   }, [duration, durationUnit, tourPlan]);
   
@@ -114,6 +145,8 @@ export default function EditTourPage({ params }) {
   
   // Fetch tour data only once when component mounts
   useEffect(() => {
+    if (!id) return;
+
     const fetchTour = async () => {
       try {
         setIsFetching(true);
@@ -143,7 +176,10 @@ export default function EditTourPage({ params }) {
         }
         setFaqs(Array.isArray(data.data.faqs) && data.data.faqs.length > 0 ? data.data.faqs : [{ question: { en: '', ar: '' }, answer: { en: '', ar: '' } }]);
         
-        // Don't call reset() - let defaultValue handle it
+        // Set default values for React Hook Form managed fields
+        setValue('descriptionEn', data.data.description?.en || '');
+        setValue('descriptionAr', data.data.description?.ar || '');
+        
       } catch (error) {
         console.error('Error fetching tour:', error);
         setError('Failed to load tour data');
@@ -153,7 +189,7 @@ export default function EditTourPage({ params }) {
     };
     
     fetchTour();
-  }, [id]);
+  }, [id, setValue]);
   
   const handleCoverImageUploaded = (url) => {
     setCoverImage(url);
@@ -232,9 +268,6 @@ export default function EditTourPage({ params }) {
     setError('');
     
     console.log('Form data received:', data);
-    console.log('Title object:', data.title);
-    console.log('Description object:', data.description);
-    console.log('Excluded items from state:', excludedItems);
     
     if (!coverImage) {
       setError(locale === 'en' ? 'Cover image is required' : 'صورة الغلاف مطلوبة');
@@ -417,7 +450,7 @@ export default function EditTourPage({ params }) {
                   key={`title-en-${tour?._id}`}
                   defaultValue={tour?.title?.en || ''}
                   {...register('titleEn', { required: true })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                 />
                 {errors['title.en'] && (
                   <p className="mt-1 text-sm text-red-600">
@@ -436,7 +469,7 @@ export default function EditTourPage({ params }) {
                   key={`title-ar-${tour?._id}`}
                   defaultValue={tour?.title?.ar || ''}
                   {...register('titleAr', { required: true })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                 />
                 {errors['title.ar'] && (
                   <p className="mt-1 text-sm text-red-600">
@@ -452,15 +485,25 @@ export default function EditTourPage({ params }) {
                 <label htmlFor="description.en" className="block text-sm font-medium text-secondary-700 mb-1">
                   {locale === 'en' ? 'Description (English)' : 'الوصف (بالإنجليزية)'}*
                 </label>
-                <textarea
-                  id="descriptionEn"
-                  key={`desc-en-${tour?._id}`}
+                <Controller
+                  name="descriptionEn"
+                  control={control}
+                  rules={{ required: true }}
                   defaultValue={tour?.description?.en || ''}
-                  {...register('descriptionEn', { required: true })}
-                  rows={5}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                ></textarea>
-                {errors['description.en'] && (
+                  render={({ field }) => (
+                    <div className="bg-white text-black">
+                      <ReactQuill 
+                        theme="snow"
+                        value={field.value}
+                        onChange={field.onChange}
+                        modules={modules}
+                        formats={formats}
+                        className="h-64 mb-12"
+                      />
+                    </div>
+                  )}
+                />
+                {errors['descriptionEn'] && (
                   <p className="mt-1 text-sm text-red-600">
                     {locale === 'en' ? 'Description in English is required' : 'الوصف بالإنجليزية مطلوب'}
                   </p>
@@ -471,15 +514,25 @@ export default function EditTourPage({ params }) {
                 <label htmlFor="description.ar" className="block text-sm font-medium text-secondary-700 mb-1">
                   {locale === 'en' ? 'Description (Arabic)' : 'الوصف (بالعربية)'}*
                 </label>
-                <textarea
-                  id="descriptionAr"
-                  key={`desc-ar-${tour?._id}`}
+                <Controller
+                  name="descriptionAr"
+                  control={control}
+                  rules={{ required: true }}
                   defaultValue={tour?.description?.ar || ''}
-                  {...register('descriptionAr', { required: true })}
-                  rows={5}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                ></textarea>
-                {errors['description.ar'] && (
+                  render={({ field }) => (
+                    <div className="bg-white text-black" dir="rtl">
+                       <ReactQuill 
+                        theme="snow"
+                        value={field.value}
+                        onChange={field.onChange}
+                        modules={modules}
+                        formats={formats}
+                        className="h-64 mb-12"
+                      />
+                    </div>
+                  )}
+                />
+                {errors['descriptionAr'] && (
                   <p className="mt-1 text-sm text-red-600">
                     {locale === 'en' ? 'Description in Arabic is required' : 'الوصف بالعربية مطلوب'}
                   </p>
@@ -501,7 +554,7 @@ export default function EditTourPage({ params }) {
                   key={`price-${tour?._id}`}
                   defaultValue={tour?.price || ''}
                   {...register('price', { required: true, min: 0 })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                 />
                 {errors.price && (
                   <p className="mt-1 text-sm text-red-600">
@@ -554,7 +607,7 @@ export default function EditTourPage({ params }) {
                   key={`duration-${tour?._id}`}
                   defaultValue={tour?.duration || ''}
                   {...register('duration', { required: true, min: 1 })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                 />
                 {errors.duration && (
                   <p className="mt-1 text-sm text-red-600">
@@ -572,7 +625,7 @@ export default function EditTourPage({ params }) {
                   key={`durationUnit-${tour?._id}`}
                   defaultValue={tour?.durationUnit || 'hours'}
                   {...register('durationUnit', { required: true })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                 >
                   <option value="hours">{locale === 'en' ? 'Hours' : 'ساعات'}</option>
                   <option value="days">{locale === 'en' ? 'Days' : 'أيام'}</option>
@@ -593,7 +646,7 @@ export default function EditTourPage({ params }) {
                   key={`maxGroupSize-${tour?._id}`}
                   defaultValue={tour?.maxGroupSize || ''}
                   {...register('maxGroupSize', { required: true, min: 1 })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                 />
                 {errors.maxGroupSize && (
                   <p className="mt-1 text-sm text-red-600">
@@ -611,7 +664,7 @@ export default function EditTourPage({ params }) {
                   key={`activityLevel-${tour?._id}`}
                   defaultValue={tour?.activityLevel || 'easy'}
                   {...register('activityLevel', { required: true })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                 >
                   <option value="easy">{locale === 'en' ? 'Easy' : 'سهل'}</option>
                   <option value="moderate">{locale === 'en' ? 'Moderate' : 'متوسط'}</option>
@@ -750,7 +803,7 @@ export default function EditTourPage({ params }) {
                     type="text"
                     value={item}
                     onChange={(e) => updateIncludedItem(index, e.target.value)}
-                    className="flex-grow px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="flex-grow px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                     placeholder={locale === 'en' ? 'E.g., Entrance fees' : 'مثال: رسوم الدخول'}
                   />
                   <button
@@ -784,7 +837,7 @@ export default function EditTourPage({ params }) {
                     type="text"
                     value={item}
                     onChange={(e) => updateExcludedItem(index, e.target.value)}
-                    className="flex-grow px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="flex-grow px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                     placeholder={locale === 'en' ? 'E.g., Personal expenses' : 'مثال: المصاريف الشخصية'}
                   />
                   <button
@@ -816,7 +869,7 @@ export default function EditTourPage({ params }) {
                 <select
                   id="transportation"
                   {...register('transportation')}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                 >
                   <option value="walking">{locale === 'en' ? 'Walking' : 'مشي'}</option>
                   <option value="public">{locale === 'en' ? 'Public Transport' : 'وسائل النقل العامة'}</option>
@@ -887,7 +940,7 @@ export default function EditTourPage({ params }) {
                             value={day.title.en}
                             onChange={(e) => updateTourPlanDay(index, 'title', 'en', e.target.value)}
                             placeholder={locale === 'en' ? 'e.g., Jerusalem Old City Tour' : 'مثل: جولة البلدة القديمة في القدس'}
-                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                           />
                         </div>
                         
@@ -900,7 +953,7 @@ export default function EditTourPage({ params }) {
                             value={day.title.ar}
                             onChange={(e) => updateTourPlanDay(index, 'title', 'ar', e.target.value)}
                             placeholder={locale === 'en' ? 'e.g., جولة البلدة القديمة في القدس' : 'مثل: جولة البلدة القديمة في القدس'}
-                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                             dir="rtl"
                           />
                         </div>
@@ -919,7 +972,7 @@ export default function EditTourPage({ params }) {
                             placeholder={locale === 'en' 
                               ? 'Describe the activities, locations, meals, and experiences for this day...' 
                               : 'اوصف الأنشطة والمواقع والوجبات والتجارب لهذا اليوم...'}
-                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                             required
                           ></textarea>
                         </div>
@@ -935,7 +988,7 @@ export default function EditTourPage({ params }) {
                             placeholder={locale === 'en' 
                               ? 'اوصف الأنشطة والمواقع والوجبات والتجارب لهذا اليوم...' 
                               : 'اوصف الأنشطة والمواقع والوجبات والتجارب لهذا اليوم...'}
-                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                             dir="rtl"
                             required
                           ></textarea>
@@ -977,7 +1030,7 @@ export default function EditTourPage({ params }) {
                       type="text"
                       value={item.title}
                       onChange={(e) => updateItineraryItem(index, 'title', e.target.value)}
-                      className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                       placeholder={locale === 'en' ? 'E.g., Visit the Old City' : 'مثال: زيارة المدينة القديمة'}
                     />
                   </div>
@@ -991,7 +1044,7 @@ export default function EditTourPage({ params }) {
                       value={item.description}
                       onChange={(e) => updateItineraryItem(index, 'description', e.target.value)}
                       rows="3"
-                      className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                       placeholder={locale === 'en' ? 'Describe this stop...' : 'وصف هذه المحطة...'}
                     ></textarea>
                   </div>
@@ -1089,19 +1142,19 @@ export default function EditTourPage({ params }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Question (English)' : 'السؤال (بالإنجليزية)'}</label>
-                  <input type="text" value={f.question?.en || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], question: { ...(u[idx].question||{}), en: e.target.value } }; return u; })} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                  <input type="text" value={f.question?.en || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], question: { ...(u[idx].question||{}), en: e.target.value } }; return u; })} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Question (Arabic)' : 'السؤال (بالعربية)'}</label>
-                  <input type="text" value={f.question?.ar || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], question: { ...(u[idx].question||{}), ar: e.target.value } }; return u; })} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                  <input type="text" value={f.question?.ar || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], question: { ...(u[idx].question||{}), ar: e.target.value } }; return u; })} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Answer (English)' : 'الإجابة (بالإنجليزية)'}</label>
-                  <textarea rows="3" value={f.answer?.en || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], answer: { ...(u[idx].answer||{}), en: e.target.value } }; return u; })} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                  <textarea rows="3" value={f.answer?.en || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], answer: { ...(u[idx].answer||{}), en: e.target.value } }; return u; })} className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"></textarea>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-1">{locale === 'en' ? 'Answer (Arabic)' : 'الإجابة (بالعربية)'}</label>
-                  <textarea rows="3" value={f.answer?.ar || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], answer: { ...(u[idx].answer||{}), ar: e.target.value } }; return u; })} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                  <textarea rows="3" value={f.answer?.ar || ''} onChange={(e) => setFaqs(prev => { const u=[...prev]; u[idx] = { ...u[idx], answer: { ...(u[idx].answer||{}), ar: e.target.value } }; return u; })} dir="rtl" className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"></textarea>
                 </div>
               </div>
             </div>
@@ -1116,7 +1169,7 @@ export default function EditTourPage({ params }) {
           <Button
             type="submit"
             variant="primary"
-            className="text-black"
+            className="text-white"
             disabled={isLoading}
           >
             {isLoading ? (

@@ -402,7 +402,7 @@ const Header = ({ locale }) => {
                   href={`/${locale}/sign-up`}
                   variant="primary"
                   size="sm"
-                  className="text-black"
+                  className="text-white"
                 >
                   {locale === 'en' ? 'Register' : 'التسجيل'}
                 </Button>
@@ -575,7 +575,7 @@ const Header = ({ locale }) => {
                     href={getLocalizedHref('/sign-up')}
                     variant="primary"
                     size="md"
-                    className="w-full text-black"
+                    className="w-full text-white"
                   >
                     {locale === 'en' ? 'Register' : 'التسجيل'}
                   </Button>
