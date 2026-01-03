@@ -120,12 +120,12 @@ export default async function QuizPage({ params }) {
   
   return (
     <MainLayout locale={locale} user={user}>
-      <div className="bg-primary-900 text-black py-16">
+      <div className="bg-primary-200 text-black py-16">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-4 text-center">
+          <h1 className="text-4xl font-bold mb-4 text-center text-white">
             {locale === 'en' ? 'Find Your Perfect Tour' : 'ابحث عن جولتك المثالية'}
           </h1>
-          <p className="text-xl max-w-3xl mx-auto text-center">
+          <p className="text-xl max-w-3xl mx-auto text-center text-white">
             {locale === 'en'
               ? 'Answer a few questions and we\'ll recommend the best tours for you'
               : 'أجب على بعض الأسئلة وسنوصي بأفضل الجولات لك'}

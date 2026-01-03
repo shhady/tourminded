@@ -232,7 +232,7 @@ export default async function GuidesPage({ searchParams, params }) {
   
   return (
     <MainLayout locale={locale} user={user}>
-      <div className="bg-primary-900 text-black py-16">
+      <div className="bg-primary-200 text-black py-16">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-4 text-center">
             {locale === 'en' ? 'Meet Our Expert Guides' : 'تعرف على مرشدينا الخبراء'}
@@ -314,7 +314,7 @@ export default async function GuidesPage({ searchParams, params }) {
             
             {/* Submit Button */}
             <div className="md:col-span-3 mt-2">
-              <Button type="submit" className="w-full md:w-auto">
+              <Button type="submit" className="w-full md:w-auto bg-white text-black">
                 {locale === 'en' ? 'Apply Filters' : 'تطبيق الفلاتر'}
               </Button>
             </div>

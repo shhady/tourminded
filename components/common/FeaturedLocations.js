@@ -124,9 +124,9 @@ const FeaturedLocations = ({ locale }) => {
         <div className="text-center mt-12">
             <Link
               href={`/${locale}/locations`}
-            className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-primary-600 hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white  hover:text-white transition-colors"
           >
-            <Button> {locale === 'en' ? 'View All Locations' : 'عرض جميع المواقع'}</Button>
+            <Button className='text-white'> {locale === 'en' ? 'View All Locations' : 'عرض جميع المواقع'}</Button>
           </Link>
         </div>
       </div>

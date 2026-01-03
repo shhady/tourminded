@@ -1,25 +1,110 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-primary-50: #F8FAFC;
+  --color-primary-100: #F1F5F9;
+  --color-primary-200: #E2E8F0;
+  --color-primary-300: #CBD5E1;
+  --color-primary-400: #94A3B8;
+  --color-primary-500: #64748B;
+  --color-primary-600: #475569;
+  --color-primary-700: #334155;
+  --color-primary-800: #1E293B;
+  --color-primary-900: #0F172A;
+
+  --color-secondary-50: #F3F4F6;
+  --color-secondary-100: #E5E7EB;
+  --color-secondary-200: #D1D5DB;
+  --color-secondary-300: #9CA3AF;
+  --color-secondary-400: #6B7280;
+  --color-secondary-500: #4B5563;
+  --color-secondary-600: #374151;
+  --color-secondary-700: #1F2937;
+  --color-secondary-800: #111827;
+  --color-secondary-900: #0B0F19;
+
+  --color-accent-green: #198754;
+  --color-accent-yellow: #FACA15;
+
+  --font-heading: var(--font-museo-moderno), sans-serif;
+  --font-sans: var(--font-montserrat), sans-serif;
+  --font-arabic: var(--font-tajawal);
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 6px 30px rgba(0, 0, 0, 0.12);
+  --shadow-hard: 0 8px 40px rgba(0, 0, 0, 0.16);
+
+  --animate-fade-in: fadeIn 0.5s ease-in-out;
+  --animate-slide-up: slideUp 0.5s ease-in-out;
+  --animate-slide-down: slideDown 0.5s ease-in-out;
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes slideUp {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes slideDown {
+    0% { transform: translateY(-20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-museo-moderno);
-  --font-mono: var(--font-geist-mono);
+/* Base Styles */
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+  --font-tajawal: 'Tajawal', sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #ededed;
-    --foreground: #0a0a0a;
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  color: rgb(var(--foreground-rgb));
+  font-family: var(--font-montserrat), sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Ensure headings use the correct font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-museo-moderno), sans-serif;
+}
+
+/* Arabic Support */
+[dir="rtl"] {
+  font-family: var(--font-tajawal), sans-serif;
+}
+
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4, [dir="rtl"] h5, [dir="rtl"] h6 {
+  font-family: var(--font-tajawal), sans-serif;
 }

@@ -412,7 +412,7 @@ export default async function GuideProfilePage({ params }) {
                 )}
                 
                 {/* QR Code */}
-                <div className="mb-6">
+                {/* <div className="mb-6">
                   <h3 className="text-lg font-semibold mb-3">
                     {locale === 'en' ? 'Scan to Share' : 'امسح للمشاركة'}
                   </h3>
@@ -425,7 +425,7 @@ export default async function GuideProfilePage({ params }) {
                       height={150}
                     />
                   </div>
-                </div>
+                </div> */}
 
                
               </div>
@@ -568,7 +568,7 @@ export default async function GuideProfilePage({ params }) {
                   )}
                   
                   {/* QR Code */}
-                  <div className="mb-6">
+                  {/* <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-3">
                       {locale === 'en' ? 'Scan to Share' : 'امسح للمشاركة'}
                     </h3>
@@ -581,7 +581,7 @@ export default async function GuideProfilePage({ params }) {
                         height={150}
                       />
                     </div>
-                  </div>
+                  </div> */}
 
                  
                 </div>

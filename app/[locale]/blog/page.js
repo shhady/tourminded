@@ -72,13 +72,13 @@ export default function BlogPage({ params }) {
   return (
     <MainLayout locale={locale}>
       {/* Hero Section */}
-      <div className="relative bg-secondary-900 text-white py-20">
-        <div className="absolute inset-0 bg-secondary-900/50 mix-blend-multiply "></div>
+      <div className="relative bg-primary-200 text-black py-20">
+        <div className="absolute inset-0 bg-primary-200/50 mix-blend-multiply "></div>
         <div className="container mx-auto px-4 relative z-10 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 font-heading text-black">
             {locale === 'en' ? 'Our Blog' : 'مدونتنا'}
           </h1>
-          <p className="text-xl max-w-2xl mx-auto text-secondary-100 text-black">
+          <p className="text-xl max-w-2xl mx-auto text-black">
             {locale === 'en' 
               ? 'Discover stories, tips, and insights about the Holy Land.' 
               : 'اكتشف قصصًا ونصائح ورؤى حول الأراضي المقدسة.'}
@@ -96,7 +96,7 @@ export default function BlogPage({ params }) {
               placeholder={locale === 'en' ? 'Search articles...' : 'ابحث عن مقالات...'}
               value={searchQuery}
               onChange={handleSearchChange}
-              className="w-full px-4 py-3 pl-10 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="text-black w-full px-4 py-3 pl-10 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               dir={locale === 'en' ? 'ltr' : 'rtl'}
             />
             <Search className={`absolute ${locale === 'en' ? 'left-3' : 'right-3'} top-1/2 transform -translate-y-1/2 text-secondary-400 w-5 h-5`} />

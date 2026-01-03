@@ -1,13 +1,20 @@
-import { MuseoModerno } from "next/font/google";
+import { MuseoModerno, Montserrat } from "next/font/google";
 import "./globals.css";
 import { getDirection } from "@/lib/i18n";
 import { UserProvider } from "@/contexts/UserContext";
 import { GuideProvider } from "@/contexts/GuideContext";
 import { Analytics } from "@vercel/analytics/next"
 import NextAuthProvider from '@/components/providers/NextAuthProvider';
+
 const museoModerno = MuseoModerno({
   subsets: ["latin"],
   variable: "--font-museo-moderno",
+  display: "swap",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
   display: "swap",
 });
 
@@ -61,37 +68,25 @@ export const metadata = {
   manifest: '/site.webmanifest',
   openGraph: {
     title: "Watermelon Tours - Connect with Expert Local Guides",
-    description: "Discover the Holy Land through the eyes of expert local guides. Book personalized tours, explore hidden gems, and create unforgettable memories in Jerusalem, Bethlehem, and beyond.",
+    description: "Discover the Holy Land with expert local guides.",
     url: 'https://watermelontours.com',
     siteName: 'Watermelon Tours',
-    locale: 'en_US',
-    type: 'website',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Watermelon Tours - Expert Local Guides in the Holy Land',
-      },
+        alt: 'Watermelon Tours',
+      }
     ],
+    locale: 'en_US',
+    type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Watermelon Tours - Connect with Expert Local Guides",
-    description: "Discover the Holy Land through the eyes of expert local guides. Book personalized tours and create unforgettable memories.",
+    title: 'Watermelon Tours - Connect with Expert Local Guides',
+    description: 'Discover the Holy Land with expert local guides.',
     images: ['/og-image.jpg'],
-    creator: '@watermelontours',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
   },
   verification: {
     google: 'your-google-verification-code',
@@ -114,7 +109,7 @@ export default function RootLayout({ children, params }) {
         <meta name="theme-color" content="#08171f" />
         <meta property="og:site_name" content="Watermelon Tours - Connect with Expert Local Guides" />
       </head>
-      <body className={` ${museoModerno.variable} font-sans antialiased overflow-x-hidden`}>
+      <body className={` ${museoModerno.variable} ${montserrat.variable} font-sans antialiased overflow-x-hidden`}>
         {process.env.NODE_ENV === 'development' && (
           <script
             dangerouslySetInnerHTML={{

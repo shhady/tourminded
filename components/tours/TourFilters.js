@@ -455,7 +455,7 @@ export default function TourFilters({ locale, initialFilters = {} }) {
               <Button
                 type="submit"
                 variant="primary"
-                className="rounded-l-none px-4"
+                className="rounded-l-none px-4 bg-white text-black"
                 disabled={isPending}
               >
                 {isPending ? (
@@ -728,7 +728,7 @@ export default function TourFilters({ locale, initialFilters = {} }) {
             <Button
               type="submit"
               variant="primary"
-              className="flex-1"
+              className="flex-1 bg-white text-black"
               disabled={isPending}
             >
               {isPending ? (

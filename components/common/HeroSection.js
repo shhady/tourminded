@@ -27,11 +27,13 @@ const HeroSection = ({ locale }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showTravelerCounter, setShowTravelerCounter] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [showExpertiseDropdown, setShowExpertiseDropdown] = useState(false);
   const [languageSearchTerm, setLanguageSearchTerm] = useState('');
   
   // Ref for handling click outside
   const travelerDropdownRef = useRef(null);
   const languageDropdownRef = useRef(null);
+  const expertiseDropdownRef = useRef(null);
 
   // Background images for carousel
   const bgImages = [
@@ -71,6 +73,13 @@ const HeroSection = ({ locale }) => {
         setShowLanguageDropdown(false);
         setLanguageSearchTerm('');
       }
+      if (
+        showExpertiseDropdown &&
+        expertiseDropdownRef.current &&
+        !expertiseDropdownRef.current.contains(event.target)
+      ) {
+        setShowExpertiseDropdown(false);
+      }
     };
     
     document.addEventListener('mousedown', handleClickOutside);
@@ -80,7 +89,7 @@ const HeroSection = ({ locale }) => {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [bgImages.length, showLanguageDropdown]);
+  }, [bgImages.length, showLanguageDropdown, showExpertiseDropdown]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -145,10 +154,20 @@ const HeroSection = ({ locale }) => {
     }
   };
 
+  const toggleExpertiseDropdown = (e) => {
+    e.stopPropagation();
+    setShowExpertiseDropdown(!showExpertiseDropdown);
+  };
+
   const handleLanguageSelect = (selectedLanguage) => {
     setLanguage(selectedLanguage);
     setShowLanguageDropdown(false);
     setLanguageSearchTerm('');
+  };
+
+  const handleExpertiseSelect = (selectedExpertise) => {
+    setExpertise(selectedExpertise);
+    setShowExpertiseDropdown(false);
   };
 
   // Get summary text for travelers
@@ -220,6 +239,9 @@ const HeroSection = ({ locale }) => {
 
   // Get selected language label
   const selectedLanguage = languageOptions.find(lang => lang.value === language);
+  
+  // Get selected expertise label
+  const selectedExpertise = expertiseOptions.find(opt => opt.value === expertise);
 
   return (
     <div className="relative min-h-[550px] sm:min-h-[650px] md:min-h-[80vh]">
@@ -267,7 +289,7 @@ const HeroSection = ({ locale }) => {
         </div>
 
         {/* Search Form - Mobile Collapsed Version */}
-        <div className="md:hidden bg-white/90 backdrop-blur-sm rounded-xl shadow-lg mb-4 animate-fade-in">
+        <div className="md:hidden w-full bg-white/90 backdrop-blur-sm rounded-xl shadow-lg mb-4 animate-fade-in">
           <div 
             className="p-4 flex justify-between items-center cursor-pointer"
             onClick={toggleFormExpansion}
@@ -336,18 +358,34 @@ const HeroSection = ({ locale }) => {
                   <label className="text-gray-800 text-sm font-medium mb-1 block">
                     {locale === 'en' ? 'Tour Type' : 'نوع الجولة'}
                   </label>
-                  <select
-                    value={expertise}
-                    onChange={(e) => setExpertise(e.target.value)}
-                    className={`${locale === "en" ? "":"pr-8"} w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white hover:border-primary-300 transition-colors`}
-                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
-                  >
-                    {expertiseOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative" ref={expertiseDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={toggleExpertiseDropdown}
+                      className={`w-full py-2 px-3 border border-gray-200 rounded-lg text-gray-800 flex justify-between items-center bg-white hover:border-primary-300 transition-colors ${showExpertiseDropdown ? 'border-primary-400 ring-1 ring-primary-300' : ''}`}
+                    >
+                      <div className="flex items-center">
+                        <span className="text-sm truncate">
+                          {selectedExpertise ? selectedExpertise.label : (locale === 'en' ? 'Select Tour Type' : 'اختر نوع الجولة')}
+                        </span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showExpertiseDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {showExpertiseDropdown && (
+                      <div className="absolute top-full left-0 z-50 shadow-xl rounded-lg w-full max-w-md bg-white text-black max-h-[200px] overflow-y-auto mt-1">
+                        {expertiseOptions.map((option) => (
+                          <div
+                            key={option.value}
+                            className="py-2 px-3 cursor-pointer hover:bg-primary-100 bg-white text-black text-sm"
+                            onMouseDown={() => handleExpertiseSelect(option.value)}
+                          >
+                            {option.label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Languages */}
@@ -370,19 +408,19 @@ const HeroSection = ({ locale }) => {
                     </button>
 
                     {showLanguageDropdown && (
-                      <div className="absolute top-full left-0 z-50 shadow-xl rounded-lg w-full max-w-md bg-white">
+                      <div className="absolute top-full left-0 z-50 shadow-xl rounded-lg w-full max-w-md bg-white text-black">
                         <input
                           type="text"
                           value={languageSearchTerm}
                           onChange={(e) => setLanguageSearchTerm(e.target.value)}
-                          placeholder="Search languages"
+                          placeholder={locale === 'en' ? 'Search languages' : 'ابحث عن اللغات'}
                           className="w-full py-2 px-3 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                         />
                         <div className="mt-2 max-h-[200px] overflow-y-auto">
                           {filteredLanguages.map((lang) => (
                             <div
                               key={lang.value}
-                              className="py-1 px-3 cursor-pointer hover:bg-primary-100 bg-white"
+                              className="py-1 px-3 cursor-pointer hover:bg-primary-100 bg-white text-black"
                               onMouseDown={() => handleLanguageSelect(lang.value)}
                             >
                               {lang.label}
@@ -399,7 +437,7 @@ const HeroSection = ({ locale }) => {
                   type="submit" 
                   className="w-full py-2.5 px-4 text-base font-medium bg-primary-600 hover:bg-primary-700 text-black rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-white">
                     <Search size={18} />
                     <span>{locale === 'en' ? 'Search Tours' : 'البحث عن الجولات'}</span>
                   </div>
@@ -462,18 +500,34 @@ const HeroSection = ({ locale }) => {
                 <MdOutlineTravelExplore className="text-primary-600 mr-2" size={16} />
                 <span>{locale === 'en' ? 'Tour Type' : 'نوع الجولة'}</span>
               </label>
-              <select
-                value={expertise}
-                onChange={(e) => setExpertise(e.target.value)}
-                className={`${locale === "en" ? "":"pr-8"} w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white hover:border-primary-300 transition-colors`}
-                style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1.5em 1.5em" }}
-              >
-                {expertiseOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative" ref={expertiseDropdownRef}>
+                <button
+                  type="button"
+                  onClick={toggleExpertiseDropdown}
+                  className={`w-full py-3 px-4 border border-gray-200 rounded-lg text-gray-800 flex justify-between items-center bg-white hover:border-primary-300 transition-colors ${showExpertiseDropdown ? 'border-primary-400 ring-1 ring-primary-300' : ''}`}
+                >
+                  <div className="flex items-center overflow-hidden">
+                    <span className="truncate">
+                      {selectedExpertise ? selectedExpertise.label : (locale === 'en' ? 'Select Tour Type' : 'اختر نوع الجولة')}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${showExpertiseDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showExpertiseDropdown && (
+                  <div className="absolute top-full left-0 mt-1 z-50 shadow-xl rounded-lg bg-white text-black max-h-[200px] overflow-y-auto" style={{ width: '100%', minWidth: '200px' }}>
+                    {expertiseOptions.map((option) => (
+                      <div
+                        key={option.value}
+                        className="py-2 px-4 cursor-pointer hover:bg-primary-100 text-black border-b border-gray-50 last:border-b-0"
+                        onMouseDown={() => handleExpertiseSelect(option.value)}
+                      >
+                        {option.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Languages */}
@@ -497,19 +551,19 @@ const HeroSection = ({ locale }) => {
                 </button>
 
                 {showLanguageDropdown && (
-                  <div className="absolute top-full left-0 mt-1 z-50 shadow-xl rounded-lg bg-white" style={{ width: '320px' }}>
+                  <div className="absolute top-full left-0 mt-1 z-50 shadow-xl rounded-lg bg-white text-black" style={{ width: '320px' }}>
                     <input
                       type="text"
                       value={languageSearchTerm}
                       onChange={(e) => setLanguageSearchTerm(e.target.value)}
-                      placeholder="Search languages"
-                      className="w-full py-2 px-3 border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                      placeholder={locale === 'en' ? 'Search languages' : 'ابحث عن اللغات'}
+                      className="w-full py-2 px-3 border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 m-2 w-[calc(100%-1rem)]"
                     />
                     <div className="mt-2 max-h-[200px] overflow-y-auto">
                       {filteredLanguages.map((lang) => (
                         <div
                           key={lang.value}
-                          className="py-1 px-3 cursor-pointer hover:bg-primary-100"
+                          className="py-1 px-3 cursor-pointer hover:bg-primary-100 text-black"
                           onMouseDown={() => handleLanguageSelect(lang.value)}
                         >
                           {lang.label}
@@ -525,11 +579,11 @@ const HeroSection = ({ locale }) => {
             <div className="md:col-span-4 mt-1">
               <Button 
                 type="submit" 
-                className="w-full py-3 px-6 text-base font-medium bg-primary-600 hover:bg-primary-700 text-black rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                className="w-full py-3 px-6 text-base font-medium bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
               >
                 <div className="flex items-center gap-2">
                   <Search size={18} />
-                  <span>{locale === 'en' ? 'Find Your Perfect Tour' : 'ابحث عن جولتك المثالية'}</span>
+                  <span className='text-white'>{locale === 'en' ? 'Find Your Perfect Tour' : 'ابحث عن جولتك المثالية'}</span>
                 </div>
               </Button>
             </div>

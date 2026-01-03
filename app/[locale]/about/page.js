@@ -44,7 +44,7 @@ export default async function AboutPage({ params }) {
   return (
     <MainLayout locale={locale} user={user}>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-primary-600 to-primary-800 text-black py-20">
+      <section className="relative bg-gradient-to-r from-primary-200 to-primary-400 text-black py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -61,7 +61,7 @@ export default async function AboutPage({ params }) {
       </section>
       
       {/* Why We Exist Section */}
-      <section className="py-16">
+      <section className="py-16 bg-primary-200 text-black">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-8 text-center">
@@ -125,7 +125,7 @@ export default async function AboutPage({ params }) {
                   <Button 
                     href={`/${locale}/quiz`}
                     variant="primary"
-                    className="text-black"
+                    className="text-white"
                   >
                     {locale === 'en' ? 'I am ready to find my perfect tour' : 'أنا مستعد للعثور على جولتي المثالية'}
                   </Button>
@@ -137,7 +137,7 @@ export default async function AboutPage({ params }) {
       </section>
       
       {/* Our Story Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-primary-200 text-black">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-8 text-center">
@@ -202,7 +202,7 @@ export default async function AboutPage({ params }) {
       </section>
       
       {/* Tour Types Section */}
-      <section className="py-16">
+      <section className="py-16 bg-primary-200 text-black">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-6 text-center">
@@ -230,7 +230,7 @@ export default async function AboutPage({ params }) {
       </section>
       
       {/* Comparison Table Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-primary-200 text-black">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
            
@@ -240,7 +240,7 @@ export default async function AboutPage({ params }) {
       </section>
       
       {/* Our Mission Section */}
-      <section className="py-16">
+      <section className="py-16 bg-primary-200 text-black">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-8 text-center">
@@ -303,7 +303,7 @@ export default async function AboutPage({ params }) {
       </section>
       
       {/* Why Watermelon Tours is the Best Choice Section */}
-      <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-primary-200 text-black">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-10 text-center">
@@ -400,7 +400,7 @@ export default async function AboutPage({ params }) {
       </section>
       
       {/* Values Section */}
-      <section className="py-16">
+      <section className="py-16 bg-primary-200 text-black">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-8 text-center">
@@ -469,7 +469,7 @@ export default async function AboutPage({ params }) {
       </section>
       
       {/* Testimonials Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-primary-200 text-black">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-10 text-center">

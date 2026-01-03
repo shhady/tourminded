@@ -313,7 +313,7 @@ export default function ToursClientPage({ initialTours, filterOptions, locale, i
               <div className="mt-6 flex gap-3">
                 <Button
                   type="submit"
-                  className="w-full bg-gray-200 hover:bg-primary-700 text-black font-medium py-3 px-4 rounded-md transition-colors text-center text-lg"
+                  className="w-full bg-white text-black font-medium py-3 px-4 rounded-md transition-colors text-center text-lg"
                 >
                   {locale === 'en' ? 'Apply Filters' : 'تطبيق المرشحات'}
                 </Button>

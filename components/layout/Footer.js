@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Facebook, Twitter, Instagram, Youtube, MapPin, Mail, Phone } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, MapPin, Mail, Phone, Music } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
 const Footer = ({ locale }) => {
@@ -32,39 +32,38 @@ const Footer = ({ locale }) => {
       { name: locale === 'en' ? 'Contact' : 'اتصل بنا', href: '/contact' },
     ],
     tours: [
-      { name: locale === 'en' ? 'Christian Tours' : 'جولات مسيحية', href: '/tours?expertise=Christian' },
-      { name: locale === 'en' ? 'Jewish Tours' : 'جولات يهودية', href: '/tours?expertise=Jewish' },
-      { name: locale === 'en' ? 'Muslim Tours' : 'جولات إسلامية', href: '/tours?expertise=Muslim' },
-      { name: locale === 'en' ? 'Historical Tours' : 'جولات تاريخية', href: '/tours?expertise=Historical' },
-      { name: locale === 'en' ? 'Cultural Tours' : 'جولات ثقافية', href: '/tours?expertise=Cultural' },
-      { name: locale === 'en' ? 'Adventure Tours' : 'جولات مغامرة', href: '/tours?expertise=Adventure' },
-      { name: locale === 'en' ? 'Nature Tours' : 'جولات طبيعة', href: '/tours?expertise=Nature' },
-      { name: locale === 'en' ? 'Photography Tours' : 'جولات تصوير', href: '/tours?expertise=Photography' },
-      { name: locale === 'en' ? 'Culinary Tours' : 'جولات طهي', href: '/tours?expertise=Culinary' },
+      { name: locale === 'en' ? 'Christian Tours' : 'جولات مسيحية', href: '/tours/categories/christian' },
+      { name: locale === 'en' ? 'Jewish Tours' : 'جولات يهودية', href: '/tours/categories/jewish' },
+      { name: locale === 'en' ? 'Muslim Tours' : 'جولات إسلامية', href: '/tours/categories/muslim' },
+      { name: locale === 'en' ? 'Historical Tours' : 'جولات تاريخية', href: '/tours/categories/historical' },
+      { name: locale === 'en' ? 'Cultural Tours' : 'جولات ثقافية', href: '/tours/categories/cultural' },
+      { name: locale === 'en' ? 'Adventure Tours' : 'جولات مغامرة', href: '/tours/categories/adventure' },
+      { name: locale === 'en' ? 'Nature Tours' : 'جولات طبيعة', href: '/tours/categories/nature' },
+      { name: locale === 'en' ? 'Photography Tours' : 'جولات تصوير', href: '/tours/categories/photography' },
+      { name: locale === 'en' ? 'Culinary Tours' : 'جولات طهي', href: '/tours/categories/culinary' },
     ],
     support: [
-      { name: locale === 'en' ? 'Help Center' : 'مركز المساعدة', href: `/help` },
-      { name: locale === 'en' ? 'Safety' : 'الأمان', href: '/safety' },
+      { name: locale === 'en' ? 'Help Center' : 'مركز المساعدة', href: '/help' },
+      { name: locale === 'en' ? 'Safety' : 'السلامة', href: '/safety' },
       { name: locale === 'en' ? 'Cancellation Options' : 'خيارات الإلغاء', href: '/cancellation' },
-      // { name: locale === 'en' ? 'COVID-19' : 'كوفيد-19', href: '/covid' },
     ],
     legal: [
       { name: locale === 'en' ? 'Terms of Service' : 'شروط الخدمة', href: '/terms' },
       { name: locale === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية', href: '/privacy' },
-      { name: locale === 'en' ? 'Cookie Policy' : 'سياسة ملفات تعريف الارتباط', href: '/cookies' },
+      { name: locale === 'en' ? 'Cookie Policy' : 'سياسة الكوكيز', href: '/cookies' },
     ],
   };
 
   return (
-    <footer className="bg-gray-50 border-t border-gray-200 pt-16 pb-8">
+    <footer className="bg-[#0E7C3F] text-white border-t border-gray-200 pt-16 pb-8">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           {/* Logo and Description */}
           <div className="lg:col-span-2">
-            <Link href={getLocalizedHref('/')} className="text-3xl font-bold text-secondary-900 inline-block">
+              <Link href={getLocalizedHref('/')} className="text-3xl font-bold text-white inline-block">
             Watermelon Tours
             </Link>
-            <p className="mt-6 text-secondary-900 max-w-md leading-relaxed">
+            <p className="mt-6 text-white max-w-md leading-relaxed">
               {locale === 'en' 
                 ? 'Connect with expert local guides for personalized tours in the Holy Land. Discover the rich heritage and fascinating culture with our knowledgeable guides.' 
                 : 'تواصل مع مرشدين محليين خبراء للحصول على جولات مخصصة في الأرض المقدسة. اكتشف التراث الغني والثقافة الرائعة مع مرشدينا ذوي المعرفة.'}
@@ -72,39 +71,52 @@ const Footer = ({ locale }) => {
             
             {/* Contact Info */}
             <div className="mt-8 space-y-3">
-              {/* <div className="flex items-start">
-                <MapPin className="text-primary-500 mt-1 mr-3 flex-shrink-0" />
-                <p className="text-secondary-900">
-                  123 Tourism Street, Jerusalem, Holy Land
-                </p>
+              {/* <div className="flex items-center gap-3 text-secondary-600">
+                <MapPin className="w-5 h-5 flex-shrink-0" />
+                <span>{locale === 'en' ? 'Jerusalem, Israel' : 'القدس'}</span>
               </div> */}
-              <div className="flex items-center">
-                <Mail className="text-primary-500 mr-3 flex-shrink-0" />
-                <a href="mailto:info@Watermelontours.com" className="text-secondary-900 hover:text-primary-600 transition-colors">
+              <div className="flex items-center gap-3 text-white">
+                <Mail className="w-5 h-5 flex-shrink-0" />
+                <a href="mailto:info@Watermelontours.com" className="hover:text-primary-600 transition-colors">
                   info@Watermelontours.com
                 </a>
               </div>
-              {/* <div className="flex items-center">
-                <Phone className="text-primary-500 mr-3 flex-shrink-0" />
-                <a href="tel:+972123456789" className="text-secondary-900 hover:text-primary-600 transition-colors">
-                  +972 12 345 6789
+              {/* <div className="flex items-center gap-3 text-secondary-600">
+                <Phone className="w-5 h-5 flex-shrink-0" />
+                <a href="tel:+972500000000" className="hover:text-primary-600 transition-colors">
+                  +972 50 000 0000
                 </a>
               </div> */}
             </div>
-            
-            {/* Social Media */}
-            <div className="mt-8 flex space-x-4">
-              <a href="#" className="bg-white border border-gray-200 hover:bg-primary-50 hover:border-primary-200 p-3 rounded-full text-primary-500 transition-all transform hover:-translate-y-1 hover:shadow-md">
-                <Facebook size={20} />
+
+            {/* Social Media Links */}
+            <div className="mt-8 flex gap-4">
+              <a 
+                href="https://www.facebook.com/people/Watermelon-Tours/61579183734296/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white text-[#0E7C3F] flex items-center justify-center hover:bg-gray-100 transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="bg-white border border-gray-200 hover:bg-primary-50 hover:border-primary-200 p-3 rounded-full text-primary-500 transition-all transform hover:-translate-y-1 hover:shadow-md">
-                <Twitter size={20} />
+              <a 
+                href="https://www.instagram.com/watermelontours?igsh=MXRzbnhxampjNDJqeA%3D%3D&utm_source=qr" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white text-[#0E7C3F] flex items-center justify-center hover:bg-gray-100 transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="bg-white border border-gray-200 hover:bg-primary-50 hover:border-primary-200 p-3 rounded-full text-primary-500 transition-all transform hover:-translate-y-1 hover:shadow-md">
-                <Instagram size={20} />
-              </a>
-              <a href="#" className="bg-white border border-gray-200 hover:bg-primary-50 hover:border-primary-200 p-3 rounded-full text-primary-500 transition-all transform hover:-translate-y-1 hover:shadow-md">
-                <Youtube size={20} />
+              <a 
+                href="https://www.tiktok.com/@watermelontours.com?_r=1&_t=ZT-92k0ckVu4fW" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white text-[#0E7C3F] flex items-center justify-center hover:bg-gray-100 transition-colors"
+                aria-label="TikTok"
+              >
+                <Music className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -112,7 +124,7 @@ const Footer = ({ locale }) => {
           {/* Footer Links */}
           {Object.keys(footerLinks).map((section) => (
             <div key={section} className="flex flex-col">
-              <h3 className="text-lg font-semibold mb-4 text-secondary-900">
+              <h3 className="text-lg font-semibold mb-4 text-white">
                 {section === 'company' && (locale === 'en' ? 'Company' : 'الشركة')}
                 {section === 'tours' && (locale === 'en' ? 'Tours' : 'الجولات')}
                 {section === 'support' && (locale === 'en' ? 'Support' : 'الدعم')}
@@ -124,8 +136,8 @@ const Footer = ({ locale }) => {
                     <Link 
                       href={getLocalizedHref(link.href)} 
                       className={`${link.highlight 
-                        ? 'text-primary-600 hover:text-primary-700 font-medium' 
-                        : 'text-secondary-600 hover:text-secondary-900'} transition-colors`}
+                        ? 'text-yellow-400 hover:text-yellow-300 font-medium' 
+                        : 'text-white/80 hover:text-white'} transition-colors`}
                     >
                       {link.name}
                     </Link>
@@ -136,17 +148,18 @@ const Footer = ({ locale }) => {
           ))}
         </div>
 
-        <div className="mt-16 pt-8 border-t border-gray-200 text-center text-secondary-900">
+        <div className="mt-16 pt-8 border-t border-white/20 text-center text-white/80">
           <p>
             &copy; {currentYear} Watermelon Tours. {locale === 'en' ? 'All rights reserved.' : 'جميع الحقوق محفوظة.'}
           </p>
-          <div>
+          <div className="mt-2">
           <Link 
   href="https://fikranova.com" 
   target="_blank" 
   rel="noopener noreferrer"
+  className="hover:text-white"
 >
-  Website by <span className="text-blue-500">Fikranova</span>
+  Website by <span className="font-bold">Fikranova</span>
 </Link>
           </div>
         </div>
@@ -155,4 +168,4 @@ const Footer = ({ locale }) => {
   );
 };
 
-export default Footer; 
+export default Footer;

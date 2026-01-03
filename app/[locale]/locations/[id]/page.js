@@ -686,12 +686,12 @@ export default async function LocationDetailsPage({ params }) {
               </p>
               
               {/* Call to Action */}
-              <div className="bg-primary-600 rounded-lg p-6 shadow-md text-black">
+              <div className="bg-primary-600 rounded-lg p-6 shadow-md text-white">
                 <h3 className="text-xl font-bold mb-3 flex items-center">
                   <Info className="w-5 h-5 mr-2" />
                   {locale === 'en' ? 'Explore Tours in' : 'استكشف الجولات في'} {location.name}
                 </h3>
-                <p className="mb-4 text-black text-opacity-90">
+                <p className="mb-4 text-white text-opacity-90">
                   {locale === 'en' 
                     ? 'Find guided tours with expert local guides.'
                     : 'ابحث عن جولات بصحبة مرشدين محليين خبراء.'}

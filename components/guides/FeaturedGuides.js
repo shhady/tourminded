@@ -73,10 +73,10 @@ const FeaturedGuides = async ({ locale }) => {
     <section className="py-16 bg-secondary-50 ">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-black">
             {locale === 'en' ? 'Top-Rated Guides' : 'المرشدين الأعلى تقييماً'}
           </h2>
-          <p className="text-xl text-secondary-600 max-w-3xl mx-auto">
+          <p className="text-xl  max-w-3xl mx-auto text-black">
             {locale === 'en'
               ? 'Meet our experienced local guides who will make your journey unforgettable'
               : 'تعرف على مرشدينا المحليين ذوي الخبرة الذين سيجعلون رحلتك لا تُنسى'}
@@ -164,9 +164,9 @@ const FeaturedGuides = async ({ locale }) => {
         <div className="text-center mt-12">
           <Link
             href={`/${locale}/guides`}
-            className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-primary-600 hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white  hover:text-white transition-colors"
           >
-           <Button>{locale === 'en' ? 'View All Guides' : 'عرض جميع المرشدين'}</Button>
+           <Button className='text-white'>{locale === 'en' ? 'View All Guides' : 'عرض جميع المرشدين'}</Button>
           </Link>
         </div>
       </div>
