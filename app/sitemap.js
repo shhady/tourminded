@@ -4,36 +4,79 @@ import Blog from '@/models/Blog';
 export default async function sitemap() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.watermelontours.com';
   
-  // Static routes
-  const routes = [
+  // Explicitly include all supported languages for SEO
+  const languages = ['en', 'ar', 'he'];
+
+  // 1. Define Static Routes
+  const staticPages = [
     '',
     '/about',
     '/contact',
     '/tours',
     '/blog',
     '/faq',
-  ].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'daily',
-    priority: 0.7,
-  }));
+  ];
+
+  // Generate sitemap entries for static pages (multilingual)
+  const staticRoutes = [];
+  
+  staticPages.forEach((route) => {
+    languages.forEach((lang) => {
+      // Construct URLs for alternates (hreflang)
+      const alternates = {};
+      languages.forEach((l) => {
+        alternates[l] = `${baseUrl}/${l}${route}`;
+      });
+
+      staticRoutes.push({
+        url: `${baseUrl}/${lang}${route}`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: route === '' ? 1.0 : 0.8,
+        alternates: {
+          languages: alternates,
+        },
+      });
+    });
+  });
 
   try {
     await connectDB();
-    const blogs = await Blog.find({ isPublished: true }).select('slug updatedAt');
     
-    const blogRoutes = blogs.map((post) => ({
-      url: `${baseUrl}/blog/${post.slug}`,
-      lastModified: post.updatedAt,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    }));
+    // 2. Fetch All Published Blogs from MongoDB
+    // Select only necessary fields to optimize performance
+    const blogs = await Blog.find({ isPublished: true })
+      .select('slug updatedAt')
+      .sort({ updatedAt: -1 })
+      .lean();
 
-    return [...routes, ...blogRoutes];
+    // Generate sitemap entries for blogs (multilingual)
+    const blogRoutes = [];
+
+    blogs.forEach((post) => {
+      languages.forEach((lang) => {
+        // Construct URLs for alternates (hreflang) for this specific blog post
+        const alternates = {};
+        languages.forEach((l) => {
+          alternates[l] = `${baseUrl}/${l}/blog/${post.slug}`;
+        });
+
+        blogRoutes.push({
+          url: `${baseUrl}/${lang}/blog/${post.slug}`,
+          lastModified: new Date(post.updatedAt),
+          changeFrequency: 'daily', // Encourage frequent crawling for news/blogs
+          priority: 0.9, // High priority for content
+          alternates: {
+            languages: alternates,
+          },
+        });
+      });
+    });
+
+    return [...staticRoutes, ...blogRoutes];
   } catch (error) {
     console.error('Error generating sitemap:', error);
-    return routes;
+    // Return at least static routes if DB fails
+    return staticRoutes;
   }
 }
-
