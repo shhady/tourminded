@@ -25,7 +25,7 @@ export default function Page() {
         email: email.toLowerCase(),
         password,
         redirect: false,
-      });
+      }); 
       if (res?.error || res?.status === 401) {
         const msg = locale === 'en' ? 'Invalid email or password' : 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
         setError(msg);

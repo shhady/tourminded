@@ -175,7 +175,7 @@ export async function PUT(request, { params }) {
 // GET a single booking by ID (requires authentication)
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Get current user from NextAuth
     const session = await getServerSession(authOptions);
@@ -268,7 +268,7 @@ export async function GET(request, { params }) {
 // DELETE a booking (requires authentication as admin)
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Get current user from NextAuth
     const session = await getServerSession(authOptions);
