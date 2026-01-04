@@ -17,7 +17,9 @@ export default function CookieBanner({ locale }) {
       accept: "Accept All",
       decline: "Decline",
       settings: "Settings",
-      privacyLink: "/privacy-policy",
+      privacyLink: "/privacy",
+      cookieLink: "/cookies",
+      readMore: "Read our Cookie Policy",
       modal: {
         title: "Cookie Settings",
         necessary: "Necessary Cookies",
@@ -35,7 +37,9 @@ export default function CookieBanner({ locale }) {
       accept: "אישור",
       decline: "דחייה",
       settings: "הגדרות",
-      privacyLink: "/he/privacy-policy",
+      privacyLink: "/privacy",
+      cookieLink: "/cookies",
+      readMore: "קרא את מדיניות העוגיות שלנו",
       modal: {
         title: "הגדרות עוגיות",
         necessary: "עוגיות הכרחיות",
@@ -53,7 +57,9 @@ export default function CookieBanner({ locale }) {
       accept: "قبول الكل",
       decline: "رفض",
       settings: "إعدادات",
-      privacyLink: "/ar/privacy-policy",
+      privacyLink: "/privacy",
+      cookieLink: "/cookies",
+      readMore: "اقرأ سياسة ملفات تعريف الارتباط الخاصة بنا",
       modal: {
         title: "إعدادات ملفات تعريف الارتباط",
         necessary: "ملفات تعريف الارتباط الضرورية",
@@ -267,6 +273,9 @@ export default function CookieBanner({ locale }) {
             <div className="flex-1 text-center md:text-start">
               <p className="text-gray-700 text-sm md:text-base leading-relaxed">
                 {t.text}
+                <a href={`/${locale}${t.cookieLink}`} className="underline text-primary-600 hover:text-primary-800 mx-1">
+                  {t.readMore}
+                </a>
               </p>
             </div>
 

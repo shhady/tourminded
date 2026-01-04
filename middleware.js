@@ -4,13 +4,30 @@ import { getToken } from 'next-auth/jwt'
 export async function middleware(req) {
   const { pathname, search } = req.nextUrl
 
-  // Redirect root to default locale
-  if (pathname === '/') {
-    return NextResponse.redirect(new URL('/en', req.url))
+  // 1. Handle Locale Redirection
+  const locales = ['en', 'he', 'ar']
+  
+  // Check if the path already has a locale
+  const pathnameHasLocale = locales.some(
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+  )
+
+  // Paths that should NOT be localized
+  const isExcludedPath = 
+    pathname.startsWith('/api') || 
+    pathname.startsWith('/_next') || 
+    pathname === '/payment-success' ||
+    // Skip files with extensions (should be handled by matcher, but good safety)
+    pathname.includes('.') 
+
+  // Redirect if missing locale
+  if (!pathnameHasLocale && !isExcludedPath) {
+    const defaultLocale = 'en'
+    return NextResponse.redirect(new URL(`/${defaultLocale}${pathname === '/' ? '' : pathname}${search}`, req.url))
   }
 
-  // Protect dashboard routes with NextAuth (admins/guides/users)
-  // Example protected pattern: /en/dashboard/... or /ar/dashboard/...
+  // 2. Protect dashboard routes with NextAuth (admins/guides/users)
+  // Pattern: /en/dashboard/... or /ar/dashboard/...
   const protectedPatterns = [/^\/[a-z]{2}\/dashboard(\/.*)?$/]
   const isProtected = protectedPatterns.some((re) => re.test(pathname))
 
