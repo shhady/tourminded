@@ -15,13 +15,13 @@ export default function CookieBanner({ locale }) {
     en: {
       text: "We use cookies to enhance your experience and analyze traffic. By clicking 'Accept', you consent to our use of cookies.",
       accept: "Accept All",
-      decline: "Decline",
-      settings: "Settings",
+      decline: "Accept Essential Only",
+      settings: "Manage Preferences",
       privacyLink: "/privacy",
       cookieLink: "/cookies",
       readMore: "Read our Cookie Policy",
       modal: {
-        title: "Cookie Settings",
+        title: "Cookie Preferences",
         necessary: "Necessary Cookies",
         necessaryDesc: "Essential for the website to function properly. Cannot be disabled.",
         analytics: "Analytics Cookies",
@@ -34,34 +34,34 @@ export default function CookieBanner({ locale }) {
     },
     he: {
       text: "אנחנו משתמשים בעוגיות כדי לשפר את חווית המשתמש ולנתח את התנועה באתר. בלחיצה על 'אישור', הינך מסכים לשימוש בעוגיות.",
-      accept: "אישור",
-      decline: "דחייה",
-      settings: "הגדרות",
+      accept: "קבל הכל",
+      decline: "קבל חיוניות בלבד",
+      settings: "ניהול העדפות",
       privacyLink: "/privacy",
       cookieLink: "/cookies",
       readMore: "קרא את מדיניות העוגיות שלנו",
       modal: {
-        title: "הגדרות עוגיות",
+        title: "העדפות עוגיות",
         necessary: "עוגיות הכרחיות",
         necessaryDesc: "חיוניות לתפקוד תקין של האתר. לא ניתן לבטל.",
         analytics: "עוגיות אנליטיות",
         analyticsDesc: "עוזרות לנו להבין כיצד מבקרים משתמשים באתר.",
         marketing: "עוגיות שיווקיות",
         marketingDesc: "משמשות להצגת מודעות רלוונטיות ומעקב אחר ביצועי פרסום.",
-        save: "שמור הגדרות",
+        save: "שמור העדפות",
         close: "סגור"
       }
     },
     ar: {
       text: "نحن نستخدم ملفات تعريف الارتباط لتحسين تجربتك وتحليل حركة المرور. بالنقر فوق 'قبول'، فإنك توافق على استخدامنا لملفات تعريف الارتباط.",
       accept: "قبول الكل",
-      decline: "رفض",
-      settings: "إعدادات",
+      decline: "الضرورية فقط",
+      settings: "إدارة التفضيلات",
       privacyLink: "/privacy",
       cookieLink: "/cookies",
       readMore: "اقرأ سياسة ملفات تعريف الارتباط الخاصة بنا",
       modal: {
-        title: "إعدادات ملفات تعريف الارتباط",
+        title: "تفضيلات ملفات تعريف الارتباط",
         necessary: "ملفات تعريف الارتباط الضرورية",
         necessaryDesc: "ضرورية لعمل الموقع بشكل صحيح. لا يمكن تعطيلها.",
         analytics: "ملفات تعريف الارتباط التحليلية",
@@ -264,41 +264,44 @@ export default function CookieBanner({ locale }) {
       {/* Main Banner */}
       {!showSettings && (
         <div 
-          className={`fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] transition-transform duration-500 ease-in-out transform translate-y-0`}
+          className={`fixed bottom-0 left-0 right-0 z-50 p-6 md:p-8 bg-white border-t border-gray-200 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transition-transform duration-500 ease-in-out transform translate-y-0`}
           dir={isRTL ? 'rtl' : 'ltr'}
         >
-          <div className="container mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
+          <div className="container mx-auto max-w-7xl flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-12">
             
             {/* Text Content */}
-            <div className="flex-1 text-center md:text-start">
-              <p className="text-gray-700 text-sm md:text-base leading-relaxed">
+            <div className="flex-1 text-center lg:text-start">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                {t.modal.title} 🍪
+              </h3>
+              <p className="text-gray-600 text-base leading-relaxed">
                 {t.text}
-                <a href={`/${locale}${t.cookieLink}`} className="underline text-primary-600 hover:text-primary-800 mx-1">
+                <a href={`/${locale}${t.cookieLink}`} className="font-medium text-primary-600 hover:text-primary-800 underline decoration-2 underline-offset-2 mx-1 transition-colors">
                   {t.readMore}
                 </a>
               </p>
             </div>
 
             {/* Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto justify-center md:justify-end items-center">
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto justify-center lg:justify-end items-center">
               <button
                 onClick={handleSettings}
-                className="text-sm text-gray-500 hover:text-gray-700 underline decoration-dotted underline-offset-4 px-2"
+                className="text-base font-medium text-gray-500 hover:text-gray-800 underline decoration-dotted underline-offset-4 px-2 py-2 transition-colors"
               >
                 {t.settings}
               </button>
 
-              <div className="flex flex-row gap-3 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button
                   onClick={handleDecline}
-                  className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 whitespace-nowrap"
+                  className="w-full sm:w-auto px-6 py-3 text-base font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 whitespace-nowrap"
                 >
                   {t.decline}
                 </button>
                 
                 <button
                   onClick={handleAccept}
-                  className="flex-1 sm:flex-none px-6 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 whitespace-nowrap"
+                  className="w-full sm:w-auto px-8 py-3 text-base font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg shadow-primary-600/20 hover:shadow-primary-600/30 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 whitespace-nowrap"
                 >
                   {t.accept}
                 </button>
