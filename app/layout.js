@@ -66,6 +66,15 @@ export const metadata = {
     "Palestinian travel agency in tel aviv",
     "Palestinian travel agency in haifa",
     "Palestinian travel agency in nazareth",
+    "holy land tours reviews",
+    "holy land tour package price",
+   
+    "christian holy land tours",
+    
+    "holy land tours for seniors",
+    "catholic holy land tours",
+    "holy land tours 2026",
+
   ],
   authors: [{ name: "Watermelon Tours Team" }],
   creator: "Watermelon Tours",
