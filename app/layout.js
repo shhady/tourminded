@@ -19,6 +19,13 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#08171f',
+};
+
 export const metadata = {
   title: {
     default: "Watermelon Tours - Connect with Expert Local Guides",
@@ -31,7 +38,6 @@ export const metadata = {
     "guides",
     "Holy Land",
     "Jerusalem",
-    "Holy Land",
     "Palestine",
     "Bethlehem",
     "local guides",
@@ -54,6 +60,17 @@ export const metadata = {
   metadataBase: new URL('https://watermelontours.com'),
   alternates: {
     canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   icons: {
     icon: [
@@ -102,17 +119,10 @@ export default async function RootLayout({ children, params }) {
 
   return (
     <html lang={locale} dir={direction} suppressHydrationWarning>
-      <head>
-        <meta name="robots" content="index, follow" />
-        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/site.webmanifest" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-        <meta name="theme-color" content="#08171f" />
-        <meta property="og:site_name" content="Watermelon Tours - Connect with Expert Local Guides" />
-        
+      <body 
+        className={` ${museoModerno.variable} ${montserrat.variable} font-sans antialiased overflow-x-hidden`}
+        suppressHydrationWarning={true}
+      >
         {/* Google Consent Mode v2 - Default Denied */}
         <Script id="google-consent-mode" strategy="beforeInteractive">
           {`
@@ -137,11 +147,7 @@ export default async function RootLayout({ children, params }) {
             })(window,document,'script','dataLayer','GTM-PGW6RBZX');
           `}
         </Script>
-      </head>
-      <body 
-        className={` ${museoModerno.variable} ${montserrat.variable} font-sans antialiased overflow-x-hidden`}
-        suppressHydrationWarning={true}
-      >
+
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe 
@@ -151,6 +157,7 @@ export default async function RootLayout({ children, params }) {
             style={{ display: 'none', visibility: 'hidden' }}
           />
         </noscript>
+        
         {process.env.NODE_ENV === 'development' && (
           <script
             dangerouslySetInnerHTML={{
