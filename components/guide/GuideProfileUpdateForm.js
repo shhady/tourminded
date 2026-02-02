@@ -815,7 +815,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
         {expertiseAreas.map((exp, index) => (
           <div key={`expertise_${index}`} className="mb-6 p-4 border border-secondary-200 rounded-md">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-secondary-900">
+              <h3 className="text-lg font-medium text-secondary-900 ">
                 {locale === 'en' ? `Expertise Area ${index + 1}` : `مجال الخبرة ${index + 1}`}
               </h3>
               
