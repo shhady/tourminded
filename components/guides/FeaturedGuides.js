@@ -106,20 +106,20 @@ const FeaturedGuides = async ({ locale }) => {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2">{guideName.split(' ')[0]}</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-black">{guideName.split(' ')[0]}</h3>
                   
                   {/* Rating */}
                   <div className="flex items-center mb-3">
                     <Star className="text-yellow-500 mr-1" size={16} />
-                    <span className="font-medium">{guide.rating.toFixed(1) || 0}</span>
-                    <span className="text-secondary-500 ml-1">
+                    <span className="font-medium text-black">{guide.rating.toFixed(1) || 0}</span>
+                    <span className="text-black ml-1">
                       ({guide.reviewCount || 0} {locale === 'en' ? 'reviews' : 'تقييمات'})
                     </span>
                   </div>
                   
                   {/* Location */}
                   {guideLocation && (
-                    <div className="flex items-center mb-3 text-secondary-700">
+                    <div className="flex items-center mb-3 text-black">
                       <MapPin className="mr-2" size={16} />
                       <span>{guideLocation}</span>
                     </div>
@@ -127,7 +127,7 @@ const FeaturedGuides = async ({ locale }) => {
                   
                   {/* Languages */}
                   {guideLanguages.length > 0 && (
-                    <div className="flex items-center mb-4 text-secondary-700">
+                    <div className="flex items-center mb-4 text-black">
                       <Languages className="mr-2 text-lg" size={18} />
                       <span>{guideLanguages.join(', ')}</span>
                     </div>
