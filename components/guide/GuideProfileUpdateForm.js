@@ -533,7 +533,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
               type="text"
               value={vehicleData.type}
               onChange={handleVehicleInputChange}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
             />
           </div>
           
@@ -547,7 +547,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
               type="text"
               value={vehicleData.model}
               onChange={handleVehicleInputChange}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
             />
           </div>
         </div>
@@ -563,7 +563,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
               type="number"
               value={vehicleData.year}
               onChange={handleVehicleInputChange}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
             />
           </div>
           
@@ -577,7 +577,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
               type="number"
               value={vehicleData.capacity}
               onChange={handleVehicleInputChange}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
             />
           </div>
         </div>
@@ -607,14 +607,14 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
       
       {/* Basic Info */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">
+        <h2 className="text-xl font-semibold mb-4 text-secondary-900">
           {locale === 'en' ? 'Basic Information' : 'المعلومات الأساسية'}
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
           <div>
             <label htmlFor="nickname" className="block text-sm font-medium text-secondary-700 mb-1">
-              {locale === 'en' ? 'Nickname' : 'اللقب'}
+              {locale === 'en' ? 'Nickname' : 'اللقب'}*
             </label>
             <input
               id="nickname"
@@ -622,13 +622,13 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
               type="text"
               value={formData.nickname || ''}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
             />
           </div>
           
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-secondary-700 mb-1">
-              {locale === 'en' ? 'Phone Number' : 'رقم الهاتف'}*
+              {locale === 'en' ? 'Phone Number' : 'رقم الهاتف'}
             </label>
             <input
               id="phone"
@@ -636,7 +636,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
               type="tel"
               value={formData.phone || ''}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
               required
             />
           </div>
@@ -645,7 +645,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
         <div>
           <label htmlFor="address" className="block text-sm font-medium text-secondary-700 mb-1">
             {/* {locale === 'en' ? 'Address' : 'العنوان'} */}
-            {locale === 'en' ? 'City you\'re from (shown on profile)' : 'المدينة التي أنت منها (معروضة على الملف الشخصي)'}*
+            {locale === 'en' ? 'City you\'re from (shown on profile)' : 'المدينة التي أنت منها (معروضة على الملف الشخصي)'}
           </label>
           <input
             id="address"
@@ -653,7 +653,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
             type="text"
             value={formData.address || ''}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
             required
           />
         </div>
@@ -661,14 +661,14 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
       
       {/* Languages & About */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">
+        <h2 className="text-xl font-semibold mb-4 text-secondary-900">
           {locale === 'en' ? 'Languages & About' : 'اللغات والنبذة'}
         </h2>
         
         {languages.map((lang, index) => (
           <div key={`lang_${index}`} className="mb-6 p-4 border border-secondary-200 rounded-md">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">
+              <h3 className="text-lg font-medium text-secondary-900">
                 {getLanguageName(lang.language)}
               </h3>
               
@@ -690,7 +690,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
               <select
                 value={lang.language}
                 onChange={e => updateLanguage(index, 'language', e.target.value)}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                 required
               >
                 <option value="">{locale === 'en' ? 'Select language' : 'اختر اللغة'}</option>
@@ -734,7 +734,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
                   type="text"
                   value={formData[`name_${lang.language}`] || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                   required
                 />
               </div>
@@ -749,7 +749,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
                   value={formData[`about_${lang.language}`] || ''}
                   onChange={handleInputChange}
                   rows="4"
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                   required
                   minLength={50}
                 ></textarea>
@@ -776,7 +776,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
       
       {/* License Issue Date (separate section) */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">
+        <h2 className="text-xl font-semibold mb-4 text-secondary-900">
           {locale === 'en' ? 'License Issue Date' : 'تاريخ إصدار الرخصة'}
         </h2>
         <div>
@@ -787,7 +787,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
             type="date"
             value={licenseIssueDate || ''}
             onChange={(e) => setLicenseIssueDate(e.target.value)}
-            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black  "
             max={new Date().toISOString().split('T')[0]}
             required
           />
@@ -808,14 +808,14 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
 
       {/* Expertise */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">
+        <h2 className="text-xl font-semibold mb-4 text-secondary-900  ">
           {locale === 'en' ? 'Expertise & Experience' : 'الخبرة والتجربة'}
         </h2>
         
         {expertiseAreas.map((exp, index) => (
           <div key={`expertise_${index}`} className="mb-6 p-4 border border-secondary-200 rounded-md">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">
+              <h3 className="text-lg font-medium text-secondary-900">
                 {locale === 'en' ? `Expertise Area ${index + 1}` : `مجال الخبرة ${index + 1}`}
               </h3>
               
@@ -839,7 +839,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
                   id={`expertise_${index}_area`}
                   value={exp.area}
                   onChange={(e) => updateExpertiseArea(index, 'area', e.target.value)}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                   required
                 >
                   <option value="">{locale === 'en' ? 'Select expertise' : 'اختر الخبرة'}</option>
@@ -871,7 +871,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
                   rows="3"
                   value={exp.expertiseAreaDescriptionEn || ''}
                   onChange={(e) => updateExpertiseArea(index, 'expertiseAreaDescriptionEn', e.target.value)}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black"
                   placeholder={locale === 'en' ? 'Describe this expertise (optional)...' : 'صف مجال الخبرة (اختياري)...'}
                 ></textarea>
               </div>
@@ -884,7 +884,7 @@ export default function GuideProfileUpdateForm({ locale, guideData, loading = fa
                   dir="rtl"
                   value={exp.expertiseAreaDescriptionAr || ''}
                   onChange={(e) => updateExpertiseArea(index, 'expertiseAreaDescriptionAr', e.target.value)}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-black  "
                   placeholder={locale === 'en' ? 'Optional Arabic description...' : 'وصف اختياري بالعربية...'}
                 ></textarea>
               </div>

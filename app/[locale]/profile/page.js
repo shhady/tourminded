@@ -475,7 +475,7 @@ export default function ProfilePage({ params }) {
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-black"
                         />
                       </div>
                       
@@ -488,7 +488,7 @@ export default function ProfilePage({ params }) {
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-black"
                           disabled
                         />
                         <p className="text-xs text-secondary-500 mt-1">
@@ -505,7 +505,7 @@ export default function ProfilePage({ params }) {
                           name="phone"
                           value={formData.phone || ''}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-black"
                         />
                       </div>
                       
@@ -614,7 +614,7 @@ export default function ProfilePage({ params }) {
                               type="password"
                               value={pwdData.currentPassword}
                               onChange={(e) => setPwdData({ ...pwdData, currentPassword: e.target.value })}
-                              className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              className="w-full px-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-black"
                               required
                             />
                           </div>
