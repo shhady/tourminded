@@ -189,26 +189,6 @@ const ReviewsSection = ({ guideId, locale }) => {
                   ? 'No reviews yet. Be the first to share your experience!' 
                   : 'لا توجد تقييمات بعد. كن أول من يشارك تجربته!'}
               </p>
-              {isSignedIn && (
-                <Link 
-                  href={`/${locale}/guides/${guideId}/review`}
-                  className="inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {locale === 'en' ? 'Write First Review' : 'كتابة أول تقييم'}
-                </Link>
-              )}
-            </div>
-          )}
-
-          {!isSignedIn && reviews.length === 0 && (
-            <div className="text-center py-4">
-              <Link 
-                href={`/${locale}/sign-in`}
-                className="text-primary-600 hover:text-primary-700"
-              >
-                {locale === 'en' ? 'Sign in to write a review' : 'سجل دخولك لكتابة تقييم'}
-              </Link>
             </div>
           )}
         </>

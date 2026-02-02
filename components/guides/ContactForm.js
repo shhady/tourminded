@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 export default function ContactForm({ locale, guideId, guideName }) {
+  const { data: session, status } = useSession();
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -14,7 +17,10 @@ export default function ContactForm({ locale, guideId, guideName }) {
   // Fix hydration issues by ensuring client-side rendering for interactive elements
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    if (session?.user?.name) {
+      setName(session.user.name);
+    }
+  }, [session]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,17 +28,30 @@ export default function ContactForm({ locale, guideId, guideName }) {
     setError('');
     
     try {
+      if (status !== 'authenticated') {
+        throw new Error(locale === 'en' ? 'You must be logged in to send a message' : 'يجب عليك تسجيل الدخول لإرسال رسالة');
+      }
+
       // Simple validation
       if (!name.trim() || !message.trim()) {
         throw new Error(locale === 'en' ? 'Please fill in all fields' : 'يرجى ملء جميع الحقول');
       }
       
-      // For now, just simulate a successful submission
-      // In a real app, you would send this to an API endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch(`/api/guides/${guideId}/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, message }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to send message');
+      }
       
       setSuccess(true);
-      setName('');
       setMessage('');
     } catch (err) {
       setError(err.message);
@@ -81,6 +100,11 @@ export default function ContactForm({ locale, guideId, guideName }) {
               ? `We've sent your message to ${guideName}. They will get back to you soon.`
               : `لقد أرسلنا رسالتك إلى ${guideName}. سيعودون إليك قريبًا.`}
           </p>
+          <p className="text-sm mt-2 font-medium text-primary-700">
+             {locale === 'en' 
+               ? 'You can also check your chat for the conversation.' 
+               : 'يمكنك أيضًا التحقق من الدردشة الخاصة بك للمحادثة.'}
+          </p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -118,15 +142,24 @@ export default function ContactForm({ locale, guideId, guideName }) {
             ></textarea>
           </div>
           
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full border-2 border-black bg-primary-600 hover:bg-primary-700 text-black font-medium py-3 rounded-lg transition-colors ${isSubmitting ? 'opacity-70 cursor-not-allowed border-2 border-black' : ''}`}
-          >
-            {isSubmitting 
-              ? (locale === 'en' ? 'Sending...' : 'جاري الإرسال...') 
-              : (locale === 'en' ? 'Send Message' : 'إرسال الرسالة')}
-          </button>
+          {status === 'authenticated' ? (
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`w-full border-2 border-black bg-primary-600 hover:bg-primary-700 text-black font-medium py-3 rounded-lg transition-colors ${isSubmitting ? 'opacity-70 cursor-not-allowed border-2 border-black' : ''}`}
+            >
+              {isSubmitting 
+                ? (locale === 'en' ? 'Sending...' : 'جاري الإرسال...') 
+                : (locale === 'en' ? 'Send Message' : 'إرسال الرسالة')}
+            </button>
+          ) : (
+             <Link
+                href={`/${locale}/sign-in`}
+                className="block w-full text-center border-2 border-primary-600 text-primary-600 font-medium py-3 rounded-lg hover:bg-primary-50 transition-colors"
+              >
+                {locale === 'en' ? 'Sign in to Send Message' : 'سجل الدخول لإرسال رسالة'}
+              </Link>
+          )}
         </form>
       )}
     </div>
