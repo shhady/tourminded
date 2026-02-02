@@ -7,6 +7,7 @@ import { Star, Languages, MapPin, Award, Mail, Phone, Share2, Download, MessageC
 import ContactForm from '@/components/guides/ContactForm';
 import ShareGuide from '@/components/guides/ShareGuide';
 import LanguageStatsSection from '@/components/guides/LanguageStatsSection';
+import GuideToursSection from '@/components/guides/GuideToursSection';
 import ReviewsSection from '@/components/guides/ReviewsSection';
 import connectDB from '@/lib/mongodb';
 import Guide from '@/models/Guide';
@@ -174,8 +175,22 @@ export default async function GuideProfilePage({ params }) {
       notFound();
     }
     
-    // Fetch tours by this guide
-    const tours = await Tour.find({ guide: id }).limit(4);
+    // Fetch tours by this guide (fetch all of them, the client component will handle pagination/show more)
+    const toursRaw = await Tour.find({ guide: id }).lean();
+    
+    // Serialize tours manually to avoid "plain objects" error with Client Components
+    const tours = toursRaw.map(tour => ({
+      _id: tour._id.toString(),
+      title: tour.title,
+      description: tour.description,
+      images: tour.images ? {
+        cover: tour.images.cover ? { url: tour.images.cover.url } : null,
+        gallery: tour.images.gallery ? tour.images.gallery.map(img => ({ url: img.url })) : []
+      } : {},
+      price: tour.price,
+      rating: tour.rating,
+      reviewCount: tour.reviewCount,
+    }));
     
     // Extract guide data
     const name = getGuideName(guide, locale);
@@ -636,74 +651,10 @@ export default async function GuideProfilePage({ params }) {
               </div>
               
               {/* Tours by this Guide Section */}
-              <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 text-gray-800">
-                <h2 className="text-2xl font-bold mb-6 flex items-center">
-                  <span className="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-lg">🧭</span>
-                  </span>
-                  {locale === 'en' ? 'Tours by this Guide' : 'جولات هذا المرشد'}
-                </h2>
-                
-                {tours && tours.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {tours.map((tour) => (
-                      <Link 
-                        key={tour._id} 
-                        href={`/${locale}/tours/${tour._id}`}
-                        className="block group"
-                      >
-                        <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                          <div className="relative h-48 w-full">
-                            <Image 
-                              src={tour.images?.cover?.url || '/no-image-cover.png'}
-                              alt={tour.title?.[locale] || tour.title?.en || 'Tour'}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-300"
-                              sizes='100vw'
-                            />
-                          </div>
-                          
-                          <div className="p-4">
-                            <h3 className="text-lg font-semibold mb-2 group-hover:text-primary-600 transition-colors">
-                              {tour.title?.[locale] || tour.title?.en || 'Tour'}
-                            </h3>
-                            
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center text-yellow-500">
-                                <Star className="w-4 h-4 fill-current" />
-                                <span className="text-gray-700 ml-1">{tour.rating || 5}</span>
-                                <span className="text-gray-500 text-sm ml-1">({tour.reviewCount || 0})</span>
-                              </div>
-                              
-                              <span className="font-bold text-primary-600">
-                                ${tour.price || 0}
-                              </span>
-                            </div>
-                            
-                            <p className="text-sm text-gray-500 line-clamp-2">
-                              {tour.description?.[locale] || tour.description?.en || ''}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">
-                      {locale === 'en' 
-                        ? 'No tours available from this guide yet' 
-                        : 'لا توجد جولات متاحة من هذا المرشد حتى الآن'}
-                    </p>
-                    <Link 
-                      href={`/${locale}/tours`}
-                      className="bg-primary-100 hover:bg-primary-200 text-primary-800 font-medium py-2 px-4 rounded-lg transition-colors inline-block"
-                    >
-                      {locale === 'en' ? 'Browse all tours' : 'تصفح جميع الجولات'}
-                    </Link>
-                  </div>
-                )}
-              </div>
+              <GuideToursSection 
+                tours={tours}
+                locale={locale}
+              />
               
               {/* Reviews Section */}
               <ReviewsSection 
