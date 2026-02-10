@@ -73,55 +73,75 @@ export default async function AboutPage({ params }) {
                 {locale === 'en' ? 'The answer is simple. Travelers deserve the truth.' : 'الإجابة بسيطة. المسافرون يستحقون الحقيقة.'}
               </h3>
               
-              <div className="space-y-6 text-gray-700 leading-relaxed">
-                <p>
-                  {locale === 'en' 
-                    ? 'For decades, tourism in Israel and Palestine has been shaped by large agencies. They decide what you see, what you hear, and who leads the experience. Stories are filtered. History turns into a script. And the people with the deepest connection to the land are often pushed aside.' 
-                    : 'لعقود من الزمان، تشكلت السياحة في إسرائيل وفلسطين من قبل وكالات كبيرة. هم يقررون ما تراه، وما تسمعه، ومن يقود التجربة. يتم تصفية القصص. يتحول التاريخ إلى نص مكتوب. وغالبًا ما يتم تهميش الأشخاص الذين لديهم أعمق ارتباط بالأرض.'}
-                </p>
-                <p className="font-medium text-primary-700">
-                  {locale === 'en' 
-                    ? 'I didn’t want to be part of that. So we built Watermelon Tours to do things differently.' 
-                    : 'لم أكن أريد أن أكون جزءًا من ذلك. لذلك قمنا ببناء Watermelon Tours للقيام بالأشياء بشكل مختلف.'}
-                </p>
-                <p>
-                  {locale === 'en' 
-                    ? 'For the first time, locals with full independence lead. Here, tours are led by people who call this place home. People who grew up here. Whose families have lived here for generations. Not trained to repeat a script. Not told what they are allowed to say. You’ll hear stories passed down within families, not written by agencies.' 
-                    : 'لأول مرة، يقود السكان المحليون باستقلالية تامة. هنا، يتم قيادة الجولات من قبل أشخاص يعتبرون هذا المكان وطنهم. أشخاص نشأوا هنا. عاشت عائلاتهم هنا لأجيال. غير مدربين على تكرار نص مكتوب. لا يُملى عليهم ما يُسمح لهم بقوله. ستسمع قصصًا متوارثة داخل العائلات، وليست مكتوبة من قبل الوكالات.'}
-                </p>
-                <p>
-                  {locale === 'en' 
-                    ? 'They share what daily life feels like. What the land means to them. And the context you would never hear on a bus tour or read in a brochure.' 
-                    : 'يشاركون شعور الحياة اليومية. ماذا تعني الأرض بالنسبة لهم. والسياق الذي لن تسمعه أبدًا في جولة بالحافلة أو تقرأه في كتيب.'}
-                </p>
-                <p>
-                  {locale === 'en' 
-                    ? 'People come here to walk sacred paths, visit ancient cities, explore history, and understand one of the most complex places in the world. We believe those experiences mean more when they are guided by lived experience.' 
-                    : 'يأتي الناس إلى هنا للمشي في مسارات مقدسة، وزيارة المدن القديمة، واستكشاف التاريخ، وفهم أحد أكثر الأماكن تعقيدًا في العالم. نحن نؤمن أن هذه التجارب تعني أكثر عندما يتم توجيهها من خلال التجربة المعاشة.'}
-                </p>
-                <p>
-                  {locale === 'en' 
-                    ? 'For you as a traveler, this means something simple. You know who your guide is. You pay a fair price. And you experience the land through real human connection.' 
-                    : 'بالنسبة لك كمسافر، هذا يعني شيئًا بسيطًا. أنت تعرف من هو مرشدك. تدفع سعرًا عادلاً. وتختبر الأرض من خلال تواصل إنساني حقيقي.'}
-                </p>
-                
-                <div className="bg-primary-50 p-6 rounded-lg border border-primary-100 my-6">
-                  <h4 className="font-semibold mb-2 flex items-center">
-                    <span className="mr-2">🛡️</span>
-                    {locale === 'en' ? 'Your safety matters' : 'سلامتك تهمنا'}
-                  </h4>
-                  <p className="text-sm">
-                    {locale === 'en' 
-                      ? 'Our guides move through this land every day. They understand access, conditions, and how quickly things can change. Every experience is planned with care, clear communication, and your well being as the top priority.' 
-                      : 'يتحرك مرشدونا عبر هذه الأرض كل يوم. يفهمون إمكانية الوصول، والظروف، ومدى سرعة تغير الأشياء. يتم التخطيط لكل تجربة بعناية، وتواصل واضح، ورفاهيتك كأولوية قصوى.'}
-                  </p>
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                {/* Image */}
+                <div className="w-full md:w-1/2 relative h-64 md:h-auto min-h-[300px] rounded-lg overflow-hidden shadow-md order-1 md:order-2">
+                  <Image 
+                    src="/whyweexist.jpg" 
+                    alt={locale === 'en' ? 'Authentic travel experience' : 'تجربة سفر أصيلة'}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
                 </div>
 
-                <p className="text-lg font-semibold text-center mt-8">
-                  {locale === 'en' 
-                    ? 'That’s why Watermelon Tours exists. Not to sell a version of a place, but to let you experience it through the people who live it.' 
-                    : 'لهذا السبب توجد Watermelon Tours. ليس لبيع نسخة من مكان ما، ولكن لتتيح لك تجربته من خلال الأشخاص الذين يعيشونه.'}
-                </p>
+                {/* Text Content Part 1 */}
+                <div className="w-full md:w-1/2 space-y-6 text-gray-700 leading-relaxed order-2 md:order-1">
+                  <p>
+                    {locale === 'en' 
+                      ? 'For decades, tourism in Israel and Palestine has been shaped by large agencies. They decide what you see, what you hear, and who leads the experience. Stories are filtered. History turns into a script. And the people with the deepest connection to the land are often pushed aside.' 
+                      : 'لعقود من الزمان، تشكلت السياحة في إسرائيل وفلسطين من قبل وكالات كبيرة. هم يقررون ما تراه، وما تسمعه، ومن يقود التجربة. يتم تصفية القصص. يتحول التاريخ إلى نص مكتوب. وغالبًا ما يتم تهميش الأشخاص الذين لديهم أعمق ارتباط بالأرض.'}
+                  </p>
+                  <p className=" text-primary-700">
+                    {locale === 'en' 
+                      ? 'I didn’t want to be part of that. So we built Watermelon Tours to do things differently.' 
+                      : 'لم أكن أريد أن أكون جزءًا من ذلك. لذلك قمنا ببناء Watermelon Tours للقيام بالأشياء بشكل مختلف.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Text Content Part 2 */}
+              <div className="mt-6 space-y-6 text-gray-700 leading-relaxed">
+                  <h3 className="text-xl font-semibold mb-6 text-center">
+                  For the first time, locals with full independence lead.
+                  </h3>
+                  <p>
+                    {locale === 'en' 
+                      ? ' Here, tours are led by people who call this place home. People who grew up here. Whose families have lived here for generations. Not trained to repeat a script. Not told what they are allowed to say. You’ll hear stories passed down within families, not written by agencies.' 
+                      : 'لأول مرة، يقود السكان المحليون باستقلالية تامة. هنا، يتم قيادة الجولات من قبل أشخاص يعتبرون هذا المكان وطنهم. أشخاص نشأوا هنا. عاشت عائلاتهم هنا لأجيال. غير مدربين على تكرار نص مكتوب. لا يُملى عليهم ما يُسمح لهم بقوله. ستسمع قصصًا متوارثة داخل العائلات، وليست مكتوبة من قبل الوكالات.'}
+                  </p>
+                  <p>
+                    {locale === 'en' 
+                      ? 'They share what daily life feels like. What the land means to them. And the context you would never hear on a bus tour or read in a brochure.' 
+                      : 'يشاركون شعور الحياة اليومية. ماذا تعني الأرض بالنسبة لهم. والسياق الذي لن تسمعه أبدًا في جولة بالحافلة أو تقرأه في كتيب.'}
+                  </p>
+                  <p>
+                    {locale === 'en' 
+                      ? 'People come here to walk sacred paths, visit ancient cities, explore history, and understand one of the most complex places in the world. We believe those experiences mean more when they are guided by lived experience.' 
+                      : 'يأتي الناس إلى هنا للمشي في مسارات مقدسة، وزيارة المدن القديمة، واستكشاف التاريخ، وفهم أحد أكثر الأماكن تعقيدًا في العالم. نحن نؤمن أن هذه التجارب تعني أكثر عندما يتم توجيهها من خلال التجربة المعاشة.'}
+                  </p>
+                  <p>
+                    {locale === 'en' 
+                      ? 'For you as a traveler, this means something simple. You know who your guide is. You pay a fair price. And you experience the land through real human connection.' 
+                      : 'بالنسبة لك كمسافر، هذا يعني شيئًا بسيطًا. أنت تعرف من هو مرشدك. تدفع سعرًا عادلاً. وتختبر الأرض من خلال تواصل إنساني حقيقي.'}
+                  </p>
+                  
+                  <div className="bg-primary-50 p-6 rounded-lg border border-primary-100 my-6">
+                    <h4 className="font-semibold mb-2 flex items-center">
+                      <span className="mr-2">🛡️</span>
+                      {locale === 'en' ? 'Your safety matters' : 'سلامتك تهمنا'}
+                    </h4>
+                    <p className="text-sm">
+                      {locale === 'en' 
+                        ? 'Our guides move through this land every day. They understand access, conditions, and how quickly things can change. Every experience is planned with care, clear communication, and your well being as the top priority.' 
+                        : 'يتحرك مرشدونا عبر هذه الأرض كل يوم. يفهمون إمكانية الوصول، والظروف، ومدى سرعة تغير الأشياء. يتم التخطيط لكل تجربة بعناية، وتواصل واضح، ورفاهيتك كأولوية قصوى.'}
+                    </p>
+                    <p className="text-sm">
+                    {locale === 'en' 
+                      ? 'That’s why Watermelon Tours exists. Not to sell a version of a place, but to let you experience it through the people who live it.' 
+                      : 'لهذا السبب توجد Watermelon Tours. ليس لبيع نسخة من مكان ما، ولكن لتتيح لك تجربته من خلال الأشخاص الذين يعيشونه.'}
+                  </p>
+                  </div>
               </div>
               
               <div className="text-center mt-10">
