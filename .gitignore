@@ -40,3 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .qodo
+
+# heavy media — keep out of git, deploy via static or CDN
+/public/frames/
+/public/videos/*.mp4
+!/public/videos/palestine-bg.mp4
+!/public/videos/palestine-bg-mobile.mp4
+.claude/worktrees/

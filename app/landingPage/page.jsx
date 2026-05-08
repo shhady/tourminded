@@ -2,20 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// ---- Frame sequence config -------------------------------------------------
-// Generate frames with ffmpeg (run once after placing the video):
-//
-//   ffmpeg -i palestine-scroll-bg.mp4 -vf "fps=24,scale=1600:-2:flags=lanczos" \
-//          -q:v 4 public/frames/palestine/frame-%03d.jpg
-//
-// 25s video × 24fps ≈ 610 frames. Adjust FRAME_COUNT to match exact output.
-const FRAME_COUNT = 610;
-const FRAME_PATH = (i) =>
-  `/frames/palestine/frame-${String(i).padStart(3, "0")}.jpg`;
-// ---------------------------------------------------------------------------
-
-const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
-
 const sections = [
   {
     eyebrow: "Meet the people",
@@ -50,188 +36,51 @@ const sections = [
 ];
 
 export default function LandingPage() {
-  const wrapperRef = useRef(null);
-  const canvasRef = useRef(null);
-  const framesRef = useRef([]);
-  const loadedCountRef = useRef(0);
-  const currentFrameRef = useRef(-1);
-  const rafRef = useRef(0);
-  const tickingRef = useRef(false);
+  const videoRef = useRef(null);
+  const [videoSrc, setVideoSrc] = useState(null);
 
-  const [loadProgress, setLoadProgress] = useState(0);
-  const [ready, setReady] = useState(false);
-
-  // ---- Preload + decode frame sequence ------------------------------------
-  // Two-phase strategy:
-  //   1. Sequential decode of first N frames (READY_THRESHOLD) so the user
-  //      can start scrolling smoothly almost immediately.
-  //   2. Background load of the rest, in scroll order, throttled by the
-  //      browser's per-origin connection cap (no extra parallelism needed).
-  // img.decode() turns each JPEG into a GPU-ready bitmap so drawImage is
-  // a memory copy rather than a decode-on-draw — this is what kills the
-  // remaining micro-stutter on fast scroll.
   useEffect(() => {
-    let cancelled = false;
-    const frames = new Array(FRAME_COUNT);
-    framesRef.current = frames;
-
-    // First ~5% of frames must be decoded before we let the user scroll.
-    const READY_THRESHOLD = Math.min(FRAME_COUNT, Math.ceil(FRAME_COUNT * 0.05));
-
-    const loadOne = (i) => {
-      const img = new Image();
-      img.decoding = "async";
-      img.src = FRAME_PATH(i + 1);
-      frames[i] = img;
-      const done = () => {
-        if (cancelled) return;
-        loadedCountRef.current += 1;
-        setLoadProgress(loadedCountRef.current / FRAME_COUNT);
-      };
-      // decode() resolves once the image is fully decoded. Fall back to
-      // onload for browsers/edge cases where decode() rejects.
-      return img
-        .decode()
-        .then(done)
-        .catch(
-          () =>
-            new Promise((res) => {
-              img.onload = () => {
-                done();
-                res();
-              };
-              img.onerror = () => {
-                done();
-                res();
-              };
-            })
-        );
-    };
-
-    (async () => {
-      // Phase 1: gate UI on the first chunk
-      for (let i = 0; i < READY_THRESHOLD; i++) {
-        if (cancelled) return;
-        await loadOne(i);
-        if (i === 0) drawFrame(0, true);
-      }
-      if (cancelled) return;
-      setReady(true);
-
-      // Phase 2: rest in background, in order, no awaiting between them
-      for (let i = READY_THRESHOLD; i < FRAME_COUNT; i++) {
-        if (cancelled) return;
-        loadOne(i);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    const isMobile =
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 768px)").matches;
+    setVideoSrc(
+      isMobile
+        ? "/videos/palestine-bg-mobile.mp4"
+        : "/videos/palestine-bg.mp4"
+    );
   }, []);
 
-  // ---- Canvas sizing (DPR-aware, responsive) ------------------------------
+  // Some mobile browsers (notably iOS Safari) don't always honor the autoplay
+  // attribute on hydration — kick play() once after the video element mounts.
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      canvas.style.width = w + "px";
-      canvas.style.height = h + "px";
-      const ctx = canvas.getContext("2d");
-      if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      // Force redraw of current frame at the new size
-      const idx = currentFrameRef.current;
-      currentFrameRef.current = -1;
-      drawFrame(idx >= 0 ? idx : 0, true);
+    if (!videoSrc) return;
+    const v = videoRef.current;
+    if (!v) return;
+    const tryPlay = () => {
+      const p = v.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
     };
-
-    resize();
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
-
-  // ---- Scroll → frame index mapping ---------------------------------------
-  useEffect(() => {
-    const wrapper = wrapperRef.current;
-    if (!wrapper) return;
-
-    const update = () => {
-      tickingRef.current = false;
-      const scrollStart = wrapper.offsetTop;
-      const scrollEnd =
-        wrapper.offsetTop + wrapper.offsetHeight - window.innerHeight;
-      const range = Math.max(scrollEnd - scrollStart, 1);
-      const progress = clamp((window.scrollY - scrollStart) / range, 0, 1);
-      const target = Math.round(progress * (FRAME_COUNT - 1));
-      drawFrame(target);
-    };
-
-    const onScroll = () => {
-      if (tickingRef.current) return;
-      tickingRef.current = true;
-      rafRef.current = window.requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  // ---- Draw a frame to canvas with object-cover behavior ------------------
-  function drawFrame(index, force = false) {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    if (!force && index === currentFrameRef.current) return;
-
-    const img = framesRef.current[index];
-    if (!img || !img.complete || img.naturalWidth === 0) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const cw = canvas.width / (window.devicePixelRatio
-      ? Math.min(window.devicePixelRatio, 2)
-      : 1);
-    const ch = canvas.height / (window.devicePixelRatio
-      ? Math.min(window.devicePixelRatio, 2)
-      : 1);
-
-    const iw = img.naturalWidth;
-    const ih = img.naturalHeight;
-    const canvasAspect = cw / ch;
-    const imgAspect = iw / ih;
-
-    let dw, dh, dx, dy;
-    if (imgAspect > canvasAspect) {
-      dh = ch;
-      dw = dh * imgAspect;
-      dx = (cw - dw) / 2;
-      dy = 0;
-    } else {
-      dw = cw;
-      dh = dw / imgAspect;
-      dx = 0;
-      dy = (ch - dh) / 2;
-    }
-
-    ctx.clearRect(0, 0, cw, ch);
-    ctx.drawImage(img, dx, dy, dw, dh);
-    currentFrameRef.current = index;
-  }
+    if (v.readyState >= 2) tryPlay();
+    else v.addEventListener("loadeddata", tryPlay, { once: true });
+    return () => v.removeEventListener("loadeddata", tryPlay);
+  }, [videoSrc]);
 
   return (
     <div className="relative min-h-screen w-full bg-[#1a1814] text-[#f5efe6] antialiased">
       <div className="pointer-events-none fixed inset-0 z-0">
-        <canvas ref={canvasRef} className="block h-full w-full" />
+        {videoSrc && (
+          <video
+            ref={videoRef}
+            key={videoSrc}
+            src={videoSrc}
+            muted
+            autoPlay
+            loop
+            playsInline
+            preload="auto"
+            className="h-full w-full object-cover"
+          />
+        )}
         <div
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80"
@@ -241,23 +90,6 @@ export default function LandingPage() {
           className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/30"
         />
       </div>
-
-      {!ready && (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-[#1a1814]/0 px-6 pb-10 pointer-events-none">
-          <div className="w-full max-w-sm">
-            <div className="mb-2 flex justify-between text-[10px] uppercase tracking-[0.3em] text-[#e9e1d3]/70">
-              <span>Loading</span>
-              <span>{Math.round(loadProgress * 100)}%</span>
-            </div>
-            <div className="h-px w-full bg-[#f5efe6]/15">
-              <div
-                className="h-full bg-[#c9a96b] transition-[width] duration-200"
-                style={{ width: `${loadProgress * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       <header className="fixed top-0 left-0 right-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 sm:py-5">
@@ -285,7 +117,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main id="top" ref={wrapperRef} className="relative z-10">
+      <main id="top" className="relative z-10">
         <section className="relative flex min-h-screen items-center px-5 pt-28 pb-16 sm:px-8 sm:pt-32 sm:pb-24">
           <div className="mx-auto w-full max-w-7xl">
             <div className="max-w-3xl">
