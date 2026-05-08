@@ -2,6 +2,25 @@
 
 import { useEffect, useRef, useState } from "react";
 
+// ---- Frame sequence config (desktop only) -------------------------------
+// Generate frames from public/videos/palestine-video.mp4:
+//
+//   ffmpeg -i palestine-video.mp4 -vf "fps=24,scale=1280:-2:flags=lanczos" \
+//          -q:v 5 public/frames/palestine/frame-%03d.jpg
+//
+// 11.7s × 24fps ≈ 282 frames. Adjust to match exact ffmpeg output.
+const FRAME_COUNT = 282;
+const FRAME_PATH = (i) =>
+  `/frames/palestine/frame-${String(i).padStart(3, "0")}.jpg`;
+
+// Mobile gets a plain looping video — iOS Safari can't keep hundreds of
+// decoded JPEGs in memory and silently drops them.
+const MOBILE_VIDEO = "/videos/palestine-video-mobile.mp4";
+const MOBILE_BREAKPOINT = "(max-width: 768px)";
+// -------------------------------------------------------------------------
+
+const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+
 const sections = [
   {
     eyebrow: "Meet the people",
@@ -36,24 +55,31 @@ const sections = [
 ];
 
 export default function LandingPage() {
+  const wrapperRef = useRef(null);
+  const canvasRef = useRef(null);
   const videoRef = useRef(null);
-  const [videoSrc, setVideoSrc] = useState(null);
 
+  const framesRef = useRef([]);
+  const loadedCountRef = useRef(0);
+  const currentFrameRef = useRef(-1);
+  const rafRef = useRef(0);
+  const tickingRef = useRef(false);
+
+  // null = SSR / not detected yet → render no background to avoid hydration
+  // mismatch and flashing the wrong layer.
+  const [mode, setMode] = useState(null);
+  const [loadProgress, setLoadProgress] = useState(0);
+  const [ready, setReady] = useState(false);
+
+  // ---- Detect mobile vs desktop -------------------------------------------
   useEffect(() => {
-    const isMobile =
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 768px)").matches;
-    setVideoSrc(
-      isMobile
-        ? "/videos/palestine-bg-mobile.mp4"
-        : "/videos/palestine-bg.mp4"
-    );
+    const mq = window.matchMedia(MOBILE_BREAKPOINT);
+    setMode(mq.matches ? "mobile" : "desktop");
   }, []);
 
-  // Some mobile browsers (notably iOS Safari) don't always honor the autoplay
-  // attribute on hydration — kick play() once after the video element mounts.
+  // ---- MOBILE: kick autoplay (iOS Safari sometimes ignores the attribute)--
   useEffect(() => {
-    if (!videoSrc) return;
+    if (mode !== "mobile") return;
     const v = videoRef.current;
     if (!v) return;
     const tryPlay = () => {
@@ -63,16 +89,174 @@ export default function LandingPage() {
     if (v.readyState >= 2) tryPlay();
     else v.addEventListener("loadeddata", tryPlay, { once: true });
     return () => v.removeEventListener("loadeddata", tryPlay);
-  }, [videoSrc]);
+  }, [mode]);
+
+  // ---- DESKTOP: preload + decode frames -----------------------------------
+  useEffect(() => {
+    if (mode !== "desktop") return;
+    let cancelled = false;
+    const frames = new Array(FRAME_COUNT);
+    framesRef.current = frames;
+    loadedCountRef.current = 0;
+    setLoadProgress(0);
+
+    const READY_THRESHOLD = Math.min(
+      FRAME_COUNT,
+      Math.ceil(FRAME_COUNT * 0.05)
+    );
+
+    const loadOne = (i) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.src = FRAME_PATH(i + 1);
+      frames[i] = img;
+      const done = () => {
+        if (cancelled) return;
+        loadedCountRef.current += 1;
+        setLoadProgress(loadedCountRef.current / FRAME_COUNT);
+      };
+      return img
+        .decode()
+        .then(done)
+        .catch(
+          () =>
+            new Promise((res) => {
+              img.onload = () => {
+                done();
+                res();
+              };
+              img.onerror = () => {
+                done();
+                res();
+              };
+            })
+        );
+    };
+
+    (async () => {
+      for (let i = 0; i < READY_THRESHOLD; i++) {
+        if (cancelled) return;
+        await loadOne(i);
+        if (i === 0) drawFrame(0, true);
+      }
+      if (cancelled) return;
+      setReady(true);
+      for (let i = READY_THRESHOLD; i < FRAME_COUNT; i++) {
+        if (cancelled) return;
+        loadOne(i);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mode]);
+
+  // ---- DESKTOP: canvas DPR-aware sizing -----------------------------------
+  useEffect(() => {
+    if (mode !== "desktop") return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const idx = currentFrameRef.current;
+      currentFrameRef.current = -1;
+      drawFrame(idx >= 0 ? idx : 0, true);
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, [mode]);
+
+  // ---- DESKTOP: scroll → frame index --------------------------------------
+  useEffect(() => {
+    if (mode !== "desktop") return;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const update = () => {
+      tickingRef.current = false;
+      const scrollStart = wrapper.offsetTop;
+      const scrollEnd =
+        wrapper.offsetTop + wrapper.offsetHeight - window.innerHeight;
+      const range = Math.max(scrollEnd - scrollStart, 1);
+      const progress = clamp((window.scrollY - scrollStart) / range, 0, 1);
+      const target = Math.round(progress * (FRAME_COUNT - 1));
+      drawFrame(target);
+    };
+
+    const onScroll = () => {
+      if (tickingRef.current) return;
+      tickingRef.current = true;
+      rafRef.current = window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
+    };
+  }, [mode]);
+
+  // ---- Draw frame with object-cover behavior -----------------------------
+  function drawFrame(index, force = false) {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    if (!force && index === currentFrameRef.current) return;
+
+    const img = framesRef.current[index];
+    if (!img || !img.complete || img.naturalWidth === 0) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const cw = canvas.width / dpr;
+    const ch = canvas.height / dpr;
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const canvasAspect = cw / ch;
+    const imgAspect = iw / ih;
+
+    let dw, dh, dx, dy;
+    if (imgAspect > canvasAspect) {
+      dh = ch;
+      dw = dh * imgAspect;
+      dx = (cw - dw) / 2;
+      dy = 0;
+    } else {
+      dw = cw;
+      dh = dw / imgAspect;
+      dx = 0;
+      dy = (ch - dh) / 2;
+    }
+
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(img, dx, dy, dw, dh);
+    currentFrameRef.current = index;
+  }
 
   return (
     <div className="relative min-h-screen w-full bg-[#1a1814] text-[#f5efe6] antialiased">
       <div className="pointer-events-none fixed inset-0 z-0">
-        {videoSrc && (
+        {mode === "desktop" && (
+          <canvas ref={canvasRef} className="block h-full w-full" />
+        )}
+        {mode === "mobile" && (
           <video
             ref={videoRef}
-            key={videoSrc}
-            src={videoSrc}
+            src={MOBILE_VIDEO}
             muted
             autoPlay
             loop
@@ -90,6 +274,23 @@ export default function LandingPage() {
           className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/30"
         />
       </div>
+
+      {mode === "desktop" && !ready && (
+        <div className="fixed inset-0 z-40 flex items-end justify-center px-6 pb-10 pointer-events-none">
+          <div className="w-full max-w-sm">
+            <div className="mb-2 flex justify-between text-[10px] uppercase tracking-[0.3em] text-[#e9e1d3]/70">
+              <span>Loading</span>
+              <span>{Math.round(loadProgress * 100)}%</span>
+            </div>
+            <div className="h-px w-full bg-[#f5efe6]/15">
+              <div
+                className="h-full bg-[#c9a96b] transition-[width] duration-200"
+                style={{ width: `${loadProgress * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <header className="fixed top-0 left-0 right-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 sm:py-5">
@@ -117,7 +318,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main id="top" className="relative z-10">
+      <main id="top" ref={wrapperRef} className="relative z-10">
         <section className="relative flex min-h-screen items-center px-5 pt-28 pb-16 sm:px-8 sm:pt-32 sm:pb-24">
           <div className="mx-auto w-full max-w-7xl">
             <div className="max-w-3xl">
