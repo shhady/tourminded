@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 const FRAME_COUNT = 282;
@@ -59,6 +60,14 @@ export default function LandingPage() {
   const [mode, setMode] = useState(null);
   const [loadProgress, setLoadProgress] = useState(0);
   const [ready, setReady] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia(MOBILE_BREAKPOINT);
@@ -92,7 +101,7 @@ export default function LandingPage() {
     );
 
     const loadOne = (i) => {
-      const img = new Image();
+      const img = new window.Image();
       img.decoding = "async";
       img.src = FRAME_PATH(i + 1);
       frames[i] = img;
@@ -295,12 +304,37 @@ export default function LandingPage() {
       )}
 
       <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 sm:py-5">
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-x-0 top-0 -bottom-6 transition-opacity duration-300 ${
+            scrolled ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-transparent" />
+          <div
+            className="absolute inset-0 backdrop-blur-md"
+            style={{
+              WebkitMaskImage:
+                "linear-gradient(to bottom, black 60%, transparent 100%)",
+              maskImage:
+                "linear-gradient(to bottom, black 60%, transparent 100%)",
+            }}
+          />
+        </div>
+
+        <div className="relative mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 sm:py-5">
           <a
             href="#top"
             className="text-xl font-semibold tracking-wide text-[#f5efe6] sm:text-2xl"
           >
-            <span className="text-[#c9a96b]">Watermelon</span>Tours
+            {/* <span className="text-[#c9a96b]">Watermelon</span>Tours */}
+          <Image
+            src="/logo1.png"
+            alt="Watermelon Tours Logo"
+            width={100}
+            height={40}
+            className="h-auto w-auto"
+          />
           </a>
 
           <nav className="hidden items-center gap-8 md:flex">
