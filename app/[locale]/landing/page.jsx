@@ -3,10 +3,21 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-const FRAME_COUNT = 282;
-const FRAME_PATH = (i) =>
-  `/frames/palestine/frame-${String(i).padStart(3, "0")}.jpg`;
-const MOBILE_VIDEO = "/videos/palestine-video-mobile.mp4";
+// Mode-specific frame sets. Mobile uses a smaller set and skips img.decode()
+// so iOS Safari doesn't OOM trying to hold ~200 decoded bitmaps in memory.
+const FRAMES = {
+  desktop: {
+    count: 282,
+    path: (i) => `/frames/palestine/frame-${String(i).padStart(3, "0")}.jpg`,
+    decode: true,
+  },
+  mobile: {
+    count: 188,
+    path: (i) =>
+      `/frames/palestine-mobile/frame-${String(i).padStart(3, "0")}.jpg`,
+    decode: false,
+  },
+};
 const MOBILE_BREAKPOINT = "(max-width: 768px)";
 
 const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
@@ -49,7 +60,6 @@ const sections = [
 export default function LandingPage() {
   const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
-  const videoRef = useRef(null);
 
   const framesRef = useRef([]);
   const loadedCountRef = useRef(0);
@@ -129,57 +139,46 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
-    if (mode !== "mobile") return;
-    const v = videoRef.current;
-    if (!v) return;
-    const tryPlay = () => {
-      const p = v.play();
-      if (p && typeof p.catch === "function") p.catch(() => {});
-    };
-    if (v.readyState >= 2) tryPlay();
-    else v.addEventListener("loadeddata", tryPlay, { once: true });
-    return () => v.removeEventListener("loadeddata", tryPlay);
-  }, [mode]);
-
-  useEffect(() => {
-    if (mode !== "desktop") return;
+    if (!mode) return;
+    const config = FRAMES[mode];
     let cancelled = false;
-    const frames = new Array(FRAME_COUNT);
+    const frames = new Array(config.count);
     framesRef.current = frames;
     loadedCountRef.current = 0;
+    setReady(false);
     setLoadProgress(0);
 
     const READY_THRESHOLD = Math.min(
-      FRAME_COUNT,
-      Math.ceil(FRAME_COUNT * 0.05)
+      config.count,
+      Math.ceil(config.count * 0.05)
     );
+
+    const waitOnLoad = (img) =>
+      new Promise((res) => {
+        img.onload = () => res();
+        img.onerror = () => res();
+      });
 
     const loadOne = (i) => {
       const img = new window.Image();
       img.decoding = "async";
-      img.src = FRAME_PATH(i + 1);
+      img.src = config.path(i + 1);
       frames[i] = img;
       const done = () => {
         if (cancelled) return;
         loadedCountRef.current += 1;
-        setLoadProgress(loadedCountRef.current / FRAME_COUNT);
+        setLoadProgress(loadedCountRef.current / config.count);
       };
-      return img
-        .decode()
-        .then(done)
-        .catch(
-          () =>
-            new Promise((res) => {
-              img.onload = () => {
-                done();
-                res();
-              };
-              img.onerror = () => {
-                done();
-                res();
-              };
-            })
-        );
+      // Desktop: pre-decode bitmaps for buttery scroll. Mobile: skip decode
+      // and rely on lazy decode at drawImage time — keeps iOS Safari memory
+      // pressure low (no hundreds of resident bitmaps).
+      if (config.decode) {
+        return img
+          .decode()
+          .then(done)
+          .catch(() => waitOnLoad(img).then(done));
+      }
+      return waitOnLoad(img).then(done);
     };
 
     (async () => {
@@ -190,7 +189,7 @@ export default function LandingPage() {
       }
       if (cancelled) return;
       setReady(true);
-      for (let i = READY_THRESHOLD; i < FRAME_COUNT; i++) {
+      for (let i = READY_THRESHOLD; i < config.count; i++) {
         if (cancelled) return;
         loadOne(i);
       }
@@ -202,7 +201,7 @@ export default function LandingPage() {
   }, [mode]);
 
   useEffect(() => {
-    if (mode !== "desktop") return;
+    if (!mode) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -246,9 +245,10 @@ export default function LandingPage() {
   }, [mode]);
 
   useEffect(() => {
-    if (mode !== "desktop") return;
+    if (!mode) return;
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
+    const count = FRAMES[mode].count;
 
     const update = () => {
       tickingRef.current = false;
@@ -257,7 +257,7 @@ export default function LandingPage() {
         wrapper.offsetTop + wrapper.offsetHeight - window.innerHeight;
       const range = Math.max(scrollEnd - scrollStart, 1);
       const progress = clamp((window.scrollY - scrollStart) / range, 0, 1);
-      const target = Math.round(progress * (FRAME_COUNT - 1));
+      const target = Math.round(progress * (count - 1));
       drawFrame(target);
     };
 
@@ -315,21 +315,7 @@ export default function LandingPage() {
   return (
     <div className="relative min-h-screen w-full bg-[#1a1814] text-[#f5efe6] antialiased">
       <div className="pointer-events-none fixed inset-0 z-0">
-        {mode === "desktop" && (
-          <canvas ref={canvasRef} className="block h-full w-full" />
-        )}
-        {mode === "mobile" && (
-          <video
-            ref={videoRef}
-            src={MOBILE_VIDEO}
-            muted
-            autoPlay
-            loop
-            playsInline
-            preload="auto"
-            className="h-full w-full object-cover"
-          />
-        )}
+        {mode && <canvas ref={canvasRef} className="block h-full w-full" />}
         <div
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80"
@@ -340,7 +326,7 @@ export default function LandingPage() {
         />
       </div>
 
-      {mode === "desktop" && !ready && (
+      {mode && !ready && (
         <div className="fixed inset-0 z-40 flex items-end justify-center px-6 pb-10 pointer-events-none">
           <div className="w-full max-w-sm">
             <div className="mb-2 flex justify-between text-[10px] uppercase tracking-[0.3em] text-[#e9e1d3]/70">
@@ -385,9 +371,10 @@ export default function LandingPage() {
           <Image
             src="/logo1.png"
             alt="Watermelon Tours Logo"
-            width={100}
-            height={40}
-            className="h-auto w-auto"
+            width={240}
+            height={96}
+            priority
+            className="h-10 w-auto md:h-16 lg:h-18"
           />
           </a>
 
