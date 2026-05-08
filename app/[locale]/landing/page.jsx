@@ -61,6 +61,10 @@ export default function LandingPage() {
   const [loadProgress, setLoadProgress] = useState(0);
   const [ready, setReady] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [tellOpen, setTellOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -68,6 +72,56 @@ export default function LandingPage() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!tellOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setTellOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [tellOpen]);
+
+  useEffect(() => {
+    if (!submitStatus?.ok) return;
+    const t = setTimeout(() => {
+      setTellOpen(false);
+      setSubmitStatus(null);
+    }, 3500);
+    return () => clearTimeout(t);
+  }, [submitStatus]);
+
+  const openTell = () => {
+    setSubmitStatus(null);
+    setTellOpen(true);
+  };
+
+  const handleTellSubmit = async (e) => {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitStatus(null);
+    try {
+      const res = await fetch("/api/landing-contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to send.");
+      setSubmitStatus({ ok: true });
+      setForm({ name: "", email: "", phone: "", message: "" });
+    } catch (err) {
+      setSubmitStatus({ error: err.message || "Failed to send." });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const mq = window.matchMedia(MOBILE_BREAKPOINT);
@@ -372,19 +426,22 @@ export default function LandingPage() {
 
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
                 <a
-                  href="#interview"
+                  href="https://calendly.com/shakkour-boulos/30min"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label="Book a 20-minute interview"
                   className="inline-flex items-center justify-center rounded-full bg-[#c9a96b] px-7 py-3.5 text-sm font-semibold text-[#1a1814] shadow-lg shadow-black/30 transition hover:bg-[#d6b87b] sm:text-base"
                 >
                   Book a 20-minute interview
                 </a>
-                <a
-                  href="#tell-us"
+                <button
+                  type="button"
+                  onClick={openTell}
                   aria-label="Tell us what kind of Palestine trip you would want"
                   className="inline-flex items-center justify-center rounded-full border border-[#f5efe6]/40 bg-white/5 px-7 py-3.5 text-sm font-semibold text-[#f5efe6] backdrop-blur transition hover:bg-white/10 sm:text-base"
                 >
                   Tell us what kind of Palestine trip you'd want
-                </a>
+                </button>
               </div>
 
               <div className="mt-16 hidden items-center gap-3 text-xs uppercase tracking-[0.25em] text-[#e9e1d3]/60 sm:flex">
@@ -465,20 +522,23 @@ export default function LandingPage() {
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
                 <a
                   id="interview"
-                  href="#"
+                  href="https://calendly.com/shakkour-boulos/30min"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label="Book a 20-minute interview"
                   className="inline-flex w-full items-center justify-center rounded-full bg-[#c9a96b] px-7 py-3.5 text-sm font-semibold text-[#1a1814] shadow-lg shadow-black/30 transition hover:bg-[#d6b87b] sm:w-auto sm:text-base"
                 >
                   Book a 20-minute interview
                 </a>
-                <a
+                <button
                   id="tell-us"
-                  href="#"
+                  type="button"
+                  onClick={openTell}
                   aria-label="Tell us what kind of Palestine trip you would want"
                   className="inline-flex w-full items-center justify-center rounded-full border border-[#f5efe6]/40 bg-white/5 px-7 py-3.5 text-sm font-semibold text-[#f5efe6] backdrop-blur transition hover:bg-white/10 sm:w-auto sm:text-base"
                 >
                   Tell us what kind of Palestine trip you'd want
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -491,6 +551,141 @@ export default function LandingPage() {
           <span>Travel as a human, not a tourist.</span>
         </div>
       </footer>
+
+      {tellOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center px-4 py-8"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="tell-us-title"
+        >
+          <div
+            aria-hidden="true"
+            onClick={() => setTellOpen(false)}
+            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+          />
+
+          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-[#1a1814]/95 p-6 shadow-2xl shadow-black/60 backdrop-blur sm:p-8">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#c9a96b]/70 to-transparent"
+            />
+
+            <button
+              type="button"
+              onClick={() => setTellOpen(false)}
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-[#e9e1d3]/70 transition hover:bg-white/5 hover:text-[#f5efe6]"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+
+            <p className="mb-2 text-[10px] uppercase tracking-[0.32em] text-[#c9a96b] sm:text-xs">
+              Tell us
+            </p>
+            <h3
+              id="tell-us-title"
+              className="font-serif text-2xl font-semibold leading-tight tracking-tight text-[#f5efe6] sm:text-3xl"
+            >
+              What kind of Palestine trip would you want?
+            </h3>
+            <p className="mt-3 text-sm text-[#e9e1d3]/75">
+              Share a few details and we&apos;ll get back to you to design something
+              that fits.
+            </p>
+
+            <form onSubmit={handleTellSubmit} className="mt-6 space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1 block text-[10px] uppercase tracking-[0.22em] text-[#e9e1d3]/60">
+                    Name
+                  </span>
+                  <input
+                    required
+                    type="text"
+                    autoComplete="name"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-[#f5efe6] outline-none transition focus:border-[#c9a96b]/60 focus:bg-white/[0.07]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1 flex items-baseline gap-2 text-[10px] uppercase tracking-[0.22em] text-[#e9e1d3]/60">
+                    Phone
+                    <span className="tracking-normal text-[#e9e1d3]/40 normal-case">
+                      (optional)
+                    </span>
+                  </span>
+                  <input
+                    type="tel"
+                    autoComplete="tel"
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-[#f5efe6] outline-none transition focus:border-[#c9a96b]/60 focus:bg-white/[0.07]"
+                  />
+                </label>
+              </div>
+
+              <label className="block">
+                <span className="mb-1 block text-[10px] uppercase tracking-[0.22em] text-[#e9e1d3]/60">
+                  Email
+                </span>
+                <input
+                  required
+                  type="email"
+                  autoComplete="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-[#f5efe6] outline-none transition focus:border-[#c9a96b]/60 focus:bg-white/[0.07]"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1 block text-[10px] uppercase tracking-[0.22em] text-[#e9e1d3]/60">
+                  Message
+                </span>
+                <textarea
+                  required
+                  rows={4}
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  placeholder="What kind of trip are you imagining? Who's coming, when, what matters most?"
+                  className="w-full resize-none rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm leading-relaxed text-[#f5efe6] outline-none transition placeholder:text-[#e9e1d3]/35 focus:border-[#c9a96b]/60 focus:bg-white/[0.07]"
+                />
+              </label>
+
+              {submitStatus?.error && (
+                <p className="text-sm text-rose-300/90">{submitStatus.error}</p>
+              )}
+              {submitStatus?.ok && (
+                <p className="text-sm text-emerald-300/90">
+                  Thanks — we&apos;ll be in touch soon.
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex w-full items-center justify-center rounded-full bg-[#c9a96b] px-7 py-3 text-sm font-semibold text-[#1a1814] shadow-lg shadow-black/30 transition hover:bg-[#d6b87b] disabled:cursor-not-allowed disabled:opacity-60 sm:text-base"
+              >
+                {submitting ? "Sending…" : "Send"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
