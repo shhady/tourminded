@@ -318,11 +318,11 @@ export default function LandingPage() {
         {mode && <canvas ref={canvasRef} className="block h-full w-full" />}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80"
+          className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/50 to-black/80"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/30"
+          className="absolute inset-0 bg-gradient-to-r from-black/45 via-transparent to-black/30"
         />
       </div>
 
