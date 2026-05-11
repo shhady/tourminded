@@ -311,7 +311,7 @@ export default function LandingPage() {
     ctx.drawImage(img, dx, dy, dw, dh);
     currentFrameRef.current = index;
   }
-
+  // test 
   return (
     <div className="relative min-h-screen w-full bg-[#1a1814] text-[#f5efe6] antialiased">
       <div className="pointer-events-none fixed inset-0 z-0">
