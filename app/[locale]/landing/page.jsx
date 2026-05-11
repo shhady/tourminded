@@ -424,10 +424,10 @@ export default function LandingPage() {
                 <button
                   type="button"
                   onClick={openTell}
-                  aria-label="Tell us what kind of Palestine trip you would want"
+                  aria-label="Get notified when trips open"
                   className="inline-flex items-center justify-center rounded-full border border-[#f5efe6]/40 bg-white/5 px-7 py-3.5 text-sm font-semibold text-[#f5efe6] backdrop-blur transition hover:bg-white/10 sm:text-base"
                 >
-                  Tell us what kind of Palestine trip you'd want
+                  Get notified when trips open
                 </button>
               </div>
 
@@ -521,10 +521,10 @@ export default function LandingPage() {
                   id="tell-us"
                   type="button"
                   onClick={openTell}
-                  aria-label="Tell us what kind of Palestine trip you would want"
+                  aria-label="Get notified when trips open"
                   className="inline-flex w-full items-center justify-center rounded-full border border-[#f5efe6]/40 bg-white/5 px-7 py-3.5 text-sm font-semibold text-[#f5efe6] backdrop-blur transition hover:bg-white/10 sm:w-auto sm:text-base"
                 >
-                  Tell us what kind of Palestine trip you'd want
+                  Get notified when trips open
                 </button>
               </div>
             </div>
@@ -586,7 +586,7 @@ export default function LandingPage() {
               id="tell-us-title"
               className="font-serif text-2xl font-semibold leading-tight tracking-tight text-[#f5efe6] sm:text-3xl"
             >
-              What kind of Palestine trip would you want?
+              Get notified when trips open
             </h3>
             <p className="mt-3 text-sm text-[#e9e1d3]/75">
               Share a few details and we&apos;ll get back to you to design something
@@ -648,7 +648,6 @@ export default function LandingPage() {
                   rows={4}
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  placeholder="What kind of trip are you imagining? Who's coming, when, what matters most?"
                   className="w-full resize-none rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm leading-relaxed text-[#f5efe6] outline-none transition placeholder:text-[#e9e1d3]/35 focus:border-[#c9a96b]/60 focus:bg-white/[0.07]"
                 />
               </label>

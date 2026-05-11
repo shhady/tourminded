@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import dynamic from 'next/dynamic';
 import FeaturedGuides from '@/components/guides/FeaturedGuides';
@@ -15,6 +16,8 @@ export const revalidate = 60;
 export default async function Home({ params }) {
   const localeParams = await params;
   const locale = (await localeParams?.locale) || 'en';
+
+  redirect(`/${locale}/landing`);
 
   return (
     <MainLayout locale={locale}>
