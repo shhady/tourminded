@@ -26,12 +26,15 @@ export const viewport = {
   themeColor: '#08171f',
 };
 
+const defaultTitle = "Visit Palestine as a human, not a tourist";
+const defaultDescription = "Discover the Holy Land through the eyes of expert local guides. Book personalized tours, explore hidden gems, and create unforgettable memories in Jerusalem, Bethlehem, and beyond.";
+
 export const metadata = {
   title: {
-    default: "Watermelon Tours - Connect with Expert Local Guides",
+    default: defaultTitle,
     template: "%s | Watermelon Tours"
   },
-  description: "Discover the Holy Land through the eyes of expert local guides. Book personalized tours, explore hidden gems, and create unforgettable memories in Jerusalem, Bethlehem, and beyond.",
+  description: defaultDescription,
   keywords: [
     "tours",
     "travel",
@@ -112,8 +115,8 @@ export const metadata = {
   },
   manifest: '/site.webmanifest',
   openGraph: {
-    title: "Watermelon Tours - Connect with Expert Local Guides",
-    description: "Discover the Holy Land with expert local guides.",
+    title: defaultTitle,
+    description: defaultDescription,
     url: 'https://watermelontours.com',
     siteName: 'Watermelon Tours',
     images: [
@@ -121,7 +124,7 @@ export const metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Watermelon Tours',
+        alt: defaultTitle,
       }
     ],
     locale: 'en_US',
@@ -129,8 +132,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Watermelon Tours - Connect with Expert Local Guides',
-    description: 'Discover the Holy Land with expert local guides.',
+    title: defaultTitle,
+    description: defaultDescription,
     images: ['/og-image.jpg'],
   },
   verification: {

@@ -399,7 +399,9 @@ export default function LandingPage() {
         <section className="relative flex min-h-screen items-center px-5 pt-28 pb-16 sm:px-8 sm:pt-32 sm:pb-24">
           <div className="mx-auto w-full max-w-7xl">
             <div className="max-w-3xl">
-              
+              {/* <p className="mb-5 text-xs uppercase tracking-[0.3em] text-[#c9a96b] sm:text-sm">
+                A documentary travel experience
+              </p> */}
               <h1 className="font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-[#f5efe6] sm:text-6xl md:text-7xl lg:text-[5.5rem]">
                 Visit Palestine
                 <span className="block text-[#e9e1d3]">as a human,</span>
