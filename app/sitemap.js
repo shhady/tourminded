@@ -13,6 +13,7 @@ export default async function sitemap() {
     '/about',
     '/contact',
     '/tours',
+    '/tours/palestine-experience',
     '/blog',
     '/faq',
   ];

@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 // Mode-specific frame sets. Mobile uses a smaller set and skips img.decode()
@@ -58,6 +60,10 @@ const sections = [
 ];
 
 export default function LandingPage() {
+  const params = useParams();
+  const locale = params?.locale || "en";
+  const tourHref = `/${locale}/tours/palestine-experience`;
+
   const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -380,7 +386,6 @@ export default function LandingPage() {
 
           <nav className="hidden items-center gap-8 md:flex">
             {/* <a href="#about" className="text-sm font-medium text-[#e9e1d3]/85 transition hover:text-[#f5efe6]">About</a>
-            <a href="#trips" className="text-sm font-medium text-[#e9e1d3]/85 transition hover:text-[#f5efe6]">Trips</a>
             <a href="#why" className="text-sm font-medium text-[#e9e1d3]/85 transition hover:text-[#f5efe6]">Why Palestine</a>
             <a href="#faq" className="text-sm font-medium text-[#e9e1d3]/85 transition hover:text-[#f5efe6]">FAQ</a> */}
           </nav>
@@ -412,24 +417,31 @@ export default function LandingPage() {
               </p>
 
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+                <Link
+                  href={tourHref}
+                  aria-label="See the trip: seven days in Palestine"
+                  className="inline-flex items-center justify-center rounded-full bg-[#c9a96b] px-7 py-3.5 text-sm font-semibold text-[#1a1814] shadow-lg shadow-black/30 transition hover:bg-[#d6b87b] sm:text-base"
+                >
+                  See the trip — 7 days in Palestine
+                </Link>
                 <a
                   href="https://calendly.com/shakkour-boulos/30min"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Book a 20-minute interview"
-                  className="inline-flex items-center justify-center rounded-full bg-[#c9a96b] px-7 py-3.5 text-sm font-semibold text-[#1a1814] shadow-lg shadow-black/30 transition hover:bg-[#d6b87b] sm:text-base"
+                  className="inline-flex items-center justify-center rounded-full border border-[#f5efe6]/40 bg-white/5 px-7 py-3.5 text-sm font-semibold text-[#f5efe6] backdrop-blur transition hover:bg-white/10 sm:text-base"
                 >
                   Book a 20-minute interview
                 </a>
-                <button
-                  type="button"
-                  onClick={openTell}
-                  aria-label="Get notified when trips open"
-                  className="inline-flex items-center justify-center rounded-full border border-[#f5efe6]/40 bg-white/5 px-7 py-3.5 text-sm font-semibold text-[#f5efe6] backdrop-blur transition hover:bg-white/10 sm:text-base"
-                >
-                  Get notified when trips open
-                </button>
               </div>
+
+              <button
+                type="button"
+                onClick={openTell}
+                className="mt-5 text-sm font-medium text-[#e9e1d3]/70 underline decoration-[#c9a96b]/50 underline-offset-4 transition hover:text-[#f5efe6]"
+              >
+                or get notified when new trips open
+              </button>
 
               <div className="mt-16 hidden items-center gap-3 text-xs uppercase tracking-[0.25em] text-[#e9e1d3]/60 sm:flex">
                 <span className="h-px w-10 bg-[#c9a96b]/60" />
@@ -495,12 +507,76 @@ export default function LandingPage() {
           </section>
         ))}
 
+        <section id="trip" className="relative flex min-h-screen items-center px-5 py-20 sm:px-8 sm:py-28">
+          <div className="mx-auto w-full max-w-7xl">
+            <div
+              data-reveal
+              className="relative mx-auto max-w-5xl overflow-hidden rounded-[20px] border border-white/10 bg-black/45 shadow-2xl shadow-black/40 backdrop-blur-xl translate-y-8 opacity-0 transition-all duration-[900ms] ease-out data-[revealed=true]:translate-y-0 data-[revealed=true]:opacity-100"
+            >
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-[#c9a96b]/70 to-transparent"
+              />
+
+              <div className="grid md:grid-cols-[1.1fr_1fr]">
+                <div className="p-7 sm:p-10 md:p-12">
+                  <p className="mb-4 text-[10px] uppercase tracking-[0.32em] text-[#c9a96b] sm:text-xs">
+                    The one trip we run
+                  </p>
+                  <h2 className="font-serif text-[28px] font-semibold leading-[1.08] tracking-tight text-[#f5efe6] sm:text-4xl md:text-[44px]">
+                    One trip. Seven days.
+                    <span className="block italic text-[#c9a96b]">
+                      The whole story.
+                    </span>
+                  </h2>
+                  <p className="mt-6 max-w-[58ch] text-[15px] leading-[1.65] text-[#e9e1d3]/85 sm:text-base md:text-lg">
+                    A Monday-to-Monday route through Jerusalem, Bethlehem,
+                    Nablus, Ramallah, Hebron, and the village of Beit Ummar —
+                    guided by the people who live it, with nights in family
+                    homes.
+                  </p>
+
+                  <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] uppercase tracking-[0.28em] text-[#e9e1d3]/60 sm:text-xs">
+                    <span>7 days / 7 nights</span>
+                    <span aria-hidden="true" className="h-px w-6 bg-[#c9a96b]/40" />
+                    <span>Departs Jerusalem, Mondays</span>
+                    <span aria-hidden="true" className="h-px w-6 bg-[#c9a96b]/40" />
+                    <span>Host families</span>
+                  </div>
+
+                  <Link
+                    href={tourHref}
+                    className="mt-9 inline-flex items-center justify-center rounded-full bg-[#c9a96b] px-7 py-3.5 text-sm font-semibold text-[#1a1814] shadow-lg shadow-black/30 transition hover:bg-[#d6b87b] sm:text-base"
+                  >
+                    Follow the route
+                  </Link>
+                </div>
+
+                <div className="relative min-h-[260px] md:min-h-0">
+                  <Image
+                    src="/frames/palestine/frame-260.jpg"
+                    alt="Three travelers at an overlook at sunset, facing the Separation Wall winding through the hills"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 512px"
+                    className="object-cover"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent md:bg-gradient-to-r md:from-black/45 md:via-transparent md:to-transparent"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="talk" className="relative flex min-h-screen items-center px-5 py-20 sm:px-8 sm:py-28">
           <div className="mx-auto w-full max-w-7xl">
             <div className="mx-auto max-w-3xl rounded-2xl border border-[#c9a96b]/30 bg-black/55 p-8 text-center backdrop-blur-md sm:p-12 md:p-16">
               <p className="mb-4 text-xs uppercase tracking-[0.3em] text-[#c9a96b] sm:text-sm">Help us build it with you</p>
               <h2 className="font-serif text-3xl font-semibold leading-tight tracking-tight text-[#f5efe6] sm:text-4xl md:text-5xl">
-                We are listening first, before we build trips.
+                We built the first trip by listening. We&apos;re still
+                listening.
               </h2>
               <p className="mt-6 text-base leading-relaxed text-[#e9e1d3]/90 sm:text-lg">
                 We are currently speaking with people who have seriously considered visiting Palestine. Your answers help us build trips that are safe, meaningful, respectful, and real.
