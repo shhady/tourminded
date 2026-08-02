@@ -530,10 +530,10 @@ export default function LandingPage() {
                     </span>
                   </h2>
                   <p className="mt-6 max-w-[58ch] text-[15px] leading-[1.65] text-[#e9e1d3]/85 sm:text-base md:text-lg">
-                    A Monday-to-Monday route through Jerusalem, Bethlehem,
-                    Nablus, Ramallah, Hebron, and the village of Beit Ummar —
-                    guided by the people who live it, with nights in family
-                    homes.
+                    A Palestinian-led, Monday-to-Monday route through
+                    Jerusalem, Bethlehem, Hebron, Nablus, Ramallah, and
+                    Jericho — ending with three nights in a family home in the
+                    village of Beit Ummar.
                   </p>
 
                   <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] uppercase tracking-[0.28em] text-[#e9e1d3]/60 sm:text-xs">
